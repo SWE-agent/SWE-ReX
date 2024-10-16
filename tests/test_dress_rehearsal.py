@@ -105,3 +105,55 @@ def test_run_in_shell_interactive_command(remote_runtime: RemoteRuntime):
     assert r.success
     r = remote_runtime.close_shell(CloseRequest())
     assert r.success
+
+
+def test_run_in_shell_interactive_command_timeout(remote_runtime: RemoteRuntime):
+    r = remote_runtime.create_shell(CreateShellRequest())
+    assert r.success
+    r = remote_runtime.run_in_shell(
+        Action(command="python", is_interactive_command=True, expect=["WONTHITTHIS"], timeout=0.1)
+    )
+    assert not r.success
+    assert "timeout" in r.failure_reason
+    r = remote_runtime.close_shell(CloseRequest())
+
+
+def test_write_to_non_existent_directory(remote_runtime: RemoteRuntime, tmp_path: Path):
+    non_existent_dir = tmp_path / "non_existent_dir" / "test.txt"
+    response = remote_runtime.write_file(WriteFileRequest(path=str(non_existent_dir), content="test"))
+    assert response.success
+
+
+def test_read_large_file(remote_runtime: RemoteRuntime, tmp_path: Path):
+    large_file = tmp_path / "large_file.txt"
+    content = "x" * 1024 * 1024  # 1 MB of data
+    large_file.write_text(content)
+
+    response = remote_runtime.read_file(ReadFileRequest(path=str(large_file)))
+    assert response.success
+    assert len(response.content) == len(content)
+
+
+def test_multiple_isolated_shells(remote_runtime: RemoteRuntime):
+    shell1 = remote_runtime.create_shell(CreateShellRequest(session="shell1"))
+    shell2 = remote_runtime.create_shell(CreateShellRequest(session="shell2"))
+
+    assert shell1.success and shell2.success
+
+    remote_runtime.run_in_shell(Action(command="x=42", session="shell1"))
+    remote_runtime.run_in_shell(Action(command="y=24", session="shell2"))
+
+    response1 = remote_runtime.run_in_shell(Action(command="echo $x", session="shell1"))
+    response2 = remote_runtime.run_in_shell(Action(command="echo $y", session="shell2"))
+
+    assert response1.output.strip() == "42"
+    assert response2.output.strip() == "24"
+
+    response3 = remote_runtime.run_in_shell(Action(command="echo $y", session="shell1"))
+    response4 = remote_runtime.run_in_shell(Action(command="echo $x", session="shell2"))
+
+    assert response3.output.strip() == ""
+    assert response4.output.strip() == ""
+
+    remote_runtime.close_shell(CloseRequest(session="shell1"))
+    remote_runtime.close_shell(CloseRequest(session="shell2"))
