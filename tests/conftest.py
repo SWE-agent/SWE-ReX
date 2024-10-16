@@ -32,7 +32,17 @@ def remote_server() -> RemoteServer:
     thread = threading.Thread(target=run_server, daemon=True)
     thread.start()
 
-    time.sleep(0.1)
+    # Wait for the server to start
+    max_retries = 10
+    retry_delay = 0.1
+    for _ in range(max_retries):
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=1):
+                break
+        except (ConnectionRefusedError, socket.timeout):
+            time.sleep(retry_delay)
+    else:
+        pytest.fail("Server did not start within the expected time")
 
     return RemoteServer(port)
 
