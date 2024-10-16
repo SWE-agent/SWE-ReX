@@ -1,3 +1,4 @@
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -69,6 +70,11 @@ def split_bash_command(inpt: str) -> list[str]:
     return cmd_strings
 
 
+def strip_control_chars(s: str) -> str:
+    ansi_escape = re.compile(r"\x1B[@-_][0-?]*[ -/]*[@-~]")
+    return ansi_escape.sub("", s)
+
+
 class Session:
     def __init__(self):
         """This basically represents one REPL that we control.
@@ -91,12 +97,19 @@ class Session:
         except pexpect.TIMEOUT:
             return CreateShellResponse(success=False, failure_reason="timeout while initializing shell")
         output = self.shell.before
-        self.shell.sendline(f"umask 002; export PS1='{self._ps1}'; export PS2=''")
+        cmds = [
+            "umask 002",
+            f"export PS1='{self._ps1}'",
+            "export PS2=''",
+            "export PS0=''",
+        ]
+        cmd = " ; ".join(cmds)
+        self.shell.sendline(cmd)
         try:
             self.shell.expect(self._ps1, timeout=1)
         except pexpect.TIMEOUT:
             return CreateShellResponse(success=False, failure_reason="timeout while setting PS1")
-        output += "\n---\n" + self.shell.before  # type: ignore
+        output += "\n---\n" + strip_control_chars(self.shell.before)  # type: ignore
         return CreateShellResponse(output=output)
 
     async def run(self, action: Action) -> Observation:
@@ -115,21 +128,23 @@ class Session:
         except pexpect.TIMEOUT:
             expect_string = ""
             return Observation(success=False, failure_reason="timeout while running command")
-        output: str = self.shell.before  # type: ignore
+        output: str = strip_control_chars(self.shell.before).strip()  # type: ignore
         if not action.is_interactive_command and not action.is_interactive_quit:
             self.shell.sendline("\necho $?")
             try:
                 self.shell.expect(self._ps1, timeout=1)
             except pexpect.TIMEOUT:
                 return Observation(success=False, failure_reason="timeout while getting exit code")
-            exit_code_raw: str = self.shell.before.strip()  # type: ignore
+            exit_code_raw: str = strip_control_chars(self.shell.before).strip()  # type: ignore
             # After quitting an interactive session, for some reason we oftentimes get double
             # PS1 for all following commands. So we might need to call expect again.
             # Alternatively we could have probably called `echo <<<$?>>>` or something.
-            if not exit_code_raw.strip():
-                print("exit_code_raw was empty, trying again")
-                self.shell.expect(self._ps1, timeout=1)
-                exit_code_raw = self.shell.before.strip()  # type: ignore
+            for _ in range(2):
+                # Try 2 more times with very small timeout
+                if not exit_code_raw.strip():
+                    print("exit_code_raw was empty, trying again")
+                    self.shell.expect(self._ps1, timeout=0.1)
+                    exit_code_raw = strip_control_chars(self.shell.before).strip()  # type: ignore
         elif action.is_interactive_quit:
             assert not action.is_interactive_command
             exit_code_raw = "0"
@@ -148,7 +163,9 @@ class Session:
             exit_code = int(exit_code_raw)
         except ValueError:
             return Observation(
-                output=output, success=False, failure_reason=f"failed to parse exit code from output {exit_code_raw!r}"
+                output=output,
+                success=False,
+                failure_reason=f"failed to parse exit code from output {exit_code_raw!r} (command: {action.command!r})",
             )
         return Observation(output=output, exit_code=exit_code, expect_string=expect_string)
 
