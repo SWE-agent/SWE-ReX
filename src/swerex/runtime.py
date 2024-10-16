@@ -39,7 +39,8 @@ def split_bash_command(inpt: str) -> list[str]:
     "cmd1<<EOF\na\nb\nEOF" is one command (because of the heredoc)
     """
     inpt = inpt.strip()
-    if not inpt:
+    if not inpt or all(l.strip().startswith("#") for l in inpt.splitlines()):
+        # bashlex can't deal with empty strings or the like :/
         return []
     parsed = bashlex.parse(inpt)
     cmd_strings = []
@@ -54,7 +55,6 @@ def split_bash_command(inpt: str) -> list[str]:
         return start, end
 
     for cmd in parsed:
-        assert cmd.kind == "command"
         start, end = find_range(cmd)
         cmd_strings.append(inpt[start:end])
     return cmd_strings

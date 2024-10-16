@@ -212,3 +212,29 @@ def test_bash_multiline_command_eof(runtime_with_default_session: RemoteRuntime)
     assert r.success
     assert "hello world" in r.output
     assert "hello world 2" in r.output
+
+
+def test_run_in_shell_subshell_command(runtime_with_default_session: RemoteRuntime):
+    r = runtime_with_default_session.run_in_shell(Action(command="(sleep 10) &"))
+    assert r.success
+
+
+def test_run_just_comment(runtime_with_default_session: RemoteRuntime):
+    r = runtime_with_default_session.run_in_shell(Action(command="# echo 'hello world'"))
+    assert r.success
+    assert r.output == ""
+
+
+def test_run_in_shell_multiple_commands(runtime_with_default_session: RemoteRuntime):
+    r = runtime_with_default_session.run_in_shell(Action(command="echo 'hello world'; echo 'hello again'"))
+    assert r.success
+    assert r.output.splitlines() == ["hello world", "hello again"]
+    r = runtime_with_default_session.run_in_shell(Action(command="echo 'hello world' && echo 'hello again'"))
+    assert r.success
+    assert r.output.splitlines() == ["hello world", "hello again"]
+
+
+def test_run_in_shell_while_loop(runtime_with_default_session: RemoteRuntime):
+    r = runtime_with_default_session.run_in_shell(Action(command="for i in {1..3};\n do echo 'hello world';\n done"))
+    assert r.success
+    assert r.output.splitlines() == ["hello world"] * 3
