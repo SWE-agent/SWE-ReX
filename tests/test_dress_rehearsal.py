@@ -80,42 +80,33 @@ def test_close_shell_twice(remote_runtime: RemoteRuntime):
     assert "does not exist" in r.failure_reason
 
 
-def test_run_in_shell_timeout(remote_runtime: RemoteRuntime):
+def test_run_in_shell_timeout(runtime_with_default_session: RemoteRuntime):
     print("in test")
-    r = remote_runtime.create_shell(CreateShellRequest())
-    assert r.success
-    r = remote_runtime.run_in_shell(Action(command="sleep 10", timeout=0.1))
+    r = runtime_with_default_session.run_in_shell(Action(command="sleep 10", timeout=0.1))
     assert not r.success
     assert "timeout" in r.failure_reason
     assert not r.output
-    r = remote_runtime.close_shell(CloseRequest())
-    assert r.success
 
 
-def test_run_in_shell_interactive_command(remote_runtime: RemoteRuntime):
-    r = remote_runtime.create_shell(CreateShellRequest())
+def test_run_in_shell_interactive_command(runtime_with_default_session: RemoteRuntime):
+    r = runtime_with_default_session.run_in_shell(
+        Action(command="python", is_interactive_command=True, expect=[">>> "])
+    )
     assert r.success
-    r = remote_runtime.run_in_shell(Action(command="python", is_interactive_command=True, expect=[">>> "]))
-    assert r.success
-    r = remote_runtime.run_in_shell(
+    r = runtime_with_default_session.run_in_shell(
         Action(command="print('hello world')", is_interactive_command=True, expect=[">>> "])
     )
     assert r.success
-    r = remote_runtime.run_in_shell(Action(command="quit()\n", is_interactive_quit=True))
-    assert r.success
-    r = remote_runtime.close_shell(CloseRequest())
+    r = runtime_with_default_session.run_in_shell(Action(command="quit()\n", is_interactive_quit=True))
     assert r.success
 
 
-def test_run_in_shell_interactive_command_timeout(remote_runtime: RemoteRuntime):
-    r = remote_runtime.create_shell(CreateShellRequest())
-    assert r.success
-    r = remote_runtime.run_in_shell(
+def test_run_in_shell_interactive_command_timeout(runtime_with_default_session: RemoteRuntime):
+    r = runtime_with_default_session.run_in_shell(
         Action(command="python", is_interactive_command=True, expect=["WONTHITTHIS"], timeout=0.1)
     )
     assert not r.success
     assert "timeout" in r.failure_reason
-    r = remote_runtime.close_shell(CloseRequest())
 
 
 def test_write_to_non_existent_directory(remote_runtime: RemoteRuntime, tmp_path: Path):
@@ -166,49 +157,33 @@ def test_empty_command(remote_runtime: RemoteRuntime):
     assert r.success
 
 
-def test_empty_command_in_shell(remote_runtime: RemoteRuntime):
-    r = remote_runtime.create_shell(CreateShellRequest())
-    assert r.success
-    r = remote_runtime.run_in_shell(
+def test_empty_command_in_shell(runtime_with_default_session: RemoteRuntime):
+    r = runtime_with_default_session.run_in_shell(
         Action(
             command="",
         )
     )
     assert r.success
-    r = remote_runtime.run_in_shell(Action(command="\n"))
+    r = runtime_with_default_session.run_in_shell(Action(command="\n"))
     assert r.success
-    r = remote_runtime.run_in_shell(Action(command="\n\n \n"))
-    assert r.success
-    r = remote_runtime.close_shell(CloseRequest())
+    r = runtime_with_default_session.run_in_shell(Action(command="\n\n \n"))
     assert r.success
 
 
-def test_command_with_linebreaks(remote_runtime: RemoteRuntime):
-    r = remote_runtime.create_shell(CreateShellRequest())
-    assert r.success
-    r = remote_runtime.run_in_shell(Action(command="\n echo 'test'\n\n"))
-    assert r.success
-    r = remote_runtime.close_shell(CloseRequest())
+def test_command_with_linebreaks(runtime_with_default_session: RemoteRuntime):
+    r = runtime_with_default_session.run_in_shell(Action(command="\n echo 'test'\n\n"))
     assert r.success
 
 
-def test_multiple_commands_with_linebreaks_in_shell(remote_runtime: RemoteRuntime):
-    r = remote_runtime.create_shell(CreateShellRequest())
-    assert r.success
-    r = remote_runtime.run_in_shell(Action(command="\n\n\n echo 'test1' \n  \n \n echo 'test2' \n\n\n"))
+def test_multiple_commands_with_linebreaks_in_shell(runtime_with_default_session: RemoteRuntime):
+    r = runtime_with_default_session.run_in_shell(Action(command="\n\n\n echo 'test1' \n  \n \n echo 'test2' \n\n\n"))
     assert r.success
     assert r.output.splitlines() == ["test1", "test2"]
-    r = remote_runtime.close_shell(CloseRequest())
-    assert r.success
 
 
-def test_bash_multiline_command_eof(remote_runtime: RemoteRuntime):
-    r = remote_runtime.create_shell(CreateShellRequest())
-    assert r.success
+def test_bash_multiline_command_eof(runtime_with_default_session: RemoteRuntime):
     command = "\n".join(["python <<EOF", "print('hello world')", "print('hello world 2')", "EOF"])
-    r = remote_runtime.run_in_shell(Action(command=command))
+    r = runtime_with_default_session.run_in_shell(Action(command=command))
     assert r.success
     assert "hello world" in r.output
     assert "hello world 2" in r.output
-    r = remote_runtime.close_shell(CloseRequest())
-    assert r.success
