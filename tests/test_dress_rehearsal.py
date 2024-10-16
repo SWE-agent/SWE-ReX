@@ -101,6 +101,31 @@ def test_run_in_shell_interactive_command(runtime_with_default_session: RemoteRu
     assert r.success
 
 
+def test_run_in_shell_multiple_interactive_and_normal_commands(runtime_with_default_session: RemoteRuntime):
+    run = runtime_with_default_session
+    r = run.run_in_shell(Action(command="ls"))
+    assert r.success
+    r = run.run_in_shell(Action(command="python", is_interactive_command=True, expect=[">>> "]))
+    assert r.success
+    r = run.run_in_shell(Action(command="print('hello world')", is_interactive_command=True, expect=[">>> "]))
+    assert "hello world" in r.output
+    assert r.success
+    r = run.run_in_shell(Action(command="quit()\n", is_interactive_quit=True))
+    assert r.success
+    r = run.run_in_shell(Action(command="echo 'hello world'"))
+    assert r.success
+    assert "hello world" in r.output
+    r = run.run_in_shell(Action(command="python", is_interactive_command=True, expect=[">>> "]))
+    assert r.success
+    r = run.run_in_shell(Action(command="print('hello world')", is_interactive_command=True, expect=[">>> "]))
+    assert r.success
+    r = run.run_in_shell(Action(command="quit()\n", is_interactive_quit=True))
+    assert r.success
+    r = run.run_in_shell(Action(command="echo 'hello world'"))
+    assert r.success
+    assert "hello world" in r.output
+
+
 def test_run_in_shell_interactive_command_timeout(runtime_with_default_session: RemoteRuntime):
     r = runtime_with_default_session.run_in_shell(
         Action(command="python", is_interactive_command=True, expect=["WONTHITTHIS"], timeout=0.1)
