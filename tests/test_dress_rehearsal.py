@@ -157,3 +157,58 @@ def test_multiple_isolated_shells(remote_runtime: RemoteRuntime):
 
     remote_runtime.close_shell(CloseRequest(session="shell1"))
     remote_runtime.close_shell(CloseRequest(session="shell2"))
+
+
+def test_empty_command(remote_runtime: RemoteRuntime):
+    r = remote_runtime.execute(Command(command="", shell=True))
+    assert r.success
+    r = remote_runtime.execute(Command(command="\n", shell=True))
+    assert r.success
+
+
+def test_empty_command_in_shell(remote_runtime: RemoteRuntime):
+    r = remote_runtime.create_shell(CreateShellRequest())
+    assert r.success
+    r = remote_runtime.run_in_shell(
+        Action(
+            command="",
+        )
+    )
+    assert r.success
+    r = remote_runtime.run_in_shell(Action(command="\n"))
+    assert r.success
+    r = remote_runtime.run_in_shell(Action(command="\n\n \n"))
+    assert r.success
+    r = remote_runtime.close_shell(CloseRequest())
+    assert r.success
+
+
+def test_command_with_linebreaks(remote_runtime: RemoteRuntime):
+    r = remote_runtime.create_shell(CreateShellRequest())
+    assert r.success
+    r = remote_runtime.run_in_shell(Action(command="\n echo 'test'\n\n"))
+    assert r.success
+    r = remote_runtime.close_shell(CloseRequest())
+    assert r.success
+
+
+def test_multiple_commands_with_linebreaks_in_shell(remote_runtime: RemoteRuntime):
+    r = remote_runtime.create_shell(CreateShellRequest())
+    assert r.success
+    r = remote_runtime.run_in_shell(Action(command="\n\n\n echo 'test1' \n  \n \n echo 'test2' \n\n\n"))
+    assert r.success
+    assert r.output.splitlines() == ["test1", "test2"]
+    r = remote_runtime.close_shell(CloseRequest())
+    assert r.success
+
+
+def test_bash_multiline_command_eof(remote_runtime: RemoteRuntime):
+    r = remote_runtime.create_shell(CreateShellRequest())
+    assert r.success
+    command = "\n".join(["python <<EOF", "print('hello world')", "print('hello world 2')", "EOF"])
+    r = remote_runtime.run_in_shell(Action(command=command))
+    assert r.success
+    assert "hello world" in r.output
+    assert "hello world 2" in r.output
+    r = remote_runtime.close_shell(CloseRequest())
+    assert r.success
