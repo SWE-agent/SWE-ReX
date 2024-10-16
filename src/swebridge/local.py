@@ -111,9 +111,6 @@ class RemoteRuntime(AbstractRuntime):
 
 if __name__ == "__main__":
     runtime = RemoteRuntime("localhost:8000")
-    print(runtime.read_file(ReadFileRequest(path="README.md")))
-    print(runtime.write_file(WriteFileRequest(path="_test.txt", content="test")))
-    print(runtime.read_file(ReadFileRequest(path="_test.txt")))
     # ----
     # print(runtime.execute(Command(command="ls", shell=True)))
     # ----

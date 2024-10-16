@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class CreateShellRequest(BaseModel):
-    name: str = "default"
+    session: str = "default"
 
 
 class CreateShellResponse(BaseModel):

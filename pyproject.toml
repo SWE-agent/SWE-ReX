@@ -27,6 +27,14 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
 ]
 
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "requests",
+    "pydantic",
+    "pexpect",
+]
+
 [project.optional-dependencies]
 dev = [
     # "mkdocs-material",

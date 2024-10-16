@@ -35,8 +35,6 @@ def remote_server() -> RemoteServer:
     time.sleep(0.1)
 
     return RemoteServer(port)
-    # The thread will be automatically terminated when the test session ends
-    # because it's a daemon thread
 
 
 @pytest.fixture
