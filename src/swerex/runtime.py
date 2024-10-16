@@ -101,7 +101,7 @@ class Session:
 
     async def run(self, action: Action) -> Observation:
         if self.shell is None:
-            return Observation(output="", exit_code_raw="-300", failure_reason="shell not initialized")
+            return Observation(success=False, failure_reason="shell not initialized")
         if not action.is_interactive_command and not action.is_interactive_quit:
             # Running multiple interactive commands by sending them with linebreaks would break things
             # because we get multiple PS1s back to back. Instead we just join them with ;
@@ -114,14 +114,14 @@ class Session:
             expect_string = expect_strings[expect_index]
         except pexpect.TIMEOUT:
             expect_string = ""
-            return Observation(output="", exit_code_raw="-100", failure_reason="timeout while running command")
+            return Observation(success=False, failure_reason="timeout while running command")
         output: str = self.shell.before  # type: ignore
         if not action.is_interactive_command and not action.is_interactive_quit:
             self.shell.sendline("\necho $?")
             try:
                 self.shell.expect(self._ps1, timeout=1)
             except pexpect.TIMEOUT:
-                return Observation(output="", exit_code_raw="-200", failure_reason="timeout while getting exit code")
+                return Observation(success=False, failure_reason="timeout while getting exit code")
             exit_code_raw: str = self.shell.before.strip()  # type: ignore
             # After quitting an interactive session, for some reason we oftentimes get double
             # PS1 for all following commands. So we might need to call expect again.
@@ -143,7 +143,14 @@ class Session:
             # Trouble with echo mode within an interactive session that we
             output = output.lstrip().removeprefix(action.command).strip()
             exit_code_raw = "0"
-        return Observation(output=output, exit_code_raw=exit_code_raw, expect_string=expect_string)
+
+        try:
+            exit_code = int(exit_code_raw)
+        except ValueError:
+            return Observation(
+                output=output, success=False, failure_reason=f"failed to parse exit code from output {exit_code_raw!r}"
+            )
+        return Observation(output=output, exit_code=exit_code, expect_string=expect_string)
 
     async def close(self) -> CloseResponse:
         if self.shell is None:
@@ -166,9 +173,7 @@ class Runtime(AbstractRuntime):
 
     async def run_in_shell(self, action: Action) -> Observation:
         if action.session not in self.sessions:
-            return Observation(
-                output="", exit_code_raw="-312", failure_reason=f"session {action.session!r} does not exist"
-            )
+            return Observation(success=False, failure_reason=f"session {action.session!r} does not exist")
         return await self.sessions[action.session].run(action)
 
     async def close_shell(self, request: CloseRequest) -> CloseResponse:
@@ -188,10 +193,10 @@ class Runtime(AbstractRuntime):
             )
         except subprocess.TimeoutExpired:
             return CommandResponse(
-                stdout="", stderr=f"Timeout ({command.timeout}s) exceeded while running command", exit_code=-1
+                failure_reason=f"Timeout ({command.timeout}s) exceeded while running command", success=False
             )
         except Exception as e:
-            return CommandResponse(stdout="", stderr=str(e), exit_code=-2)
+            return CommandResponse(failure_reason=str(e), success=False)
 
     async def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
         try:

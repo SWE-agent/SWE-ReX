@@ -28,24 +28,13 @@ class Action(BaseModel):
 
 
 class Observation(BaseModel):
-    output: str
-    # The output of an interactive command will always be set to -400.
-    exit_code_raw: str = ""
+    success: bool = True
+    output: str = ""
+    exit_code: int | None = None
     failure_reason: str = ""
     # Which of the expect strings was matched to terminate the command.
-    # Empty string if the command timed out.
+    # Empty string if the command timed out etc.
     expect_string: str = ""
-
-    @property
-    def exit_code(self) -> int:
-        try:
-            return int(self.exit_code_raw)
-        except ValueError:
-            return -1
-
-    @property
-    def success(self) -> bool:
-        return self.exit_code == 0
 
 
 class CloseRequest(BaseModel):
@@ -64,13 +53,11 @@ class Command(BaseModel):
 
 
 class CommandResponse(BaseModel):
-    stdout: str
-    stderr: str
-    exit_code: int
-
-    @property
-    def success(self) -> bool:
-        return self.exit_code == 0
+    stdout: str = ""
+    stderr: str = ""
+    exit_code: int | None = None
+    success: bool = True
+    failure_reason: str = ""
 
 
 class ReadFileRequest(BaseModel):
