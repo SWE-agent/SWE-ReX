@@ -33,6 +33,7 @@ dependencies = [
     "requests",
     "pydantic",
     "pexpect",
+    "bashlex",
 ]
 
 [project.optional-dependencies]

@@ -1,8 +1,9 @@
-import re
 import subprocess
 import time
 from pathlib import Path
 
+import bashlex
+import bashlex.ast
 import pexpect
 
 from swerex.local import AbstractRuntime
@@ -22,14 +23,12 @@ from swerex.models import (
 )
 
 
-def split_bash_command(inpt: str, *, strip=True, remove_empty=True) -> list[str]:
+def split_bash_command(inpt: str) -> list[str]:
     r"""Split a bash command with linebreaks, escaped newlines, and heredocs into a list of
     individual commands.
 
     Args:
         inpt: The input string to split into commands.
-        strip: Whether to strip leading and trailing whitespace from each command.
-        remove_empty: Whether to remove empty commands from the result.
     Returns:
         A list of commands as strings.
 
@@ -39,56 +38,26 @@ def split_bash_command(inpt: str, *, strip=True, remove_empty=True) -> list[str]
     "cmd1\\\n asdf" is one command (because the linebreak is escaped)
     "cmd1<<EOF\na\nb\nEOF" is one command (because of the heredoc)
     """
-    commands = []
-    current_command = []
-    in_heredoc = False
-    heredoc_delimiter = None
+    inpt = inpt.strip()
+    if not inpt:
+        return []
+    parsed = bashlex.parse(inpt)
+    cmd_strings = []
 
-    # This regex matches an escaped newline (backslash followed by a newline)
-    escaped_newline_regex = re.compile(r"\\\n")
+    def find_range(cmd: bashlex.ast.node) -> tuple[int, int]:
+        start = cmd.pos[0]  # type: ignore
+        end = cmd.pos[1]  # type: ignore
+        for part in getattr(cmd, "parts", []):
+            part_start, part_end = find_range(part)
+            start = min(start, part_start)
+            end = max(end, part_end)
+        return start, end
 
-    for line in inpt.splitlines():
-        if in_heredoc:
-            current_command.append(line)
-            # Check if we are at the end of the heredoc
-            if heredoc_delimiter is not None and heredoc_delimiter in line.strip():
-                in_heredoc = False
-                commands.append("\n".join(current_command))
-                current_command = []
-            continue
-
-        # Handle escaped newlines
-        if escaped_newline_regex.search(line):
-            current_command.append(escaped_newline_regex.sub("", line))
-            continue
-
-        # Check for heredoc start (e.g., <<EOF)
-        heredoc_match = re.search(r"<<(\w+)", line)
-        if heredoc_match:
-            in_heredoc = True
-            heredoc_delimiter = heredoc_match.group(1)
-            current_command.append(line)
-            continue
-
-        # If the line is not empty, add it to the current command
-        if line.strip():
-            current_command.append(line)
-
-        # If it's the end of a command (no escape, no heredoc), finalize it
-        if not line.endswith("\\") and not in_heredoc:
-            commands.append("\n".join(current_command))
-            current_command = []
-
-    # Add any remaining command
-    if current_command:
-        commands.append("\n".join(current_command))
-
-    if strip:
-        commands = [cmd.strip() for cmd in commands]
-    if remove_empty:
-        commands = [cmd for cmd in commands if cmd]
-
-    return commands
+    for cmd in parsed:
+        assert cmd.kind == "command"
+        start, end = find_range(cmd)
+        cmd_strings.append(inpt[start:end])
+    return cmd_strings
 
 
 class Session:
@@ -127,7 +96,7 @@ class Session:
         if not action.is_interactive_command and not action.is_interactive_quit:
             # Running multiple interactive commands by sending them with linebreaks would break things
             # because we get multiple PS1s back to back. Instead we just join them with ;
-            individual_commands = split_bash_command(action.command, strip=True, remove_empty=True)
+            individual_commands = split_bash_command(action.command)
             action.command = " ; ".join(individual_commands)
         self.shell.sendline(action.command)
         try:

@@ -41,3 +41,21 @@ def test_split_bash_command_multilline_blank_line_heredoc():
 
 def test_split_bash_command_all_blank_lines():
     assert split_bash_command("\n\n\n") == []
+
+
+def test_split_bash_command_quotation_marks():
+    assert split_bash_command('cmd1 "a\nb"') == [
+        'cmd1 "a\nb"',
+    ]
+    assert split_bash_command("cmd1 'a\nb'") == [
+        "cmd1 'a\nb'",
+    ]
+
+
+def test_split_command_with_heredoc_quotations():
+    assert split_bash_command('cmd1 <<EOF\n"a\nb"\nEOF') == [
+        'cmd1 <<EOF\n"a\nb"\nEOF',
+    ]
+    assert split_bash_command("cmd1 <<EOF\n'a\nb'\nEOF") == [
+        "cmd1 <<EOF\n'a\nb'\nEOF",
+    ]
