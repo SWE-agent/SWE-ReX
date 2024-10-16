@@ -4,6 +4,7 @@ from pathlib import Path
 
 import bashlex
 import bashlex.ast
+import bashlex.errors
 import pexpect
 
 from swerex.local import AbstractRuntime
@@ -27,6 +28,9 @@ def split_bash_command(inpt: str) -> list[str]:
     r"""Split a bash command with linebreaks, escaped newlines, and heredocs into a list of
     individual commands.
 
+    This relies on the bashlex library. It has quite a few bugs, so if we hit a
+    parsing error we just return the input unsplit and hope for the best.
+
     Args:
         inpt: The input string to split into commands.
     Returns:
@@ -42,7 +46,12 @@ def split_bash_command(inpt: str) -> list[str]:
     if not inpt or all(l.strip().startswith("#") for l in inpt.splitlines()):
         # bashlex can't deal with empty strings or the like :/
         return []
-    parsed = bashlex.parse(inpt)
+    try:
+        parsed = bashlex.parse(inpt)
+    except bashlex.errors.ParsingError as e:
+        print(e)
+        print("Return input unsplit; this might cause issues.")
+        return [inpt]
     cmd_strings = []
 
     def find_range(cmd: bashlex.ast.node) -> tuple[int, int]:

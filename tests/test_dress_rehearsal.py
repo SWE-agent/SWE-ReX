@@ -238,3 +238,9 @@ def test_run_in_shell_while_loop(runtime_with_default_session: RemoteRuntime):
     r = runtime_with_default_session.run_in_shell(Action(command="for i in {1..3};\n do echo 'hello world';\n done"))
     assert r.success
     assert r.output.splitlines() == ["hello world"] * 3
+
+
+def test_run_in_shell_bashlex_errors(runtime_with_default_session: RemoteRuntime):
+    # One of the bugs in bashlex
+    r = runtime_with_default_session.run_in_shell(Action(command="[[ $env == $env ]]"))
+    assert r.success
