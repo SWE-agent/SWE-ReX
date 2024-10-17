@@ -5,8 +5,8 @@ from dataclasses import dataclass
 
 import pytest
 
-from swerex.local import RemoteRuntime
-from swerex.remote import app
+from swerex.runtime.remote import RemoteRuntime
+from swerex.server import app
 
 
 def find_free_port() -> int:

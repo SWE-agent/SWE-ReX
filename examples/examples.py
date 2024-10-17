@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-from swerex.local import RemoteRuntime
 from swerex.models import (
     Action,
     CloseRequest,
     CreateShellRequest,
 )
+from swerex.runtime.remote import RemoteRuntime
 
 if __name__ == "__main__":
     runtime = RemoteRuntime("http://localhost:8000")

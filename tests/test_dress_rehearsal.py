@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from swerex.local import RemoteRuntime
 from swerex.models import Action, CloseRequest, Command, CreateShellRequest, ReadFileRequest, WriteFileRequest
+from swerex.runtime.remote import RemoteRuntime
 
 
 def test_server_alive(remote_runtime: RemoteRuntime):

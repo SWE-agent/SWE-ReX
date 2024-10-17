@@ -64,7 +64,7 @@ namespaces = false
 # "Source" = "http://github.com/princeton-nlp/SWE-agent"
 
 [project.scripts]
-swerex-remote = "swerex.remote:main"
+swerex-remote = "swerex.server:main"
 
 [tool.pytest.ini_options]
 markers = [

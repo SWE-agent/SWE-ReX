@@ -12,7 +12,7 @@ from swerex.models import (
     ReadFileRequest,
     WriteFileRequest,
 )
-from swerex.runtime import Runtime
+from swerex.runtime.local import Runtime
 
 app = FastAPI()
 runtime = Runtime()
@@ -56,7 +56,7 @@ async def write_file(request: WriteFileRequest):
 def main():
     import uvicorn
 
-    parser = argparse.ArgumentParser(description="Run the SWEBridge FastAPI server")
+    parser = argparse.ArgumentParser(description="Run the SWE-ReX FastAPI server")
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind the server to")
     parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
 

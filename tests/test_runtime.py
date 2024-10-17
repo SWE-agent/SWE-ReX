@@ -1,4 +1,4 @@
-from swerex.runtime import split_bash_command
+from swerex.runtime.local import split_bash_command
 
 
 def test_split_bash_command_normal():
