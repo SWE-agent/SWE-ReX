@@ -57,3 +57,8 @@ class AbstractRuntime(ABC):
     def upload(self, request: UploadRequest) -> UploadResponse:
         """Uploads a file"""
         pass
+
+    @abstractmethod
+    def close(self):
+        """Closes the runtime."""
+        pass

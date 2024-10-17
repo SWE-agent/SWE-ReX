@@ -80,6 +80,12 @@ async def upload(
     return {"success": True}
 
 
+@app.post("/close")
+async def close():
+    await runtime.close()
+    return {"success": True}
+
+
 def main():
     import uvicorn
 

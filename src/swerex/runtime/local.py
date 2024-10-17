@@ -1,3 +1,4 @@
+import asyncio
 import re
 import shutil
 import subprocess
@@ -248,3 +249,6 @@ class Runtime(AbstractRuntime):
             return UploadResponse(success=True)
         except Exception as e:
             return UploadResponse(success=False, failure_reason=str(e))
+
+    async def close(self):
+        await asyncio.gather(*[s.close() for s in self.sessions.values()])

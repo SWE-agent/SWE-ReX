@@ -50,8 +50,10 @@ def remote_server() -> RemoteServer:
 
 
 @pytest.fixture
-def remote_runtime(remote_server: RemoteServer) -> RemoteRuntime:
-    return RemoteRuntime(f"http://127.0.0.1:{remote_server.port}")
+def remote_runtime(remote_server: RemoteServer) -> Generator[RemoteRuntime, None, None]:
+    r = RemoteRuntime(f"http://127.0.0.1:{remote_server.port}")
+    yield r
+    r.close()
 
 
 @pytest.fixture

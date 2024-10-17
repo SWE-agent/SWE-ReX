@@ -91,3 +91,7 @@ class RemoteRuntime(AbstractRuntime):
             response = requests.post(f"{self.host}/upload", files=files, data=data)
             response.raise_for_status()
             return UploadResponse(**response.json())
+
+    def close(self):
+        response = requests.post(f"{self.host}/close")
+        response.raise_for_status()
