@@ -3,6 +3,10 @@ from pydantic import BaseModel
 
 class CreateShellRequest(BaseModel):
     session: str = "default"
+    # Source the following files before running commands.
+    # The reason this gets a special treatment is that these files
+    # often overwrite PS1, which we need to reset.
+    startup_source: list[str] = []
 
 
 class CreateShellResponse(BaseModel):

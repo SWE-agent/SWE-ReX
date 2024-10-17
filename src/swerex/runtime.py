@@ -76,11 +76,12 @@ def strip_control_chars(s: str) -> str:
 
 
 class Session:
-    def __init__(self):
+    def __init__(self, request: CreateShellRequest):
         """This basically represents one REPL that we control.
 
         It's pretty similar to a `pexpect.REPLWrapper`.
         """
+        self.request = request
         self._ps1 = "SHELLPS1PREFIX"
         self.shell: pexpect.spawn | None = None
 
@@ -91,14 +92,14 @@ class Session:
             echo=False,
         )
         time.sleep(0.1)
-        self.shell.sendline("echo 'fully_initialized'")
+        self.shell.sendline("echo 'UNIQUESTRING29234'")
         try:
-            self.shell.expect("fully_initialized", timeout=1)
+            self.shell.expect("UNIQUESTRING29234", timeout=1)
         except pexpect.TIMEOUT:
             return CreateShellResponse(success=False, failure_reason="timeout while initializing shell")
         output = self.shell.before
-        cmds = [
-            "umask 002",
+        cmds = [f"source {path}" for path in self.request.startup_source]
+        cmds += [
             f"export PS1='{self._ps1}'",
             "export PS2=''",
             "export PS0=''",
@@ -184,7 +185,7 @@ class Runtime(AbstractRuntime):
     async def create_shell(self, request: CreateShellRequest) -> CreateShellResponse:
         if request.session in self.sessions:
             return CreateShellResponse(success=False, failure_reason=f"session {request.session} already exists")
-        shell = Session()
+        shell = Session(request)
         self.sessions[request.session] = shell
         return await shell.start()
 
