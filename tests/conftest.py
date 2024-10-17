@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from swerex.models import CloseRequest, CreateShellRequest
+from swerex.models import Action, CloseSessionRequest, Command, CreateSessionRequest
 from swerex.runtime.remote import RemoteRuntime
 from swerex.server import app
 
@@ -56,8 +56,16 @@ def remote_runtime(remote_server: RemoteServer) -> RemoteRuntime:
 
 @pytest.fixture
 def runtime_with_default_session(remote_runtime: RemoteRuntime) -> Generator[RemoteRuntime, None, None]:
-    r = remote_runtime.create_shell(CreateShellRequest())
+    r = remote_runtime.create_session(CreateSessionRequest())
     assert r.success
     yield remote_runtime
-    r = remote_runtime.close_shell(CloseRequest())
+    r = remote_runtime.close_session(CloseSessionRequest())
     assert r.success
+
+
+class _Action(Action):
+    timeout: float | None = 5
+
+
+class _Command(Command):
+    timeout: float | None = 5

@@ -11,12 +11,12 @@ import pexpect
 
 from swerex.models import (
     Action,
-    CloseRequest,
-    CloseResponse,
+    CloseSessionRequest,
+    CloseSessionResponse,
     Command,
     CommandResponse,
-    CreateShellRequest,
-    CreateShellResponse,
+    CreateSessionRequest,
+    CreateSessionResponse,
     Observation,
     ReadFileRequest,
     ReadFileResponse,
@@ -73,7 +73,7 @@ def strip_control_chars(s: str) -> str:
 class Session:
     UNIQUE_STRING = "UNIQUESTRING29234"
 
-    def __init__(self, request: CreateShellRequest):
+    def __init__(self, request: CreateSessionRequest):
         """This basically represents one REPL that we control.
 
         It's pretty similar to a `pexpect.REPLWrapper`.
@@ -82,7 +82,7 @@ class Session:
         self._ps1 = "SHELLPS1PREFIX"
         self.shell: pexpect.spawn | None = None
 
-    async def start(self) -> CreateShellResponse:
+    async def start(self) -> CreateSessionResponse:
         self.shell = pexpect.spawn(
             "/bin/bash",
             encoding="utf-8",
@@ -93,7 +93,7 @@ class Session:
         try:
             self.shell.expect(self.UNIQUE_STRING, timeout=1)
         except pexpect.TIMEOUT:
-            return CreateShellResponse(success=False, failure_reason="timeout while initializing shell")
+            return CreateSessionResponse(success=False, failure_reason="timeout while initializing shell")
         output = self.shell.before
         cmds = [f"source {path}" for path in self.request.startup_source]
         cmds += [
@@ -106,9 +106,9 @@ class Session:
         try:
             self.shell.expect(self._ps1, timeout=1)
         except pexpect.TIMEOUT:
-            return CreateShellResponse(success=False, failure_reason="timeout while setting PS1")
+            return CreateSessionResponse(success=False, failure_reason="timeout while setting PS1")
         output += "\n---\n" + strip_control_chars(self.shell.before)  # type: ignore
-        return CreateShellResponse(output=output)
+        return CreateSessionResponse(output=output)
 
     async def run(self, action: Action) -> Observation:
         if self.shell is None:
@@ -181,33 +181,33 @@ class Session:
             )
         return Observation(output=output, exit_code=exit_code, expect_string=matched_expect_string)
 
-    async def close(self) -> CloseResponse:
+    async def close(self) -> CloseSessionResponse:
         if self.shell is None:
-            return CloseResponse()
+            return CloseSessionResponse()
         self.shell.close()
         self.shell = None
-        return CloseResponse()
+        return CloseSessionResponse()
 
 
 class Runtime(AbstractRuntime):
     def __init__(self):
         self.sessions: dict[str, Session] = {}
 
-    async def create_shell(self, request: CreateShellRequest) -> CreateShellResponse:
+    async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
         if request.session in self.sessions:
-            return CreateShellResponse(success=False, failure_reason=f"session {request.session} already exists")
+            return CreateSessionResponse(success=False, failure_reason=f"session {request.session} already exists")
         shell = Session(request)
         self.sessions[request.session] = shell
         return await shell.start()
 
-    async def run_in_shell(self, action: Action) -> Observation:
+    async def run_in_session(self, action: Action) -> Observation:
         if action.session not in self.sessions:
             return Observation(success=False, failure_reason=f"session {action.session!r} does not exist")
         return await self.sessions[action.session].run(action)
 
-    async def close_shell(self, request: CloseRequest) -> CloseResponse:
+    async def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
         if request.session not in self.sessions:
-            return CloseResponse(success=False, failure_reason=f"session {request.session!r} does not exist")
+            return CloseSessionResponse(success=False, failure_reason=f"session {request.session!r} does not exist")
         out = await self.sessions[request.session].close()
         del self.sessions[request.session]
         return out

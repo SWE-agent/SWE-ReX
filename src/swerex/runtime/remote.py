@@ -7,12 +7,12 @@ import requests
 
 from swerex.models import (
     Action,
-    CloseRequest,
-    CloseResponse,
+    CloseSessionRequest,
+    CloseSessionResponse,
     Command,
     CommandResponse,
-    CreateShellRequest,
-    CreateShellResponse,
+    CreateSessionRequest,
+    CreateSessionResponse,
     Observation,
     ReadFileRequest,
     ReadFileResponse,
@@ -39,25 +39,25 @@ class RemoteRuntime(AbstractRuntime):
             print(traceback.format_exc())
             return False
 
-    def create_shell(self, request: CreateShellRequest) -> CreateShellResponse:
-        response = requests.post(f"{self.host}/create_shell", json=request.model_dump())
+    def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
+        response = requests.post(f"{self.host}/create_session", json=request.model_dump())
         response.raise_for_status()
-        return CreateShellResponse(**response.json())
+        return CreateSessionResponse(**response.json())
 
-    def run_in_shell(self, action: Action) -> Observation:
+    def run_in_session(self, action: Action) -> Observation:
         print("----")
         print(action)
-        response = requests.post(f"{self.host}/run_in_shell", json=action.model_dump())
+        response = requests.post(f"{self.host}/run_in_session", json=action.model_dump())
         response.raise_for_status()
         obs = Observation(**response.json())
         if not obs.success:
             print(f"Command failed: {obs.failure_reason}")
         return obs
 
-    def close_shell(self, request: CloseRequest) -> CloseResponse:
-        response = requests.post(f"{self.host}/close_shell", json=request.model_dump())
+    def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
+        response = requests.post(f"{self.host}/close_session", json=request.model_dump())
         response.raise_for_status()
-        return CloseResponse(**response.json())
+        return CloseSessionResponse(**response.json())
 
     def execute(self, command: Command) -> CommandResponse:
         response = requests.post(f"{self.host}/execute", json=command.model_dump())

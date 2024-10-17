@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class CreateShellRequest(BaseModel):
+class CreateSessionRequest(BaseModel):
     session: str = "default"
     # Source the following files before running commands.
     # The reason this gets a special treatment is that these files
@@ -9,7 +9,7 @@ class CreateShellRequest(BaseModel):
     startup_source: list[str] = []
 
 
-class CreateShellResponse(BaseModel):
+class CreateSessionResponse(BaseModel):
     success: bool = True
     failure_reason: str = ""
     output: str = ""
@@ -41,11 +41,11 @@ class Observation(BaseModel):
     expect_string: str = ""
 
 
-class CloseRequest(BaseModel):
+class CloseSessionRequest(BaseModel):
     session: str = "default"
 
 
-class CloseResponse(BaseModel):
+class CloseSessionResponse(BaseModel):
     success: bool = True
     failure_reason: str = ""
 
