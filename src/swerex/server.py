@@ -10,9 +10,9 @@ from fastapi import FastAPI, File, Form, UploadFile
 
 from swerex.models import (
     Action,
-    CloseRequest,
+    CloseSessionRequest,
     Command,
-    CreateShellRequest,
+    CreateSessionRequest,
     ReadFileRequest,
     WriteFileRequest,
 )
@@ -27,19 +27,19 @@ async def root():
     return {"message": "running"}
 
 
-@app.post("/create_shell")
-async def create_shell(request: CreateShellRequest):
-    return (await runtime.create_shell(request)).model_dump()
+@app.post("/create_session")
+async def create_session(request: CreateSessionRequest):
+    return (await runtime.create_session(request)).model_dump()
 
 
-@app.post("/run_in_shell")
+@app.post("/run_in_session")
 async def run(action: Action):
-    return (await runtime.run_in_shell(action)).model_dump()
+    return (await runtime.run_in_session(action)).model_dump()
 
 
-@app.post("/close_shell")
-async def close(request: CloseRequest):
-    return (await runtime.close_shell(request)).model_dump()
+@app.post("/close_session")
+async def close_session(request: CloseSessionRequest):
+    return (await runtime.close_session(request)).model_dump()
 
 
 @app.post("/execute")

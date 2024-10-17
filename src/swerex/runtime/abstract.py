@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 
 from swerex.models import (
     Action,
-    CloseRequest,
+    CloseSessionRequest,
     Command,
     CommandResponse,
-    CreateShellRequest,
-    CreateShellResponse,
+    CreateSessionRequest,
+    CreateSessionResponse,
     Observation,
     ReadFileRequest,
     ReadFileResponse,
@@ -24,17 +24,17 @@ class AbstractRuntime(ABC):
     """
 
     @abstractmethod
-    def create_shell(self, request: CreateShellRequest) -> CreateShellResponse:
-        """Creates a new shell session."""
+    def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
+        """Creates a new session."""
         pass
 
     @abstractmethod
-    def run_in_shell(self, action: Action) -> Observation:
-        """Runs a command in a shell session."""
+    def run_in_session(self, action: Action) -> Observation:
+        """Runs a command in a session."""
         pass
 
     @abstractmethod
-    def close_shell(self, request: CloseRequest):
+    def close_session(self, request: CloseSessionRequest):
         """Closes a shell session."""
         pass
 
