@@ -250,3 +250,10 @@ def test_run_in_shell_bashlex_errors(runtime_with_default_session: RemoteRuntime
 def test_run_shell_check_exit_code(runtime_with_default_session: RemoteRuntime):
     r = runtime_with_default_session.run_in_shell(Action(command="/bin/bash -n <<'EOF'\necho 'hello world'\nEOF"))
     assert r.success and r.exit_code == 0
+
+
+def test_with_bashlex_errors(runtime_with_default_session: RemoteRuntime):
+    r = runtime_with_default_session.run_in_shell(Action(command="echo 'hw';A=();echo 'asdf'"))
+    assert r.success and r.exit_code == 0
+    assert "hw" in r.output
+    assert "asdf" in r.output

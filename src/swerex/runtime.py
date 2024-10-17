@@ -29,9 +29,6 @@ def split_bash_command(inpt: str) -> list[str]:
     r"""Split a bash command with linebreaks, escaped newlines, and heredocs into a list of
     individual commands.
 
-    This relies on the bashlex library. It has quite a few bugs, so if we hit a
-    parsing error we just return the input unsplit and hope for the best.
-
     Args:
         inpt: The input string to split into commands.
     Returns:
@@ -47,12 +44,7 @@ def split_bash_command(inpt: str) -> list[str]:
     if not inpt or all(l.strip().startswith("#") for l in inpt.splitlines()):
         # bashlex can't deal with empty strings or the like :/
         return []
-    try:
-        parsed = bashlex.parse(inpt)
-    except bashlex.errors.ParsingError as e:
-        print(e)
-        print("Return input unsplit; this might cause issues.")
-        return [inpt]
+    parsed = bashlex.parse(inpt)
     cmd_strings = []
 
     def find_range(cmd: bashlex.ast.node) -> tuple[int, int]:
@@ -76,6 +68,8 @@ def strip_control_chars(s: str) -> str:
 
 
 class Session:
+    UNIQUE_STRING = "UNIQUESTRING29234"
+
     def __init__(self, request: CreateShellRequest):
         """This basically represents one REPL that we control.
 
@@ -92,9 +86,9 @@ class Session:
             echo=False,
         )
         time.sleep(0.1)
-        self.shell.sendline("echo 'UNIQUESTRING29234'")
+        self.shell.sendline(f"echo '{self.UNIQUE_STRING}'")
         try:
-            self.shell.expect("UNIQUESTRING29234", timeout=1)
+            self.shell.expect(self.UNIQUE_STRING, timeout=1)
         except pexpect.TIMEOUT:
             return CreateShellResponse(success=False, failure_reason="timeout while initializing shell")
         output = self.shell.before
@@ -116,18 +110,32 @@ class Session:
     async def run(self, action: Action) -> Observation:
         if self.shell is None:
             return Observation(success=False, failure_reason="shell not initialized")
+        fallback_terminator = False
         if not action.is_interactive_command and not action.is_interactive_quit:
             # Running multiple interactive commands by sending them with linebreaks would break things
             # because we get multiple PS1s back to back. Instead we just join them with ;
-            individual_commands = split_bash_command(action.command)
-            action.command = " ; ".join(individual_commands)
+            # However, sometimes bashlex errors and we can't do this. In this case
+            # we add a unique string to the end of the command and then seek to that
+            # (which is also somewhat brittle, so we don't do this by default).
+            try:
+                individual_commands = split_bash_command(action.command)
+            except bashlex.errors.ParsingError as e:
+                print("Bashlex fail:")
+                print(e)
+                action.command += f"\nsleep 0.1; echo {self.UNIQUE_STRING}"
+                fallback_terminator = True
+            else:
+                action.command = " ; ".join(individual_commands)
         self.shell.sendline(action.command)
-        try:
+        if not fallback_terminator:
             expect_strings = action.expect + [self._ps1]
+        else:
+            expect_strings = [self.UNIQUE_STRING]
+        try:
             expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
-            expect_string = expect_strings[expect_index]
+            matched_expect_string = expect_strings[expect_index]
         except pexpect.TIMEOUT:
-            expect_string = ""
+            matched_expect_string = ""
             return Observation(success=False, failure_reason="timeout while running command")
         output: str = strip_control_chars(self.shell.before).strip()  # type: ignore
         if not action.is_interactive_command and not action.is_interactive_quit:
@@ -168,7 +176,7 @@ class Session:
                 success=False,
                 failure_reason=f"failed to parse exit code from output {exit_code_raw!r} (command: {action.command!r})",
             )
-        return Observation(output=output, exit_code=exit_code, expect_string=expect_string)
+        return Observation(output=output, exit_code=exit_code, expect_string=matched_expect_string)
 
     async def close(self) -> CloseResponse:
         if self.shell is None:
