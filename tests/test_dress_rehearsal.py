@@ -54,17 +54,18 @@ def test_create_close_shell(remote_runtime: RemoteRuntime):
     assert r.success
 
 
-def test_run_in_shell(remote_runtime: RemoteRuntime):
-    name = "test_run_in_shell"
-    r = remote_runtime.create_shell(CreateShellRequest(session=name))
-    assert r.success
-    r = remote_runtime.run_in_shell(Action(command="echo 'hello world'", session=name))
+def test_run_in_shell(runtime_with_default_session: RemoteRuntime):
+    r = runtime_with_default_session.run_in_shell(Action(command="echo 'hello world'"))
     assert r.success and r.exit_code == 0
-    r = remote_runtime.run_in_shell(Action(command="doesntexit", session=name))
+    r = runtime_with_default_session.run_in_shell(Action(command="doesntexit"))
     assert r.success
-    assert r.exit_code != 0
-    r = remote_runtime.close_shell(CloseRequest(session=name))
+    assert r.exit_code == 127
+    r = runtime_with_default_session.run_in_shell(Action(command="false && true"))
     assert r.success
+    assert r.exit_code == 1
+    r = runtime_with_default_session.run_in_shell(Action(command="false || true"))
+    assert r.success
+    assert r.exit_code == 0
 
 
 def test_run_in_shell_non_existent_session(remote_runtime: RemoteRuntime):
