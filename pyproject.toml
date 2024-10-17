@@ -34,6 +34,7 @@ dependencies = [
     "pydantic",
     "pexpect",
     "bashlex",
+    "python-multipart",
 ]
 
 [project.optional-dependencies]
@@ -45,6 +46,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "pre-commit",
+    "pytest-asyncio",
 ]
 
 [tool.setuptools]
@@ -73,7 +75,7 @@ testpaths = [
     "tests"
 ]
 xfail_strict = true
-
+asyncio_mode = "auto"
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.

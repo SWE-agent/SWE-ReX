@@ -82,3 +82,13 @@ class WriteFileRequest(BaseModel):
 class WriteFileResponse(BaseModel):
     success: bool = True
     failure_reason: str = ""
+
+
+class UploadRequest(BaseModel):
+    source_path: str
+    target_path: str
+
+
+class UploadResponse(BaseModel):
+    success: bool = True
+    failure_reason: str = ""

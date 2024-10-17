@@ -10,6 +10,8 @@ from swerex.models import (
     Observation,
     ReadFileRequest,
     ReadFileResponse,
+    UploadRequest,
+    UploadResponse,
     WriteFileRequest,
     WriteFileResponse,
 )
@@ -49,4 +51,9 @@ class AbstractRuntime(ABC):
     @abstractmethod
     def write_file(self, request: WriteFileRequest) -> WriteFileResponse:
         """Writes a file"""
+        pass
+
+    @abstractmethod
+    def upload(self, request: UploadRequest) -> UploadResponse:
+        """Uploads a file"""
         pass

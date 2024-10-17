@@ -1,4 +1,7 @@
+import shutil
+import tempfile
 import traceback
+from pathlib import Path
 
 import requests
 
@@ -13,6 +16,8 @@ from swerex.models import (
     Observation,
     ReadFileRequest,
     ReadFileResponse,
+    UploadRequest,
+    UploadResponse,
     WriteFileRequest,
     WriteFileResponse,
 )
@@ -68,3 +73,21 @@ class RemoteRuntime(AbstractRuntime):
         response = requests.post(f"{self.host}/write_file", json=request.model_dump())
         response.raise_for_status()
         return WriteFileResponse(**response.json())
+
+    def upload(self, request: UploadRequest) -> UploadResponse:
+        source = Path(request.source_path)
+        if source.is_dir():
+            with tempfile.TemporaryDirectory() as temp_dir:
+                zip_path = Path(temp_dir) / f"{source.name}.zip"
+                shutil.make_archive(str(zip_path.with_suffix("")), "zip", source)
+                files = {"file": zip_path.open("rb")}
+                data = {"target_path": request.target_path, "unzip": "true"}
+                response = requests.post(f"{self.host}/upload", files=files, data=data)
+                response.raise_for_status()
+                return UploadResponse(**response.json())
+        else:
+            files = {"file": source.open("rb")}
+            data = {"target_path": request.target_path, "unzip": "false"}
+            response = requests.post(f"{self.host}/upload", files=files, data=data)
+            response.raise_for_status()
+            return UploadResponse(**response.json())

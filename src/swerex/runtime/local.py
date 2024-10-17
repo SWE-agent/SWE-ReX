@@ -1,4 +1,5 @@
 import re
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -19,6 +20,8 @@ from swerex.models import (
     Observation,
     ReadFileRequest,
     ReadFileResponse,
+    UploadRequest,
+    UploadResponse,
     WriteFileRequest,
     WriteFileResponse,
 )
@@ -235,3 +238,13 @@ class Runtime(AbstractRuntime):
         Path(request.path).parent.mkdir(parents=True, exist_ok=True)
         Path(request.path).write_text(request.content)
         return WriteFileResponse(success=True)
+
+    async def upload(self, request: UploadRequest) -> UploadResponse:
+        try:
+            if Path(request.source_path).is_dir():
+                shutil.copytree(request.source_path, request.target_path)
+            else:
+                shutil.copy(request.source_path, request.target_path)
+            return UploadResponse(success=True)
+        except Exception as e:
+            return UploadResponse(success=False, failure_reason=str(e))
