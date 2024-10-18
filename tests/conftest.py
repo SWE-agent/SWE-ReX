@@ -1,7 +1,7 @@
 import socket
 import threading
 import time
-from collections.abc import Generator
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 
 import pytest
@@ -50,18 +50,18 @@ def remote_server() -> RemoteServer:
 
 
 @pytest.fixture
-def remote_runtime(remote_server: RemoteServer) -> Generator[RemoteRuntime, None, None]:
+async def remote_runtime(remote_server: RemoteServer) -> AsyncGenerator[RemoteRuntime, None]:
     r = RemoteRuntime(f"http://127.0.0.1:{remote_server.port}")
     yield r
-    r.close()
+    await r.close_session(CloseSessionRequest())
 
 
 @pytest.fixture
-def runtime_with_default_session(remote_runtime: RemoteRuntime) -> Generator[RemoteRuntime, None, None]:
-    r = remote_runtime.create_session(CreateSessionRequest())
+async def runtime_with_default_session(remote_runtime: RemoteRuntime) -> AsyncGenerator[RemoteRuntime, None]:
+    r = await remote_runtime.create_session(CreateSessionRequest())
     assert r.success
     yield remote_runtime
-    r = remote_runtime.close_session(CloseSessionRequest())
+    r = await remote_runtime.close_session(CloseSessionRequest())
     assert r.success
 
 

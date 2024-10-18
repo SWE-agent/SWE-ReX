@@ -28,7 +28,7 @@ class RemoteRuntime(AbstractRuntime):
     def __init__(self, host: str):
         self.host = host
 
-    def is_alive(self) -> bool:
+    async def is_alive(self) -> bool:
         try:
             response = requests.get(f"{self.host}")
             if response.status_code == 200 and response.json().get("message") == "running":
@@ -39,12 +39,12 @@ class RemoteRuntime(AbstractRuntime):
             print(traceback.format_exc())
             return False
 
-    def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
+    async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
         response = requests.post(f"{self.host}/create_session", json=request.model_dump())
         response.raise_for_status()
         return CreateSessionResponse(**response.json())
 
-    def run_in_session(self, action: Action) -> Observation:
+    async def run_in_session(self, action: Action) -> Observation:
         print("----")
         print(action)
         response = requests.post(f"{self.host}/run_in_session", json=action.model_dump())
@@ -54,27 +54,27 @@ class RemoteRuntime(AbstractRuntime):
             print(f"Command failed: {obs.failure_reason}")
         return obs
 
-    def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
+    async def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
         response = requests.post(f"{self.host}/close_session", json=request.model_dump())
         response.raise_for_status()
         return CloseSessionResponse(**response.json())
 
-    def execute(self, command: Command) -> CommandResponse:
+    async def execute(self, command: Command) -> CommandResponse:
         response = requests.post(f"{self.host}/execute", json=command.model_dump())
         response.raise_for_status()
         return CommandResponse(**response.json())
 
-    def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
+    async def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
         response = requests.post(f"{self.host}/read_file", json=request.model_dump())
         response.raise_for_status()
         return ReadFileResponse(**response.json())
 
-    def write_file(self, request: WriteFileRequest) -> WriteFileResponse:
+    async def write_file(self, request: WriteFileRequest) -> WriteFileResponse:
         response = requests.post(f"{self.host}/write_file", json=request.model_dump())
         response.raise_for_status()
         return WriteFileResponse(**response.json())
 
-    def upload(self, request: UploadRequest) -> UploadResponse:
+    async def upload(self, request: UploadRequest) -> UploadResponse:
         source = Path(request.source_path)
         if source.is_dir():
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -92,6 +92,6 @@ class RemoteRuntime(AbstractRuntime):
             response.raise_for_status()
             return UploadResponse(**response.json())
 
-    def close(self):
+    async def close(self):
         response = requests.post(f"{self.host}/close")
         response.raise_for_status()
