@@ -55,6 +55,9 @@ include-package-data = true
 [tool.setuptools.dynamic]
 version = {attr = "swerex.__version__"}
 
+[tool.setuptools.package-data]
+"pkgname" = ["py.typed"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 namespaces = false
