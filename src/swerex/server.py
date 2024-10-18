@@ -8,7 +8,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, File, Form, UploadFile
 
-from swerex.models import (
+from swerex.runtime.abstract import (
     Action,
     CloseSessionRequest,
     Command,

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from swerex.models import Action, CloseSessionRequest, Command, CreateSessionRequest
+from swerex.runtime.abstract import Action, CloseSessionRequest, Command, CreateSessionRequest
 from swerex.runtime.remote import RemoteRuntime
 from swerex.server import app
 

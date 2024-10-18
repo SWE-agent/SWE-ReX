@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from swerex.models import ReadFileRequest, UploadRequest
+from swerex.runtime.abstract import ReadFileRequest, UploadRequest
 from swerex.runtime.local import Runtime
 
 

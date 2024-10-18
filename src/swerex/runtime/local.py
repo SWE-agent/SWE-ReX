@@ -10,7 +10,8 @@ import bashlex.ast
 import bashlex.errors
 import pexpect
 
-from swerex.models import (
+from swerex.runtime.abstract import (
+    AbstractRuntime,
     Action,
     CloseSessionRequest,
     CloseSessionResponse,
@@ -26,7 +27,6 @@ from swerex.models import (
     WriteFileRequest,
     WriteFileResponse,
 )
-from swerex.runtime.abstract import AbstractRuntime
 
 
 def split_bash_command(inpt: str) -> list[str]:

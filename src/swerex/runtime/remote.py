@@ -5,7 +5,8 @@ from pathlib import Path
 
 import requests
 
-from swerex.models import (
+from swerex.runtime.abstract import (
+    AbstractRuntime,
     Action,
     CloseSessionRequest,
     CloseSessionResponse,
@@ -21,7 +22,6 @@ from swerex.models import (
     WriteFileRequest,
     WriteFileResponse,
 )
-from swerex.runtime.abstract import AbstractRuntime
 
 
 class RemoteRuntime(AbstractRuntime):

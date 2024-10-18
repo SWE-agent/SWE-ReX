@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from swerex.models import (
+from swerex.runtime.abstract import (
     A,
     CloseSessionRequest,
     CreateSessionRequest,

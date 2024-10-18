@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 
-from swerex.models import (
+from swerex.runtime.abstract import (
     CloseSessionRequest,
     CreateSessionRequest,
     ReadFileRequest,
