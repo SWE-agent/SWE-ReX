@@ -165,12 +165,13 @@ class Session:
             exit_code_raw = "0"
             self.shell.setecho(False)
             self.shell.waitnoecho()
-            self.shell.sendline("stty -echo; echo 'doneremovingecho'; echo 'doneremovingecho'")
+            self.shell.sendline(f"stty -echo; echo '{self.UNIQUE_STRING}'")
             # Might need two expects for some reason
-            print(self.shell.expect("doneremovingecho", timeout=1))
+            print(self.shell.expect(self.UNIQUE_STRING, timeout=1))
             print(self.shell.expect(self._ps1, timeout=1))
         else:
-            # Trouble with echo mode within an interactive session that we
+            # Interactive command.
+            # For some reason, this often times enables echo mode within the shell.
             output = output.lstrip().removeprefix(action.command).strip()
             exit_code_raw = "0"
 
