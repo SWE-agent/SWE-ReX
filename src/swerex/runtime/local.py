@@ -116,22 +116,53 @@ class Session:
     async def run(self, action: Action) -> Observation:
         if self.shell is None:
             return Observation(success=False, failure_reason="shell not initialized")
+        if action.is_interactive_command or action.is_interactive_quit:
+            return await self._run_interactive(action)
+        return await self._run_normal(action)
+
+    async def _run_interactive(self, action: Action) -> Observation:
+        assert self.shell is not None
+        self.shell.sendline(action.command)
+        expect_strings = action.expect + [self._ps1]
+        try:
+            expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
+            matched_expect_string = expect_strings[expect_index]
+        except pexpect.TIMEOUT:
+            matched_expect_string = ""
+            return Observation(success=False, failure_reason="timeout while running command")
+        output: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
+        if action.is_interactive_quit:
+            assert not action.is_interactive_command
+            self.shell.setecho(False)
+            self.shell.waitnoecho()
+            self.shell.sendline(f"stty -echo; echo '{self._UNIQUE_STRING}'")
+            # Might need two expects for some reason
+            print(self.shell.expect(self._UNIQUE_STRING, timeout=1))
+            print(self.shell.expect(self._ps1, timeout=1))
+        else:
+            # Interactive command.
+            # For some reason, this often times enables echo mode within the shell.
+            output = output.lstrip().removeprefix(action.command).strip()
+
+        return Observation(output=output, exit_code=0, expect_string=matched_expect_string)
+
+    async def _run_normal(self, action: Action) -> Observation:
+        assert self.shell is not None
         fallback_terminator = False
-        if not action.is_interactive_command and not action.is_interactive_quit:
-            # Running multiple interactive commands by sending them with linebreaks would break things
-            # because we get multiple PS1s back to back. Instead we just join them with ;
-            # However, sometimes bashlex errors and we can't do this. In this case
-            # we add a unique string to the end of the command and then seek to that
-            # (which is also somewhat brittle, so we don't do this by default).
-            try:
-                individual_commands = _split_bash_command(action.command)
-            except bashlex.errors.ParsingError as e:
-                print("Bashlex fail:")
-                print(e)
-                action.command += f"\n TMPEXITCODE=$? ; sleep 0.1; echo '{self._UNIQUE_STRING}' ; (exit $TMPEXITCODE)"
-                fallback_terminator = True
-            else:
-                action.command = " ; ".join(individual_commands)
+        # Running multiple interactive commands by sending them with linebreaks would break things
+        # because we get multiple PS1s back to back. Instead we just join them with ;
+        # However, sometimes bashlex errors and we can't do this. In this case
+        # we add a unique string to the end of the command and then seek to that
+        # (which is also somewhat brittle, so we don't do this by default).
+        try:
+            individual_commands = _split_bash_command(action.command)
+        except bashlex.errors.ParsingError as e:
+            print("Bashlex fail:")
+            print(e)
+            action.command += f"\n TMPEXITCODE=$? ; sleep 0.1; echo '{self._UNIQUE_STRING}' ; (exit $TMPEXITCODE)"
+            fallback_terminator = True
+        else:
+            action.command = " ; ".join(individual_commands)
         self.shell.sendline(action.command)
         if not fallback_terminator:
             expect_strings = action.expect + [self._ps1]
@@ -144,36 +175,21 @@ class Session:
             matched_expect_string = ""
             return Observation(success=False, failure_reason="timeout while running command")
         output: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
-        if not action.is_interactive_command and not action.is_interactive_quit:
-            self.shell.sendline("\necho $?")
-            try:
-                self.shell.expect(self._ps1, timeout=1)
-            except pexpect.TIMEOUT:
-                return Observation(success=False, failure_reason="timeout while getting exit code")
-            exit_code_raw: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
-            # After quitting an interactive session, for some reason we oftentimes get double
-            # PS1 for all following commands. So we might need to call expect again.
-            # Alternatively we could have probably called `echo <<<$?>>>` or something.
-            for _ in range(2):
-                # Try 2 more times with very small timeout
-                if not exit_code_raw.strip():
-                    print("exit_code_raw was empty, trying again")
-                    self.shell.expect(self._ps1, timeout=0.1)
-                    exit_code_raw = _strip_control_chars(self.shell.before).strip()  # type: ignore
-        elif action.is_interactive_quit:
-            assert not action.is_interactive_command
-            exit_code_raw = "0"
-            self.shell.setecho(False)
-            self.shell.waitnoecho()
-            self.shell.sendline(f"stty -echo; echo '{self._UNIQUE_STRING}'")
-            # Might need two expects for some reason
-            print(self.shell.expect(self._UNIQUE_STRING, timeout=1))
-            print(self.shell.expect(self._ps1, timeout=1))
-        else:
-            # Interactive command.
-            # For some reason, this often times enables echo mode within the shell.
-            output = output.lstrip().removeprefix(action.command).strip()
-            exit_code_raw = "0"
+        self.shell.sendline("\necho $?")
+        try:
+            self.shell.expect(self._ps1, timeout=1)
+        except pexpect.TIMEOUT:
+            return Observation(success=False, failure_reason="timeout while getting exit code")
+        exit_code_raw: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
+        # After quitting an interactive session, for some reason we oftentimes get double
+        # PS1 for all following commands. So we might need to call expect again.
+        # Alternatively we could have probably called `echo <<<$?>>>` or something.
+        for _ in range(2):
+            # Try 2 more times with very small timeout
+            if not exit_code_raw.strip():
+                print("exit_code_raw was empty, trying again")
+                self.shell.expect(self._ps1, timeout=0.1)
+                exit_code_raw = _strip_control_chars(self.shell.before).strip()  # type: ignore
 
         output = output.replace(self._UNIQUE_STRING, "").replace(self._ps1, "")
 
