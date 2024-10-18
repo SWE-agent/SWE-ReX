@@ -1,5 +1,3 @@
-import asyncio
-
 from swerex.deployment.abstract import AbstractDeployment
 from swerex.runtime.local import Runtime
 
@@ -12,15 +10,15 @@ class LocalDeployment(AbstractDeployment):
     ):
         self._runtime = None
 
-    def is_alive(self) -> bool:
+    async def is_alive(self) -> bool:
         return self._runtime is not None
 
-    def start(self):
+    async def start(self):
         self._runtime = Runtime()
 
-    def stop(self):
+    async def stop(self):
         if self._runtime is not None:
-            asyncio.run(self._runtime.close())
+            await self._runtime.close()
             self._runtime = None
 
     @property

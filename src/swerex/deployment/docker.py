@@ -1,4 +1,5 @@
 import subprocess
+import time
 import uuid
 
 from swerex import REMOTE_EXECUTABLE_NAME
@@ -15,6 +16,8 @@ class DockerDeployment(AbstractDeployment):
         self._runtime: RemoteRuntime | None = None
         self._port = port
         self._container_process = None
+        if docker_args is None:
+            docker_args = []
         self._docker_args = docker_args
         self._container_name = None
         self.logger = get_logger("deploy")
@@ -27,13 +30,15 @@ class DockerDeployment(AbstractDeployment):
     def container_name(self) -> str | None:
         return self._container_name
 
-    def is_alive(self) -> bool:
+    async def is_alive(self, *, timeout: float | None = None) -> bool:
         if self._runtime is None:
             return False
-        return self._runtime.is_alive()
+        return await self._runtime.is_alive(timeout=timeout)
 
-    def start(
+    async def start(
         self,
+        *,
+        timeout: float | None = None,
     ):
         assert self._container_name is None
         self._container_name = self._get_container_name()
@@ -43,6 +48,7 @@ class DockerDeployment(AbstractDeployment):
             "--rm",
             "-p",
             f"8000:{self._port}",
+            *self._docker_args,
             "--name",
             self._container_name,
             self._image_name,
@@ -55,10 +61,13 @@ class DockerDeployment(AbstractDeployment):
         self._container_process = subprocess.Popen(cmds)
         self.logger.info("Starting runtime")
         self._runtime = RemoteRuntime(f"http://127.0.0.1:{self._port}")
+        t0 = time.time()
+        await self._runtime.wait_until_alive(timeout=timeout)
+        self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
 
-    def stop(self):
+    async def stop(self):
         if self._runtime is not None:
-            self._runtime.close()
+            await self._runtime.close()
             self._runtime = None
         if self._container_process is not None:
             self._container_process.terminate()

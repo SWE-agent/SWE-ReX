@@ -1,5 +1,6 @@
 import shutil
 import tempfile
+import time
 import traceback
 from pathlib import Path
 
@@ -30,9 +31,9 @@ class RemoteRuntime(AbstractRuntime):
     def __init__(self, host: str):
         self.host = host
 
-    async def is_alive(self) -> bool:
+    async def is_alive(self, *, timeout: float | None = None) -> bool:
         try:
-            response = requests.get(f"{self.host}")
+            response = requests.get(f"{self.host}", timeout=timeout)
             if response.status_code == 200 and response.json().get("message") == "running":
                 return True
             return False
@@ -40,6 +41,17 @@ class RemoteRuntime(AbstractRuntime):
             print(f"Failed to connect to {self.host}")
             print(traceback.format_exc())
             return False
+
+    async def wait_until_alive(self, *, timeout: float | None = None):
+        if timeout is None:
+            timeout = 10
+        end_time = time.time() + timeout
+        while time.time() < end_time:
+            if await self.is_alive(timeout=0.1):
+                return
+            time.sleep(0.1)
+        msg = "Failed to start runtime"
+        raise TimeoutError(msg)
 
     async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
         response = requests.post(f"{self.host}/create_session", json=request.model_dump())
