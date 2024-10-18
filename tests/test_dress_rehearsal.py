@@ -296,3 +296,10 @@ async def test_upload_directory(runtime_with_default_session: RemoteRuntime, tmp
     assert (
         await runtime_with_default_session.read_file(ReadFileRequest(path=str(tmp_target / "file2.txt")))
     ).content == "test2"
+
+
+async def test_fail_bashlex_errors(runtime_with_default_session: RemoteRuntime):
+    r = await runtime_with_default_session.run_in_session(A(command="A=(); false"))
+    assert r.success
+    assert r.exit_code == 1
+    assert r.output == ""

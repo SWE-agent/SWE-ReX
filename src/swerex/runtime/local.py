@@ -74,7 +74,7 @@ def _strip_control_chars(s: str) -> str:
 
 
 class Session:
-    UNIQUE_STRING = "UNIQUESTRING29234"
+    _UNIQUE_STRING = "UNIQUESTRING29234"
 
     def __init__(self, request: CreateSessionRequest):
         """This basically represents one REPL that we control.
@@ -92,9 +92,9 @@ class Session:
             echo=False,
         )
         time.sleep(0.1)
-        self.shell.sendline(f"echo '{self.UNIQUE_STRING}'")
+        self.shell.sendline(f"echo '{self._UNIQUE_STRING}'")
         try:
-            self.shell.expect(self.UNIQUE_STRING, timeout=1)
+            self.shell.expect(self._UNIQUE_STRING, timeout=1)
         except pexpect.TIMEOUT:
             return CreateSessionResponse(success=False, failure_reason="timeout while initializing shell")
         output = self.shell.before
@@ -128,7 +128,7 @@ class Session:
             except bashlex.errors.ParsingError as e:
                 print("Bashlex fail:")
                 print(e)
-                action.command += f"\nsleep 0.1; echo {self.UNIQUE_STRING}"
+                action.command += f"\n TMPEXITCODE=$? ; sleep 0.1; echo '{self._UNIQUE_STRING}' ; (exit $TMPEXITCODE)"
                 fallback_terminator = True
             else:
                 action.command = " ; ".join(individual_commands)
@@ -136,7 +136,7 @@ class Session:
         if not fallback_terminator:
             expect_strings = action.expect + [self._ps1]
         else:
-            expect_strings = [self.UNIQUE_STRING]
+            expect_strings = [self._UNIQUE_STRING]
         try:
             expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
             matched_expect_string = expect_strings[expect_index]
@@ -165,15 +165,17 @@ class Session:
             exit_code_raw = "0"
             self.shell.setecho(False)
             self.shell.waitnoecho()
-            self.shell.sendline(f"stty -echo; echo '{self.UNIQUE_STRING}'")
+            self.shell.sendline(f"stty -echo; echo '{self._UNIQUE_STRING}'")
             # Might need two expects for some reason
-            print(self.shell.expect(self.UNIQUE_STRING, timeout=1))
+            print(self.shell.expect(self._UNIQUE_STRING, timeout=1))
             print(self.shell.expect(self._ps1, timeout=1))
         else:
             # Interactive command.
             # For some reason, this often times enables echo mode within the shell.
             output = output.lstrip().removeprefix(action.command).strip()
             exit_code_raw = "0"
+
+        output = output.replace(self._UNIQUE_STRING, "").replace(self._ps1, "")
 
         try:
             exit_code = int(exit_code_raw)
