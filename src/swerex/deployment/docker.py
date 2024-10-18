@@ -6,6 +6,8 @@ from swerex.deployment.abstract import AbstractDeployment
 from swerex.runtime.remote import RemoteRuntime
 from swerex.utils.log import get_logger
 
+__all__ = ["DockerDeployment"]
+
 
 class DockerDeployment(AbstractDeployment):
     def __init__(self, image_name: str, port: int = 8000, docker_args: list[str] | None = None):

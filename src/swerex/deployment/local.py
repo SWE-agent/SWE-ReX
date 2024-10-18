@@ -3,6 +3,8 @@ import asyncio
 from swerex.deployment.abstract import AbstractDeployment
 from swerex.runtime.local import Runtime
 
+__all__ = ["LocalDeployment"]
+
 
 class LocalDeployment(AbstractDeployment):
     def __init__(

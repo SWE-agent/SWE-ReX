@@ -28,8 +28,10 @@ from swerex.runtime.abstract import (
     WriteFileResponse,
 )
 
+__all__ = ["Runtime", "Session"]
 
-def split_bash_command(inpt: str) -> list[str]:
+
+def _split_bash_command(inpt: str) -> list[str]:
     r"""Split a bash command with linebreaks, escaped newlines, and heredocs into a list of
     individual commands.
 
@@ -66,7 +68,7 @@ def split_bash_command(inpt: str) -> list[str]:
     return cmd_strings
 
 
-def strip_control_chars(s: str) -> str:
+def _strip_control_chars(s: str) -> str:
     ansi_escape = re.compile(r"\x1B[@-_][0-?]*[ -/]*[@-~]")
     return ansi_escape.sub("", s)
 
@@ -108,7 +110,7 @@ class Session:
             self.shell.expect(self._ps1, timeout=1)
         except pexpect.TIMEOUT:
             return CreateSessionResponse(success=False, failure_reason="timeout while setting PS1")
-        output += "\n---\n" + strip_control_chars(self.shell.before)  # type: ignore
+        output += "\n---\n" + _strip_control_chars(self.shell.before)  # type: ignore
         return CreateSessionResponse(output=output)
 
     async def run(self, action: Action) -> Observation:
@@ -122,7 +124,7 @@ class Session:
             # we add a unique string to the end of the command and then seek to that
             # (which is also somewhat brittle, so we don't do this by default).
             try:
-                individual_commands = split_bash_command(action.command)
+                individual_commands = _split_bash_command(action.command)
             except bashlex.errors.ParsingError as e:
                 print("Bashlex fail:")
                 print(e)
@@ -141,14 +143,14 @@ class Session:
         except pexpect.TIMEOUT:
             matched_expect_string = ""
             return Observation(success=False, failure_reason="timeout while running command")
-        output: str = strip_control_chars(self.shell.before).strip()  # type: ignore
+        output: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
         if not action.is_interactive_command and not action.is_interactive_quit:
             self.shell.sendline("\necho $?")
             try:
                 self.shell.expect(self._ps1, timeout=1)
             except pexpect.TIMEOUT:
                 return Observation(success=False, failure_reason="timeout while getting exit code")
-            exit_code_raw: str = strip_control_chars(self.shell.before).strip()  # type: ignore
+            exit_code_raw: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
             # After quitting an interactive session, for some reason we oftentimes get double
             # PS1 for all following commands. So we might need to call expect again.
             # Alternatively we could have probably called `echo <<<$?>>>` or something.
@@ -157,7 +159,7 @@ class Session:
                 if not exit_code_raw.strip():
                     print("exit_code_raw was empty, trying again")
                     self.shell.expect(self._ps1, timeout=0.1)
-                    exit_code_raw = strip_control_chars(self.shell.before).strip()  # type: ignore
+                    exit_code_raw = _strip_control_chars(self.shell.before).strip()  # type: ignore
         elif action.is_interactive_quit:
             assert not action.is_interactive_command
             exit_code_raw = "0"
