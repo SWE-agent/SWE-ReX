@@ -39,10 +39,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    # "mkdocs-material",
-    # "mkdocs-glightbox",
-    # "mkdocs-include-markdown-plugin",
-    # "mkdocstrings[python]>=0.18",
+    "mkdocs-material",
+    "mkdocs-glightbox",
+    "mkdocs-include-markdown-plugin",
+    "mkdocstrings[python]>=0.18",
     "pytest",
     "pytest-cov",
     "pre-commit",

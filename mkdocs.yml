@@ -1,0 +1,71 @@
+site_name: SWE-ReX documentation
+theme:
+  name: material
+  # custom_dir: docs/overrides
+  icon:
+    repo: fontawesome/brands/github
+  logo: assets/swerex.svg
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - scheme: default
+      primary: black
+      accent: deep orange
+      media: "(prefers-color-scheme: light)"
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: black
+      accent: deep orange
+      media: "(prefers-color-scheme: dark)"
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.indexes
+    - content.action.edit
+    - navigation.footer
+    - content.code.copy
+    - content.footnote.tooltips
+    - header.autohide
+    - announce.dismiss
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.magiclink
+  - footnotes
+  - attr_list
+  - md_in_html
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+nav:
+  - Home: index.md
+  - Deployments: deployments.md
+  - Runtimes: runtimes.md
+plugins:
+   - glightbox
+   - search
+   - include-markdown
+   - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: ['src/swerex']
+          options:
+            summary: true
+            show_root_heading: true
+            heading_level: 2
+            docstring_style: google
+            show_if_no_docstring: true
+repo_url: https://github.com/klieret/swe-rex
+repo_name: klieret/SWE-ReX
+edit_uri: edit/main/docs/
+extra_css:
+  - assets/custom.css
