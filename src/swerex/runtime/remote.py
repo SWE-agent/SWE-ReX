@@ -1,4 +1,5 @@
 import shutil
+import sys
 import tempfile
 import time
 import traceback
@@ -18,10 +19,12 @@ from swerex.runtime.abstract import (
     Observation,
     ReadFileRequest,
     ReadFileResponse,
+    SweRexception,
     UploadRequest,
     UploadResponse,
     WriteFileRequest,
     WriteFileResponse,
+    _ExceptionTransfer,
 )
 
 __all__ = ["RemoteRuntime"]
@@ -30,6 +33,21 @@ __all__ = ["RemoteRuntime"]
 class RemoteRuntime(AbstractRuntime):
     def __init__(self, host: str):
         self.host = host
+
+    def _handle_response_errors(self, response: requests.Response):
+        if response.status_code == 511:
+            print("3333")
+            exc_transfer = _ExceptionTransfer(**response.json()["swerexception"])
+            print(f"Exception class: {exc_transfer.class_path!r}")
+            try:
+                # get exception object from class path
+                module, _, exc_name = exc_transfer.class_path.rpartition(".")
+                exception = getattr(sys.modules[module], exc_name)
+            except AttributeError:
+                print(f"Unknown exception class: {exc_transfer.class_path!r}")
+                raise SweRexception(exc_transfer.message) from None
+            raise exception(exc_transfer.message) from None
+        response.raise_for_status()
 
     async def is_alive(self, *, timeout: float | None = None) -> bool:
         try:
@@ -62,7 +80,7 @@ class RemoteRuntime(AbstractRuntime):
         print("----")
         print(action)
         response = requests.post(f"{self.host}/run_in_session", json=action.model_dump())
-        response.raise_for_status()
+        self._handle_response_errors(response)
         obs = Observation(**response.json())
         if not obs.success:
             print(f"Command failed: {obs.failure_reason}")
@@ -70,17 +88,17 @@ class RemoteRuntime(AbstractRuntime):
 
     async def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
         response = requests.post(f"{self.host}/close_session", json=request.model_dump())
-        response.raise_for_status()
+        self._handle_response_errors(response)
         return CloseSessionResponse(**response.json())
 
     async def execute(self, command: Command) -> CommandResponse:
         response = requests.post(f"{self.host}/execute", json=command.model_dump())
-        response.raise_for_status()
+        self._handle_response_errors(response)
         return CommandResponse(**response.json())
 
     async def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
         response = requests.post(f"{self.host}/read_file", json=request.model_dump())
-        response.raise_for_status()
+        self._handle_response_errors(response)
         return ReadFileResponse(**response.json())
 
     async def write_file(self, request: WriteFileRequest) -> WriteFileResponse:
@@ -97,13 +115,13 @@ class RemoteRuntime(AbstractRuntime):
                 files = {"file": zip_path.open("rb")}
                 data = {"target_path": request.target_path, "unzip": "true"}
                 response = requests.post(f"{self.host}/upload", files=files, data=data)
-                response.raise_for_status()
+                self._handle_response_errors(response)
                 return UploadResponse(**response.json())
         else:
             files = {"file": source.open("rb")}
             data = {"target_path": request.target_path, "unzip": "false"}
             response = requests.post(f"{self.host}/upload", files=files, data=data)
-            response.raise_for_status()
+            self._handle_response_errors(response)
             return UploadResponse(**response.json())
 
     async def close(self):

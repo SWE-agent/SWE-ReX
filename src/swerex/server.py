@@ -27,8 +27,10 @@ runtime = Runtime()
 
 @app.exception_handler(Exception)
 async def swerexeption_handler(request: Request, exc: Exception):
-    _exc = _ExceptionTransfer(message=str(exc), classname=type(exc).__name__, traceback=traceback.format_exc())
-    return JSONResponse(status_code=400, content={"swerexception": _exc.model_dump()})
+    _exc = _ExceptionTransfer(
+        message=str(exc), class_path=type(exc).__module__ + "." + type(exc).__name__, traceback=traceback.format_exc()
+    )
+    return JSONResponse(status_code=511, content={"swerexception": _exc.model_dump()})
 
 
 @app.get("/")

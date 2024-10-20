@@ -53,7 +53,7 @@ def remote_server() -> RemoteServer:
 async def remote_runtime(remote_server: RemoteServer) -> AsyncGenerator[RemoteRuntime, None]:
     r = RemoteRuntime(f"http://127.0.0.1:{remote_server.port}")
     yield r
-    await r.close_session(CloseSessionRequest())
+    await r.close()
 
 
 @pytest.fixture

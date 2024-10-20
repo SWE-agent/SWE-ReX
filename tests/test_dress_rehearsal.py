@@ -4,10 +4,12 @@ from pathlib import Path
 import pytest
 
 from swerex.runtime.abstract import (
+    BashIncorrectSyntaxError,
     CloseSessionRequest,
     CommandTimeoutError,
     CreateSessionRequest,
     ReadFileRequest,
+    SessionDoesNotExistError,
     UploadRequest,
     WriteFileRequest,
 )
@@ -73,33 +75,28 @@ async def test_run_in_shell(runtime_with_default_session: RemoteRuntime):
 
 
 async def test_run_in_shell_non_existent_session(remote_runtime: RemoteRuntime):
-    r = await remote_runtime.run_in_session(A(command="echo 'hello world'", session="non_existent"))
-    assert not r.success
-    assert "does not exist" in r.failure_reason
+    with pytest.raises(SessionDoesNotExistError):
+        await remote_runtime.run_in_session(A(command="echo 'hello world'", session="non_existent"))
 
 
 async def test_close_shell_non_existent_session(remote_runtime: RemoteRuntime):
-    r = await remote_runtime.close_session(CloseSessionRequest(session="non_existent"))
-    assert not r.success
-    assert "does not exist" in r.failure_reason
+    with pytest.raises(SessionDoesNotExistError):
+        await remote_runtime.close_session(CloseSessionRequest(session="non_existent"))
 
 
 async def test_close_shell_twice(remote_runtime: RemoteRuntime):
-    r = await remote_runtime.create_session(CreateSessionRequest())
+    n = "mynewsession"
+    r = await remote_runtime.create_session(CreateSessionRequest(session=n))
     assert r.success
-    r = await remote_runtime.close_session(CloseSessionRequest())
+    r = await remote_runtime.close_session(CloseSessionRequest(session=n))
     assert r.success
-    r = await remote_runtime.close_session(CloseSessionRequest())
-    assert not r.success
-    assert "does not exist" in r.failure_reason
+    with pytest.raises(SessionDoesNotExistError):
+        await remote_runtime.close_session(CloseSessionRequest(session=n))
 
 
 async def test_run_in_shell_timeout(runtime_with_default_session: RemoteRuntime):
-    print("in test")
-    r = await runtime_with_default_session.run_in_session(A(command="sleep 10", timeout=0.1))
-    assert not r.success
-    assert "timeout" in r.failure_reason
-    assert not r.output
+    with pytest.raises(CommandTimeoutError):
+        await runtime_with_default_session.run_in_session(A(command="sleep 10", timeout=0.1))
 
 
 async def test_run_in_shell_interactive_command(runtime_with_default_session: RemoteRuntime):
@@ -141,11 +138,10 @@ async def test_run_in_shell_multiple_interactive_and_normal_commands(runtime_wit
 
 
 async def test_run_in_shell_interactive_command_timeout(runtime_with_default_session: RemoteRuntime):
-    r = await runtime_with_default_session.run_in_session(
-        A(command="python", is_interactive_command=True, expect=["WONTHITTHIS"], timeout=0.1)
-    )
-    assert not r.success
-    assert "timeout" in r.failure_reason
+    with pytest.raises(CommandTimeoutError):
+        await runtime_with_default_session.run_in_session(
+            A(command="python", is_interactive_command=True, expect=["WONTHITTHIS"], timeout=0.1)
+        )
 
 
 async def test_write_to_non_existent_directory(remote_runtime: RemoteRuntime, tmp_path: Path):
@@ -308,6 +304,5 @@ async def test_fail_bashlex_errors(runtime_with_default_session: RemoteRuntime):
 
 
 async def test_check_bash_command_invalid(runtime_with_default_session: RemoteRuntime):
-    r = await runtime_with_default_session.run_in_session(A(command="(a"))
-    assert not r.success
-    assert "while checking bash command" in r.failure_reason.lower()
+    with pytest.raises(BashIncorrectSyntaxError):
+        await runtime_with_default_session.run_in_session(A(command="(a"))

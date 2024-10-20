@@ -98,7 +98,7 @@ class UploadResponse(BaseModel):
 
 class _ExceptionTransfer(BaseModel):
     message: str = ""
-    classname: str = ""
+    class_path: str = ""
     traceback: str = ""
 
 

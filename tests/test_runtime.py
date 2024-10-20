@@ -1,3 +1,6 @@
+import pytest
+
+from swerex.runtime.abstract import BashIncorrectSyntaxError
 from swerex.runtime.local import _check_bash_command, _split_bash_command
 
 
@@ -62,11 +65,14 @@ def test_split_command_with_heredoc_quotations():
 
 
 def test_check_bash_command_invalid():
-    assert not _check_bash_command("(a")[0]
-    assert not _check_bash_command("a='")[0]
-    assert not _check_bash_command("for")[0]
+    with pytest.raises(BashIncorrectSyntaxError):
+        _check_bash_command("(a")
+    with pytest.raises(BashIncorrectSyntaxError):
+        _check_bash_command("a='")
+    with pytest.raises(BashIncorrectSyntaxError):
+        _check_bash_command("for")
 
 
 def test_check_bash_command_valid():
-    assert _check_bash_command("(a)")[0]
-    assert _check_bash_command("a=''")[0]
+    _check_bash_command("(a)")
+    _check_bash_command("a=''")
