@@ -47,6 +47,7 @@ dev = [
     "pytest-cov",
     "pre-commit",
     "pytest-asyncio",
+    "griffe-pydantic",
 ]
 
 [tool.setuptools]

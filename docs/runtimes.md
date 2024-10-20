@@ -1,6 +1,6 @@
 # Runtime classes
 
-::: swerex.runtime.abstract.AbstractRuntime
+::: swerex.runtime.abstract
 
 The local runtime has the same interface as the `AbstractRuntime`.
 

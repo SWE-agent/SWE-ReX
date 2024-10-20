@@ -17,18 +17,29 @@ class CreateSessionResponse(BaseModel):
 
 # todo: implement non-output-timeout
 class Action(BaseModel):
+    """An action to run in a session."""
+
     command: str
+    """The command to run."""
+
     session: str = "default"
+    """The session to run the command in."""
+
     timeout: float | None = None
-    # For a non-exiting command to an interactive program
-    # (e.g., gdb), set this to True.
-    # This will disable checking for exit codes, since the command won't terminate.
-    # If the command is something like "quit" and should terminate the
-    # interactive program, set this to False.
+    """The timeout for the command. None means no timeout."""
+
     is_interactive_command: bool = False
+    """For a non-exiting command to an interactive program
+    (e.g., gdb), set this to True."""
+
     is_interactive_quit: bool = False
-    # Outputs to expect in addition to the PS1
+    """This will disable checking for exit codes, since the command won't terminate.
+    If the command is something like "quit" and should terminate the
+    interactive program, set this to False.
+    """
+
     expect: list[str] = []
+    """Outputs to expect in addition to the PS1"""
 
 
 class Observation(BaseModel):

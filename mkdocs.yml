@@ -64,6 +64,13 @@ plugins:
             heading_level: 2
             docstring_style: google
             show_if_no_docstring: true
+            show_signature: true
+            show_signature_annotations: true
+            signature_crossrefs: true
+            separate_signature: true
+            extensions:
+              - griffe_pydantic:
+                  schema: false
 repo_url: https://github.com/klieret/swe-rex
 repo_name: klieret/SWE-ReX
 edit_uri: edit/main/docs/
