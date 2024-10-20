@@ -73,6 +73,28 @@ def _strip_control_chars(s: str) -> str:
     return ansi_escape.sub("", s)
 
 
+def _check_bash_command(command: str) -> tuple[bool, str]:
+    """Check if a bash command is valid.
+
+    Returns:
+        A tuple of (success, message).
+        success is True if the command is valid, False otherwise.
+        message is a message describing the error if success is False, or an empty string if success is True.
+    """
+    _unique_string = "SOUNIQUEEOF"
+    cmd = f"/bin/bash -n << '{_unique_string}'\n{command}\n{_unique_string}"
+    result = subprocess.run(cmd, shell=True, capture_output=True)
+    if result.returncode == 0:
+        return True, ""
+    stdout = result.stdout.decode(errors="backslashreplace")
+    stderr = result.stderr.decode(errors="backslashreplace")
+    msg = (
+        f"Error ({result.returncode}) while checking bash command \n{command!r}\n"
+        f"Stderr: {stderr!r}\nStdout: {stdout!r}"
+    )
+    return False, msg
+
+
 class Session:
     _UNIQUE_STRING = "UNIQUESTRING29234"
 
@@ -148,6 +170,9 @@ class Session:
 
     async def _run_normal(self, action: Action) -> Observation:
         assert self.shell is not None
+        valid, msg = _check_bash_command(action.command)
+        if not valid:
+            return Observation(success=False, failure_reason=msg)
         fallback_terminator = False
         # Running multiple interactive commands by sending them with linebreaks would break things
         # because we get multiple PS1s back to back. Instead we just join them with ;

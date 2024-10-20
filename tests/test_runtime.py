@@ -1,4 +1,4 @@
-from swerex.runtime.local import _split_bash_command
+from swerex.runtime.local import _check_bash_command, _split_bash_command
 
 
 def test_split_bash_command_normal():
@@ -59,3 +59,14 @@ def test_split_command_with_heredoc_quotations():
     assert _split_bash_command("cmd1 <<EOF\n'a\nb'\nEOF") == [
         "cmd1 <<EOF\n'a\nb'\nEOF",
     ]
+
+
+def test_check_bash_command_invalid():
+    assert not _check_bash_command("(a")[0]
+    assert not _check_bash_command("a='")[0]
+    assert not _check_bash_command("for")[0]
+
+
+def test_check_bash_command_valid():
+    assert _check_bash_command("(a)")[0]
+    assert _check_bash_command("a=''")[0]

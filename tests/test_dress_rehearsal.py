@@ -303,3 +303,9 @@ async def test_fail_bashlex_errors(runtime_with_default_session: RemoteRuntime):
     assert r.success
     assert r.exit_code == 1
     assert r.output == ""
+
+
+async def test_check_bash_command_invalid(runtime_with_default_session: RemoteRuntime):
+    r = await runtime_with_default_session.run_in_session(A(command="(a"))
+    assert not r.success
+    assert "while checking bash command" in r.failure_reason.lower()
