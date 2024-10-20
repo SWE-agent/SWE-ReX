@@ -86,6 +86,10 @@ class UploadResponse(BaseModel):
     pass
 
 
+class CloseResponse(BaseModel):
+    pass
+
+
 class _ExceptionTransfer(BaseModel):
     message: str = ""
     class_path: str = ""
@@ -155,6 +159,6 @@ class AbstractRuntime(ABC):
         pass
 
     @abstractmethod
-    async def close(self):
+    async def close(self) -> CloseResponse:
         """Closes the runtime."""
         pass

@@ -12,10 +12,12 @@ from fastapi.responses import JSONResponse
 
 from swerex.runtime.abstract import (
     Action,
+    CloseResponse,
     CloseSessionRequest,
     Command,
     CreateSessionRequest,
     ReadFileRequest,
+    UploadResponse,
     WriteFileRequest,
     _ExceptionTransfer,
 )
@@ -88,13 +90,13 @@ async def upload(
                 zip_ref.extractall(target_path)
         else:
             shutil.copy(file_path, target_path)
-    return {"success": True}
+    return UploadResponse()
 
 
 @app.post("/close")
 async def close():
     await runtime.close()
-    return {"success": True}
+    return CloseResponse()
 
 
 def main():

@@ -26,6 +26,7 @@ from swerex.runtime.abstract import (
     WriteFileResponse,
     _ExceptionTransfer,
 )
+from swerex.utils.log import get_logger
 
 __all__ = ["RemoteRuntime"]
 
@@ -33,20 +34,23 @@ __all__ = ["RemoteRuntime"]
 class RemoteRuntime(AbstractRuntime):
     def __init__(self, host: str):
         self.host = host
+        self.logger = get_logger("RR")
+
+    def _handle_transfer_exception(self, exc_transfer: _ExceptionTransfer):
+        if exc_transfer.traceback:
+            self.logger.debug("Traceback: %s", exc_transfer.traceback)
+        try:
+            module, _, exc_name = exc_transfer.class_path.rpartition(".")
+            exception = getattr(sys.modules[module], exc_name)
+        except AttributeError:
+            self.logger.error(f"Unknown exception class: {exc_transfer.class_path!r}")
+            raise SweRexception(exc_transfer.message) from None
+        raise exception(exc_transfer.message) from None
 
     def _handle_response_errors(self, response: requests.Response):
         if response.status_code == 511:
-            print("3333")
             exc_transfer = _ExceptionTransfer(**response.json()["swerexception"])
-            print(f"Exception class: {exc_transfer.class_path!r}")
-            try:
-                # get exception object from class path
-                module, _, exc_name = exc_transfer.class_path.rpartition(".")
-                exception = getattr(sys.modules[module], exc_name)
-            except AttributeError:
-                print(f"Unknown exception class: {exc_transfer.class_path!r}")
-                raise SweRexception(exc_transfer.message) from None
-            raise exception(exc_transfer.message) from None
+            self._handle_transfer_exception(exc_transfer)
         response.raise_for_status()
 
     async def is_alive(self, *, timeout: float | None = None) -> bool:
@@ -56,8 +60,8 @@ class RemoteRuntime(AbstractRuntime):
                 return True
             return False
         except requests.RequestException:
-            print(f"Failed to connect to {self.host}")
-            print(traceback.format_exc())
+            self.logger.error(f"Failed to connect to {self.host}")
+            self.logger.error(traceback.format_exc())
             return False
 
     async def wait_until_alive(self, *, timeout: float | None = None):
@@ -77,8 +81,7 @@ class RemoteRuntime(AbstractRuntime):
         return CreateSessionResponse(**response.json())
 
     async def run_in_session(self, action: Action) -> Observation:
-        print("----")
-        print(action)
+        self.logger.debug("Running action: %s", action)
         response = requests.post(f"{self.host}/run_in_session", json=action.model_dump())
         self._handle_response_errors(response)
         return Observation(**response.json())

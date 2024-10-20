@@ -32,6 +32,7 @@ from swerex.runtime.abstract import (
     WriteFileRequest,
     WriteFileResponse,
 )
+from swerex.utils.log import get_logger
 
 __all__ = ["Runtime", "Session"]
 
@@ -105,6 +106,7 @@ class Session:
         self.request = request
         self._ps1 = "SHELLPS1PREFIX"
         self.shell: pexpect.spawn | None = None
+        self.logger = get_logger(f"RexS ({request.session})")
 
     async def start(self) -> CreateSessionResponse:
         self.shell = pexpect.spawn(
@@ -161,8 +163,8 @@ class Session:
             self.shell.waitnoecho()
             self.shell.sendline(f"stty -echo; echo '{self._UNIQUE_STRING}'")
             # Might need two expects for some reason
-            print(self.shell.expect(self._UNIQUE_STRING, timeout=1))
-            print(self.shell.expect(self._ps1, timeout=1))
+            self.shell.expect(self._UNIQUE_STRING, timeout=1)
+            self.shell.expect(self._ps1, timeout=1)
         else:
             # Interactive command.
             # For some reason, this often times enables echo mode within the shell.
@@ -182,8 +184,7 @@ class Session:
         try:
             individual_commands = _split_bash_command(action.command)
         except bashlex.errors.ParsingError as e:
-            print("Bashlex fail:")
-            print(e)
+            self.logger.error("Bashlex fail: %s", e)
             action.command += f"\n TMPEXITCODE=$? ; sleep 0.1; echo '{self._UNIQUE_STRING}' ; (exit $TMPEXITCODE)"
             fallback_terminator = True
         else:
@@ -213,7 +214,7 @@ class Session:
         for _ in range(2):
             # Try 2 more times with very small timeout
             if not exit_code_raw.strip():
-                print("exit_code_raw was empty, trying again")
+                self.logger.warning("exit_code_raw was empty, trying again")
                 self.shell.expect(self._ps1, timeout=0.1)
                 exit_code_raw = _strip_control_chars(self.shell.before).strip()  # type: ignore
 
