@@ -96,6 +96,33 @@ class UploadResponse(BaseModel):
     failure_reason: str = ""
 
 
+class _ExceptionTransfer(BaseModel):
+    message: str = ""
+    classname: str = ""
+    traceback: str = ""
+
+
+class SweRexception(RuntimeError): ...
+
+
+class BashIncorrectSyntaxError(SweRexception, RuntimeError): ...
+
+
+class UninitializedShellError(SweRexception, ValueError): ...
+
+
+class CommandTimeoutError(SweRexception, RuntimeError): ...
+
+
+class NoExitCodeError(SweRexception, RuntimeError): ...
+
+
+class SessionExistsError(SweRexception, ValueError): ...
+
+
+class SessionDoesNotExistError(SweRexception, ValueError): ...
+
+
 class AbstractRuntime(ABC):
     """This is the main entry point for running stuff
 

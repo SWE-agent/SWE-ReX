@@ -1,8 +1,11 @@
 import asyncio
 from pathlib import Path
 
+import pytest
+
 from swerex.runtime.abstract import (
     CloseSessionRequest,
+    CommandTimeoutError,
     CreateSessionRequest,
     ReadFileRequest,
     UploadRequest,
@@ -31,7 +34,8 @@ async def test_read_write_file(remote_runtime: RemoteRuntime, tmp_path: Path):
 
 
 async def test_read_non_existent_file(remote_runtime: RemoteRuntime):
-    assert not (await remote_runtime.read_file(ReadFileRequest(path="non_existent.txt"))).success
+    with pytest.raises(FileNotFoundError):
+        await remote_runtime.read_file(ReadFileRequest(path="non_existent.txt"))
 
 
 async def test_execute_command(remote_runtime: RemoteRuntime):
@@ -43,10 +47,8 @@ async def test_execute_command_shell_false(remote_runtime: RemoteRuntime):
 
 
 async def test_execute_command_timeout(remote_runtime: RemoteRuntime):
-    r = await remote_runtime.execute(C(command=["sleep", "10"], timeout=0.1))
-    assert not r.success
-    assert "timeout" in r.failure_reason.lower()
-    assert not r.stdout
+    with pytest.raises(CommandTimeoutError):
+        await remote_runtime.execute(C(command=["sleep", "10"], timeout=0.1))
 
 
 async def test_create_close_shell(remote_runtime: RemoteRuntime):

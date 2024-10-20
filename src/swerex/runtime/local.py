@@ -13,15 +13,20 @@ import pexpect
 from swerex.runtime.abstract import (
     AbstractRuntime,
     Action,
+    BashIncorrectSyntaxError,
     CloseSessionRequest,
     CloseSessionResponse,
     Command,
     CommandResponse,
+    CommandTimeoutError,
     CreateSessionRequest,
     CreateSessionResponse,
+    NoExitCodeError,
     Observation,
     ReadFileRequest,
     ReadFileResponse,
+    SessionDoesNotExistError,
+    SessionExistsError,
     UploadRequest,
     UploadResponse,
     WriteFileRequest,
@@ -73,26 +78,20 @@ def _strip_control_chars(s: str) -> str:
     return ansi_escape.sub("", s)
 
 
-def _check_bash_command(command: str) -> tuple[bool, str]:
-    """Check if a bash command is valid.
-
-    Returns:
-        A tuple of (success, message).
-        success is True if the command is valid, False otherwise.
-        message is a message describing the error if success is False, or an empty string if success is True.
-    """
+def _check_bash_command(command: str) -> None:
+    """Check if a bash command is valid. Raises BashIncorrectSyntaxError if it's not."""
     _unique_string = "SOUNIQUEEOF"
     cmd = f"/bin/bash -n << '{_unique_string}'\n{command}\n{_unique_string}"
     result = subprocess.run(cmd, shell=True, capture_output=True)
     if result.returncode == 0:
-        return True, ""
+        return
     stdout = result.stdout.decode(errors="backslashreplace")
     stderr = result.stderr.decode(errors="backslashreplace")
     msg = (
         f"Error ({result.returncode}) while checking bash command \n{command!r}\n"
         f"Stderr: {stderr!r}\nStdout: {stdout!r}"
     )
-    return False, msg
+    raise BashIncorrectSyntaxError(msg)
 
 
 class Session:
@@ -118,7 +117,8 @@ class Session:
         try:
             self.shell.expect(self._UNIQUE_STRING, timeout=1)
         except pexpect.TIMEOUT:
-            return CreateSessionResponse(success=False, failure_reason="timeout while initializing shell")
+            msg = "timeout while initializing shell"
+            raise pexpect.TIMEOUT(msg)
         output = self.shell.before
         cmds = [f"source {path}" for path in self.request.startup_source]
         cmds += [
@@ -131,13 +131,15 @@ class Session:
         try:
             self.shell.expect(self._ps1, timeout=1)
         except pexpect.TIMEOUT:
-            return CreateSessionResponse(success=False, failure_reason="timeout while setting PS1")
+            msg = "timeout while setting PS1"
+            raise pexpect.TIMEOUT(msg)
         output += "\n---\n" + _strip_control_chars(self.shell.before)  # type: ignore
         return CreateSessionResponse(output=output)
 
     async def run(self, action: Action) -> Observation:
         if self.shell is None:
-            return Observation(success=False, failure_reason="shell not initialized")
+            msg = "shell not initialized"
+            raise RuntimeError(msg)
         if action.is_interactive_command or action.is_interactive_quit:
             return await self._run_interactive(action)
         return await self._run_normal(action)
@@ -149,9 +151,9 @@ class Session:
         try:
             expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
             matched_expect_string = expect_strings[expect_index]
-        except pexpect.TIMEOUT:
-            matched_expect_string = ""
-            return Observation(success=False, failure_reason="timeout while running command")
+        except pexpect.TIMEOUT as e:
+            msg = f"timeout while running command {action.command!r}"
+            raise CommandTimeoutError(msg) from e
         output: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
         if action.is_interactive_quit:
             assert not action.is_interactive_command
@@ -170,9 +172,7 @@ class Session:
 
     async def _run_normal(self, action: Action) -> Observation:
         assert self.shell is not None
-        valid, msg = _check_bash_command(action.command)
-        if not valid:
-            return Observation(success=False, failure_reason=msg)
+        _check_bash_command(action.command)
         fallback_terminator = False
         # Running multiple interactive commands by sending them with linebreaks would break things
         # because we get multiple PS1s back to back. Instead we just join them with ;
@@ -196,15 +196,16 @@ class Session:
         try:
             expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
             matched_expect_string = expect_strings[expect_index]
-        except pexpect.TIMEOUT:
-            matched_expect_string = ""
-            return Observation(success=False, failure_reason="timeout while running command")
+        except pexpect.TIMEOUT as e:
+            msg = f"timeout while running command {action.command!r}"
+            raise CommandTimeoutError(msg) from e
         output: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
         self.shell.sendline("\necho $?")
         try:
             self.shell.expect(self._ps1, timeout=1)
         except pexpect.TIMEOUT:
-            return Observation(success=False, failure_reason="timeout while getting exit code")
+            msg = "timeout while getting exit code"
+            raise NoExitCodeError(msg)
         exit_code_raw: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
         # After quitting an interactive session, for some reason we oftentimes get double
         # PS1 for all following commands. So we might need to call expect again.
@@ -220,12 +221,9 @@ class Session:
 
         try:
             exit_code = int(exit_code_raw)
-        except ValueError:
-            return Observation(
-                output=output,
-                success=False,
-                failure_reason=f"failed to parse exit code from output {exit_code_raw!r} (command: {action.command!r})",
-            )
+        except ValueError as e:
+            msg = f"failed to parse exit code from output {exit_code_raw!r} (command: {action.command!r})"
+            raise NoExitCodeError(msg) from e
         return Observation(output=output, exit_code=exit_code, expect_string=matched_expect_string)
 
     async def close(self) -> CloseSessionResponse:
@@ -242,19 +240,22 @@ class Runtime(AbstractRuntime):
 
     async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
         if request.session in self.sessions:
-            return CreateSessionResponse(success=False, failure_reason=f"session {request.session} already exists")
+            msg = f"session {request.session} already exists"
+            raise SessionExistsError(msg)
         shell = Session(request)
         self.sessions[request.session] = shell
         return await shell.start()
 
     async def run_in_session(self, action: Action) -> Observation:
         if action.session not in self.sessions:
-            return Observation(success=False, failure_reason=f"session {action.session!r} does not exist")
+            msg = f"session {action.session!r} does not exist"
+            raise SessionDoesNotExistError(msg)
         return await self.sessions[action.session].run(action)
 
     async def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
         if request.session not in self.sessions:
-            return CloseSessionResponse(success=False, failure_reason=f"session {request.session!r} does not exist")
+            msg = f"session {request.session!r} does not exist"
+            raise SessionDoesNotExistError(msg)
         out = await self.sessions[request.session].close()
         del self.sessions[request.session]
         return out
@@ -267,19 +268,13 @@ class Runtime(AbstractRuntime):
                 stderr=result.stderr.decode(errors="backslashreplace"),
                 exit_code=result.returncode,
             )
-        except subprocess.TimeoutExpired:
-            return CommandResponse(
-                failure_reason=f"Timeout ({command.timeout}s) exceeded while running command", success=False
-            )
-        except Exception as e:
-            return CommandResponse(failure_reason=str(e), success=False)
+        except subprocess.TimeoutExpired as e:
+            msg = f"Timeout ({command.timeout}s) exceeded while running command"
+            raise CommandTimeoutError(msg) from e
 
     async def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
-        try:
-            content = Path(request.path).read_text()
-            return ReadFileResponse(success=True, content=content)
-        except Exception as e:
-            return ReadFileResponse(success=False, failure_reason=str(e))
+        content = Path(request.path).read_text()
+        return ReadFileResponse(success=True, content=content)
 
     async def write_file(self, request: WriteFileRequest) -> WriteFileResponse:
         Path(request.path).parent.mkdir(parents=True, exist_ok=True)
@@ -287,14 +282,11 @@ class Runtime(AbstractRuntime):
         return WriteFileResponse(success=True)
 
     async def upload(self, request: UploadRequest) -> UploadResponse:
-        try:
-            if Path(request.source_path).is_dir():
-                shutil.copytree(request.source_path, request.target_path)
-            else:
-                shutil.copy(request.source_path, request.target_path)
-            return UploadResponse(success=True)
-        except Exception as e:
-            return UploadResponse(success=False, failure_reason=str(e))
+        if Path(request.source_path).is_dir():
+            shutil.copytree(request.source_path, request.target_path)
+        else:
+            shutil.copy(request.source_path, request.target_path)
+        return UploadResponse(success=True)
 
     async def close(self):
         await asyncio.gather(*[self.close_session(CloseSessionRequest(session=s)) for s in self.sessions])
