@@ -81,10 +81,7 @@ class RemoteRuntime(AbstractRuntime):
         print(action)
         response = requests.post(f"{self.host}/run_in_session", json=action.model_dump())
         self._handle_response_errors(response)
-        obs = Observation(**response.json())
-        if not obs.success:
-            print(f"Command failed: {obs.failure_reason}")
-        return obs
+        return Observation(**response.json())
 
     async def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
         response = requests.post(f"{self.host}/close_session", json=request.model_dump())

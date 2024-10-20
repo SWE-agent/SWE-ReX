@@ -274,19 +274,19 @@ class Runtime(AbstractRuntime):
 
     async def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
         content = Path(request.path).read_text()
-        return ReadFileResponse(success=True, content=content)
+        return ReadFileResponse(content=content)
 
     async def write_file(self, request: WriteFileRequest) -> WriteFileResponse:
         Path(request.path).parent.mkdir(parents=True, exist_ok=True)
         Path(request.path).write_text(request.content)
-        return WriteFileResponse(success=True)
+        return WriteFileResponse()
 
     async def upload(self, request: UploadRequest) -> UploadResponse:
         if Path(request.source_path).is_dir():
             shutil.copytree(request.source_path, request.target_path)
         else:
             shutil.copy(request.source_path, request.target_path)
-        return UploadResponse(success=True)
+        return UploadResponse()
 
     async def close(self):
         await asyncio.gather(*[self.close_session(CloseSessionRequest(session=s)) for s in self.sessions])

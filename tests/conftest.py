@@ -58,11 +58,9 @@ async def remote_runtime(remote_server: RemoteServer) -> AsyncGenerator[RemoteRu
 
 @pytest.fixture
 async def runtime_with_default_session(remote_runtime: RemoteRuntime) -> AsyncGenerator[RemoteRuntime, None]:
-    r = await remote_runtime.create_session(CreateSessionRequest())
-    assert r.success
+    await remote_runtime.create_session(CreateSessionRequest())
     yield remote_runtime
-    r = await remote_runtime.close_session(CloseSessionRequest())
-    assert r.success
+    await remote_runtime.close_session(CloseSessionRequest())
 
 
 class _Action(Action):

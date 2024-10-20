@@ -12,8 +12,6 @@ class CreateSessionRequest(BaseModel):
 
 
 class CreateSessionResponse(BaseModel):
-    success: bool = True
-    failure_reason: str = ""
     output: str = ""
 
 
@@ -34,7 +32,6 @@ class Action(BaseModel):
 
 
 class Observation(BaseModel):
-    success: bool = True
     output: str = ""
     exit_code: int | None = None
     failure_reason: str = ""
@@ -48,8 +45,7 @@ class CloseSessionRequest(BaseModel):
 
 
 class CloseSessionResponse(BaseModel):
-    success: bool = True
-    failure_reason: str = ""
+    pass
 
 
 class Command(BaseModel):
@@ -62,8 +58,6 @@ class CommandResponse(BaseModel):
     stdout: str = ""
     stderr: str = ""
     exit_code: int | None = None
-    success: bool = True
-    failure_reason: str = ""
 
 
 class ReadFileRequest(BaseModel):
@@ -71,8 +65,6 @@ class ReadFileRequest(BaseModel):
 
 
 class ReadFileResponse(BaseModel):
-    success: bool = True
-    failure_reason: str = ""
     content: str = ""
 
 
@@ -82,8 +74,7 @@ class WriteFileRequest(BaseModel):
 
 
 class WriteFileResponse(BaseModel):
-    success: bool = True
-    failure_reason: str = ""
+    pass
 
 
 class UploadRequest(BaseModel):
@@ -92,8 +83,7 @@ class UploadRequest(BaseModel):
 
 
 class UploadResponse(BaseModel):
-    success: bool = True
-    failure_reason: str = ""
+    pass
 
 
 class _ExceptionTransfer(BaseModel):
