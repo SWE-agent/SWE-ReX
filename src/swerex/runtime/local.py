@@ -297,4 +297,4 @@ class Runtime(AbstractRuntime):
             return UploadResponse(success=False, failure_reason=str(e))
 
     async def close(self):
-        await asyncio.gather(*[s.close() for s in self.sessions.values()])
+        await asyncio.gather(*[self.close_session(CloseSessionRequest(session=s)) for s in self.sessions])
