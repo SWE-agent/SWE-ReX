@@ -60,7 +60,7 @@ class DockerDeployment(AbstractDeployment):
         self.logger.debug(f"Command: {' '.join(cmds)}")
         self._container_process = subprocess.Popen(cmds)
         self.logger.info("Starting runtime")
-        self._runtime = RemoteRuntime(f"http://127.0.0.1:{self._port}")
+        self._runtime = RemoteRuntime(port=self._port)
         t0 = time.time()
         await self._runtime.wait_until_alive(timeout=timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")

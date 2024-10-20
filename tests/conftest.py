@@ -51,7 +51,7 @@ def remote_server() -> RemoteServer:
 
 @pytest.fixture
 async def remote_runtime(remote_server: RemoteServer) -> AsyncGenerator[RemoteRuntime, None]:
-    r = RemoteRuntime(f"http://127.0.0.1:{remote_server.port}")
+    r = RemoteRuntime(port=remote_server.port)
     yield r
     await r.close()
 

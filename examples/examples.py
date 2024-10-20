@@ -8,7 +8,7 @@ from swerex.runtime.abstract import (
 from swerex.runtime.remote import RemoteRuntime
 
 if __name__ == "__main__":
-    runtime = RemoteRuntime("http://localhost:8000")
+    runtime = RemoteRuntime()
     # fmt: off
     print(runtime.is_alive())
     print(runtime.create_session(CreateSessionRequest()))

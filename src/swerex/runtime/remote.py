@@ -32,9 +32,17 @@ __all__ = ["RemoteRuntime"]
 
 
 class RemoteRuntime(AbstractRuntime):
-    def __init__(self, host: str):
-        self.host = host
+    def __init__(self, *, host: str = "http://127.0.0.1", port: int = 8000):
         self.logger = get_logger("RR")
+        if not host.startswith("http"):
+            self.logger.warning("Host %s does not start with http, adding http://", host)
+            host = f"http://{host}"
+        self.host = host
+        self.port = port
+
+    @property
+    def _api_url(self) -> str:
+        return f"{self.host}:{self.port}"
 
     def _handle_transfer_exception(self, exc_transfer: _ExceptionTransfer):
         if exc_transfer.traceback:
@@ -55,7 +63,7 @@ class RemoteRuntime(AbstractRuntime):
 
     async def is_alive(self, *, timeout: float | None = None) -> bool:
         try:
-            response = requests.get(f"{self.host}", timeout=timeout)
+            response = requests.get(self._api_url, timeout=timeout)
             if response.status_code == 200 and response.json().get("message") == "running":
                 return True
             return False
@@ -76,34 +84,34 @@ class RemoteRuntime(AbstractRuntime):
         raise TimeoutError(msg)
 
     async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
-        response = requests.post(f"{self.host}/create_session", json=request.model_dump())
+        response = requests.post(f"{self._api_url}/create_session", json=request.model_dump())
         response.raise_for_status()
         return CreateSessionResponse(**response.json())
 
     async def run_in_session(self, action: Action) -> Observation:
         self.logger.debug("Running action: %s", action)
-        response = requests.post(f"{self.host}/run_in_session", json=action.model_dump())
+        response = requests.post(f"{self._api_url}/run_in_session", json=action.model_dump())
         self._handle_response_errors(response)
         return Observation(**response.json())
 
     async def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
-        response = requests.post(f"{self.host}/close_session", json=request.model_dump())
+        response = requests.post(f"{self._api_url}/close_session", json=request.model_dump())
         self._handle_response_errors(response)
         return CloseSessionResponse(**response.json())
 
     async def execute(self, command: Command) -> CommandResponse:
-        response = requests.post(f"{self.host}/execute", json=command.model_dump())
+        response = requests.post(f"{self._api_url}/execute", json=command.model_dump())
         self._handle_response_errors(response)
         return CommandResponse(**response.json())
 
     async def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
-        response = requests.post(f"{self.host}/read_file", json=request.model_dump())
+        response = requests.post(f"{self._api_url}/read_file", json=request.model_dump())
         self._handle_response_errors(response)
         return ReadFileResponse(**response.json())
 
     async def write_file(self, request: WriteFileRequest) -> WriteFileResponse:
-        response = requests.post(f"{self.host}/write_file", json=request.model_dump())
-        response.raise_for_status()
+        response = requests.post(f"{self._api_url}/write_file", json=request.model_dump())
+        self._handle_response_errors(response)
         return WriteFileResponse(**response.json())
 
     async def upload(self, request: UploadRequest) -> UploadResponse:
@@ -114,16 +122,16 @@ class RemoteRuntime(AbstractRuntime):
                 shutil.make_archive(str(zip_path.with_suffix("")), "zip", source)
                 files = {"file": zip_path.open("rb")}
                 data = {"target_path": request.target_path, "unzip": "true"}
-                response = requests.post(f"{self.host}/upload", files=files, data=data)
+                response = requests.post(f"{self._api_url}/upload", files=files, data=data)
                 self._handle_response_errors(response)
                 return UploadResponse(**response.json())
         else:
             files = {"file": source.open("rb")}
             data = {"target_path": request.target_path, "unzip": "false"}
-            response = requests.post(f"{self.host}/upload", files=files, data=data)
+            response = requests.post(f"{self._api_url}/upload", files=files, data=data)
             self._handle_response_errors(response)
             return UploadResponse(**response.json())
 
     async def close(self):
-        response = requests.post(f"{self.host}/close")
-        response.raise_for_status()
+        response = requests.post(f"{self._api_url}/close")
+        self._handle_response_errors(response)
