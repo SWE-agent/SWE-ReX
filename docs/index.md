@@ -31,3 +31,9 @@ Looking closer at the internals:
 [abstractruntime]: runtimes/#swerex.runtime.abstract.AbstractRuntime
 [abstractruntime.execute]: runtimes/#swerex.runtime.abstract.AbstractRuntime.execute
 [abstractruntime.run_in_session]: runtimes/#swerex.runtime.abstract.AbstractRuntime.run_in_session
+
+Here's a simple example:
+
+```python
+--8<-- "docs/examples.py"
+```
