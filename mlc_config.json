@@ -8,6 +8,9 @@
     },
     {
       "pattern": ".*localhost.*"
+    },
+    {
+      "pattern": ".*#swerex.*"
     }
   ]
 }

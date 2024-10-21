@@ -157,7 +157,7 @@ class SessionDoesNotExistError(SweRexception, ValueError): ...
 
 
 class AbstractRuntime(ABC):
-    """This is the main entry point for running stuff
+    """This is the main entry point for running stuff.
 
     It keeps track of all the sessions (individual repls) that are currently open.
     """
