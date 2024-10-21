@@ -33,7 +33,11 @@ jobs:
         with:
           python-version: '3.11'
       - name: Build docker image
+        # Can only copy things from the current directory,
+        # so need to move this first
         run: |
+          mv tests/setup_test_docker.sh .
+          mv tests/swe_rex_test.Dockerfile .
           ./setup_test_docker.sh
       - name: Install uv
         run: |
