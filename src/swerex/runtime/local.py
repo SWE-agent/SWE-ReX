@@ -21,6 +21,7 @@ from swerex.runtime.abstract import (
     CommandTimeoutError,
     CreateSessionRequest,
     CreateSessionResponse,
+    IsAliveResponse,
     NoExitCodeError,
     Observation,
     ReadFileRequest,
@@ -238,6 +239,9 @@ class Session:
 class Runtime(AbstractRuntime):
     def __init__(self):
         self.sessions: dict[str, Session] = {}
+
+    async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
+        return IsAliveResponse(is_alive=True)
 
     async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
         if request.session in self.sessions:

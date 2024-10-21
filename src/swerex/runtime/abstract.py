@@ -3,16 +3,35 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel
 
 
+class IsAliveResponse(BaseModel):
+    """Response to the is_alive request.
+
+    You can test the result with bool().
+    """
+
+    is_alive: bool
+
+    message: str = ""
+    """Error message if is_alive is False."""
+
+    def __bool__(self) -> bool:
+        return self.is_alive
+
+
 class CreateSessionRequest(BaseModel):
     session: str = "default"
-    # Source the following files before running commands.
-    # The reason this gets a special treatment is that these files
-    # often overwrite PS1, which we need to reset.
+    """The name of the session to create."""
+
     startup_source: list[str] = []
+    """Source the following files before running commands.
+    The reason this gets a special treatment is that these files
+    often overwrite PS1, which we need to reset.
+    """
 
 
 class CreateSessionResponse(BaseModel):
     output: str = ""
+    """Output from starting the session."""
 
 
 # todo: implement non-output-timeout
@@ -133,6 +152,11 @@ class AbstractRuntime(ABC):
 
     It keeps track of all the sessions (individual repls) that are currently open.
     """
+
+    @abstractmethod
+    async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
+        """Checks if the runtime is alive."""
+        pass
 
     @abstractmethod
     async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:

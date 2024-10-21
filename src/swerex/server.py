@@ -37,7 +37,12 @@ async def swerexeption_handler(request: Request, exc: Exception):
 
 @app.get("/")
 async def root():
-    return {"message": "running"}
+    return {"message": "hello world"}
+
+
+@app.get("/is_alive")
+async def is_alive():
+    return (await runtime.is_alive()).model_dump()
 
 
 @app.post("/create_session")

@@ -1,4 +1,5 @@
 from swerex.deployment.abstract import AbstractDeployment
+from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.local import Runtime
 
 __all__ = ["LocalDeployment"]
@@ -10,8 +11,10 @@ class LocalDeployment(AbstractDeployment):
     ):
         self._runtime = None
 
-    async def is_alive(self) -> bool:
-        return self._runtime is not None
+    async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
+        if self._runtime is None:
+            return IsAliveResponse(is_alive=False, message="Runtime is None.")
+        return await self._runtime.is_alive(timeout=timeout)
 
     async def start(self):
         self._runtime = Runtime()

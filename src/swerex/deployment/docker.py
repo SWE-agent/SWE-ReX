@@ -4,8 +4,10 @@ import uuid
 
 from swerex import REMOTE_EXECUTABLE_NAME
 from swerex.deployment.abstract import AbstractDeployment
+from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.remote import RemoteRuntime
 from swerex.utils.log import get_logger
+from swerex.utils.wait import _wait_until_alive
 
 __all__ = ["DockerDeployment"]
 
@@ -30,10 +32,23 @@ class DockerDeployment(AbstractDeployment):
     def container_name(self) -> str | None:
         return self._container_name
 
-    async def is_alive(self, *, timeout: float | None = None) -> bool:
+    async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
         if self._runtime is None:
-            return False
+            msg = "Runtime not started"
+            raise RuntimeError(msg)
+        if self._container_process is None:
+            msg = "Container process not started"
+            raise RuntimeError(msg)
+        if self._container_process.poll() is not None:
+            msg = "Container process terminated."
+            output = "stdout:\n" + self._container_process.stdout.read().decode()  # type: ignore
+            output += "\nstderr:\n" + self._container_process.stderr.read().decode()  # type: ignore
+            msg += "\n" + output
+            raise RuntimeError(msg)
         return await self._runtime.is_alive(timeout=timeout)
+
+    async def _wait_until_alive(self, timeout: float | None = None):
+        return await _wait_until_alive(self.is_alive, timeout=timeout)
 
     async def start(
         self,
@@ -47,7 +62,7 @@ class DockerDeployment(AbstractDeployment):
             "run",
             "--rm",
             "-p",
-            f"8000:{self._port}",
+            f"{self._port}:8000",
             *self._docker_args,
             "--name",
             self._container_name,
@@ -58,11 +73,11 @@ class DockerDeployment(AbstractDeployment):
             f"Starting container {self._container_name} with image {self._image_name} serving on port {self._port}"
         )
         self.logger.debug(f"Command: {' '.join(cmds)}")
-        self._container_process = subprocess.Popen(cmds)
+        self._container_process = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.logger.info("Starting runtime")
         self._runtime = RemoteRuntime(port=self._port)
         t0 = time.time()
-        await self._runtime.wait_until_alive(timeout=timeout)
+        await self._wait_until_alive(timeout=timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
 
     async def stop(self):

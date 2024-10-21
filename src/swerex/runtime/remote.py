@@ -1,7 +1,6 @@
 import shutil
 import sys
 import tempfile
-import time
 import traceback
 from pathlib import Path
 
@@ -16,6 +15,7 @@ from swerex.runtime.abstract import (
     CommandResponse,
     CreateSessionRequest,
     CreateSessionResponse,
+    IsAliveResponse,
     Observation,
     ReadFileRequest,
     ReadFileResponse,
@@ -27,6 +27,7 @@ from swerex.runtime.abstract import (
     _ExceptionTransfer,
 )
 from swerex.utils.log import get_logger
+from swerex.utils.wait import _wait_until_alive
 
 __all__ = ["RemoteRuntime"]
 
@@ -61,27 +62,37 @@ class RemoteRuntime(AbstractRuntime):
             self._handle_transfer_exception(exc_transfer)
         response.raise_for_status()
 
-    async def is_alive(self, *, timeout: float | None = None) -> bool:
+    async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
+        """Checks if the runtime is alive.
+
+        Internal server errors are thrown, everything else just has us return False
+        together with the message.
+        """
         try:
-            response = requests.get(self._api_url, timeout=timeout)
-            if response.status_code == 200 and response.json().get("message") == "running":
-                return True
-            return False
+            response = requests.get(f"{self._api_url}/is_alive", timeout=timeout)
+            if response.status_code == 200:
+                return IsAliveResponse(**response.json())
+            elif response.status_code == 511:
+                exc_transfer = _ExceptionTransfer(**response.json()["swerexception"])
+                self._handle_transfer_exception(exc_transfer)
+            msg = (
+                f"Status code {response.status_code} from {self._api_url}/is_alive. "
+                f"Message: {response.json().get('message')}"
+            )
+            return IsAliveResponse(is_alive=False, message=msg)
         except requests.RequestException:
-            self.logger.error(f"Failed to connect to {self.host}")
-            self.logger.error(traceback.format_exc())
-            return False
+            msg = f"Failed to connect to {self.host}\n"
+            msg += traceback.format_exc()
+            self.logger.debug(msg)
+            return IsAliveResponse(is_alive=False, message=msg)
+        except Exception:
+            msg = f"Failed to connect to {self.host}\n"
+            msg += traceback.format_exc()
+            self.logger.debug(msg)
+            return IsAliveResponse(is_alive=False, message=msg)
 
     async def wait_until_alive(self, *, timeout: float | None = None):
-        if timeout is None:
-            timeout = 10
-        end_time = time.time() + timeout
-        while time.time() < end_time:
-            if await self.is_alive(timeout=0.1):
-                return
-            time.sleep(0.1)
-        msg = "Failed to start runtime"
-        raise TimeoutError(msg)
+        return await _wait_until_alive(self.is_alive, timeout=timeout)
 
     async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
         response = requests.post(f"{self._api_url}/create_session", json=request.model_dump())

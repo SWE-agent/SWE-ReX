@@ -9,12 +9,7 @@ import pytest
 from swerex.runtime.abstract import Action, CloseSessionRequest, Command, CreateSessionRequest
 from swerex.runtime.remote import RemoteRuntime
 from swerex.server import app
-
-
-def find_free_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("", 0))
-        return s.getsockname()[1]
+from swerex.utils.free_port import find_free_port
 
 
 @dataclass
@@ -25,6 +20,7 @@ class RemoteServer:
 @pytest.fixture(scope="session")
 def remote_server() -> RemoteServer:
     port = find_free_port()
+    print(f"Using port {port} for the remote server")
 
     def run_server():
         import uvicorn
