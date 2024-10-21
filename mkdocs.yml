@@ -49,6 +49,7 @@ nav:
   - Home: index.md
   - Deployments: deployments.md
   - Runtimes: runtimes.md
+  - Server: server.md
 plugins:
    - glightbox
    - search
