@@ -4,7 +4,8 @@ theme:
   # custom_dir: docs/overrides
   icon:
     repo: fontawesome/brands/github
-  logo: assets/swerex.svg
+  logo: assets/swerex_no_text.svg
+  favicon: assets/swerex_no_text.svg
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
