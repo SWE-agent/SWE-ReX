@@ -14,6 +14,7 @@ from swerex.runtime.abstract import (
     AbstractRuntime,
     Action,
     BashIncorrectSyntaxError,
+    CloseResponse,
     CloseSessionRequest,
     CloseSessionResponse,
     Command,
@@ -110,6 +111,7 @@ class Session:
         self.logger = get_logger(f"RexS ({request.session})")
 
     async def start(self) -> CreateSessionResponse:
+        """Spawn the session, source any startupfiles and set the PS1."""
         self.shell = pexpect.spawn(
             "/bin/bash",
             encoding="utf-8",
@@ -148,6 +150,9 @@ class Session:
         return await self._run_normal(action)
 
     async def _run_interactive(self, action: Action) -> Observation:
+        """Run an interactive action. This is different because we don't seek to
+        the PS1 and don't attempt to get the exit code.
+        """
         assert self.shell is not None
         self.shell.sendline(action.command)
         expect_strings = action.expect + [self._ps1]
@@ -174,6 +179,14 @@ class Session:
         return Observation(output=output, exit_code=0, expect_string=matched_expect_string)
 
     async def _run_normal(self, action: Action) -> Observation:
+        """Run a normal action. This is the default mode.
+
+        There are three steps to this:
+
+        1. Check if the command is valid
+        2. Execute the command
+        3. Get the exit code
+        """
         assert self.shell is not None
         _check_bash_command(action.command)
         fallback_terminator = False
@@ -293,5 +306,6 @@ class Runtime(AbstractRuntime):
             shutil.copy(request.source_path, request.target_path)
         return UploadResponse()
 
-    async def close(self):
+    async def close(self) -> CloseResponse:
         await asyncio.gather(*[self.close_session(CloseSessionRequest(session=s)) for s in self.sessions])
+        return CloseResponse()
