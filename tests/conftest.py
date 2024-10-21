@@ -2,19 +2,23 @@ import socket
 import threading
 import time
 from collections.abc import AsyncGenerator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pytest
+import uvicorn
 
+import swerex.server
 from swerex.runtime.abstract import Action, CloseSessionRequest, Command, CreateSessionRequest
 from swerex.runtime.remote import RemoteRuntime
-from swerex.server import app
 from swerex.utils.free_port import find_free_port
+
+TEST_API_KEY = "testkey"
 
 
 @dataclass
 class RemoteServer:
     port: int
+    headers: dict[str, str] = field(default_factory=lambda: {"X-API-Key": TEST_API_KEY})
 
 
 @pytest.fixture(scope="session")
@@ -23,9 +27,8 @@ def remote_server() -> RemoteServer:
     print(f"Using port {port} for the remote server")
 
     def run_server():
-        import uvicorn
-
-        uvicorn.run(app, host="127.0.0.1", port=port, log_level="error")
+        swerex.server.API_KEY = TEST_API_KEY
+        uvicorn.run(swerex.server.app, host="127.0.0.1", port=port, log_level="error")
 
     thread = threading.Thread(target=run_server, daemon=True)
     thread.start()
@@ -47,7 +50,7 @@ def remote_server() -> RemoteServer:
 
 @pytest.fixture
 async def remote_runtime(remote_server: RemoteServer) -> AsyncGenerator[RemoteRuntime, None]:
-    r = RemoteRuntime(port=remote_server.port)
+    r = RemoteRuntime(port=remote_server.port, token=TEST_API_KEY)
     yield r
     await r.close()
 

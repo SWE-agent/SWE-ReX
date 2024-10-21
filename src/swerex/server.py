@@ -7,8 +7,11 @@ import traceback
 import zipfile
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, Request, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import JSONResponse
+from fastapi.security import APIKeyHeader
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from swerex.runtime.abstract import (
     Action,
@@ -26,9 +29,23 @@ from swerex.runtime.local import Runtime
 app = FastAPI()
 runtime = Runtime()
 
+API_KEY = ""
+api_key_header = APIKeyHeader(name="X-API-Key")
+
+
+@app.middleware("http")
+async def authenticate(request: Request, call_next):
+    if API_KEY:
+        api_key = await api_key_header(request)
+        if api_key != API_KEY:
+            raise HTTPException(status_code=401, detail="Invalid API Key")
+    return await call_next(request)
+
 
 @app.exception_handler(Exception)
-async def swerexeption_handler(request: Request, exc: Exception):
+async def exception_handler(request: Request, exc: Exception):
+    if isinstance(exc, (HTTPException, StarletteHTTPException)):
+        return await http_exception_handler(request, exc)
     _exc = _ExceptionTransfer(
         message=str(exc), class_path=type(exc).__module__ + "." + type(exc).__name__, traceback=traceback.format_exc()
     )
@@ -110,8 +127,11 @@ def main():
     parser = argparse.ArgumentParser(description="Run the SWE-ReX FastAPI server")
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind the server to")
     parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
+    parser.add_argument("--api-key", default="", help="API key to authenticate requests")
 
     args = parser.parse_args()
+    global API_KEY
+    API_KEY = args.api_key
     uvicorn.run(app, host=args.host, port=args.port)
 
 
