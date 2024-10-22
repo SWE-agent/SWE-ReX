@@ -83,6 +83,8 @@ plugins:
             show_signature_annotations: true
             signature_crossrefs: true
             separate_signature: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
             extensions:
               - griffe_pydantic:
                   schema: false
@@ -90,4 +92,4 @@ repo_url: https://github.com/klieret/swe-rex
 repo_name: klieret/SWE-ReX
 edit_uri: edit/main/docs/
 extra_css:
-  - assets/custom.css
+  - css/mkdocstrings.css
