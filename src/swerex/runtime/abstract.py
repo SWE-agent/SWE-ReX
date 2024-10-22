@@ -84,10 +84,16 @@ class Command(BaseModel):
     """A command to run as a subprocess."""
 
     command: str | list[str]
+    """The command to run. Should be a list of strings (recommended because
+    of automatic escaping of spaces etc.) unless you set `shell=True`
+    (i.e., exactly like with `subprocess.run()`).
+    """
+
     timeout: float | None = None
+    """The timeout for the command. None means no timeout."""
 
     shell: bool = False
-    """Same as the subprocess.run() shell argument."""
+    """Same as the `subprocess.run()` `shell` argument."""
 
 
 class CommandResponse(BaseModel):

@@ -25,6 +25,7 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
   features:
+    # - navigation.tabs
     - navigation.indexes
     - content.action.edit
     - navigation.footer
@@ -47,10 +48,21 @@ markdown_extensions:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 nav:
-  - Home: index.md
-  - Deployments: deployments.md
-  - Runtimes: runtimes.md
-  - Server: server.md
+  - Home: 
+    - index.md
+    - Architecture: architecture.md
+    - Usage: quickstart.md
+  - Reference:
+    - Deployments:
+      - Abstract: api/deployments/abstract.md
+      - Local: api/deployments/local.md
+      - Docker: api/deployments/docker.md
+    - Runtimes:
+      - Abstract: api/runtimes/abstract.md
+      - Local: api/runtimes/local.md
+      - Remote: api/runtimes/remote.md
+      - Data: api/runtimes/data.md
+    - Server: api/server.md
 plugins:
    - glightbox
    - search
@@ -61,7 +73,7 @@ plugins:
         python:
           paths: ['src/swerex']
           options:
-            summary: true
+            summary: false
             show_root_heading: true
             heading_level: 2
             docstring_style: google
