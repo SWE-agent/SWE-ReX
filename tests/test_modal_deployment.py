@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -5,6 +6,7 @@ import pytest
 from swerex.deployment.modal import ModalDeployment
 
 
+@pytest.mark.skipif(os.getenv("GITHUB_ACTIONS") == "true", reason="Skipping modal tests in github actions")
 @pytest.mark.slow
 async def test_modal_deployment():
     dockerfile = Path(__file__).parent / "swe_rex_test.Dockerfile"
