@@ -23,6 +23,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
     defaults:
       run:
         shell: bash -l {0}

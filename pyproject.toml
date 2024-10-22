@@ -48,6 +48,11 @@ dev = [
     "pre-commit",
     "pytest-asyncio",
     "griffe-pydantic",
+    "swerex[modal]",
+]
+modal = [
+    "modal",
+    "boto3",
 ]
 
 [tool.setuptools]
@@ -74,6 +79,7 @@ swerex-remote = "swerex.server:main"
 
 [tool.pytest.ini_options]
 markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
 ]
 testpaths = [
     "tests"

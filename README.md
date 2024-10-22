@@ -4,20 +4,10 @@
 
 ## Install
 
-```
+```bash
 pip install -e .
-```
-
-## Running it
-
-First, start server:
-
-```
-swerex-remote
-```
-
-Then, in another terminal, run the client:
-
-```
-./examples/examples.py
+# With modal support
+pip install -e '.[modal]'
+# Development setup (all optional dependencies)
+pip install -e '.[dev]'
 ```
