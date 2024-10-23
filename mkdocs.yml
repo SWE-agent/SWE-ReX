@@ -58,6 +58,8 @@ nav:
       - Abstract: api/deployments/abstract.md
       - Local: api/deployments/local.md
       - Docker: api/deployments/docker.md
+      - Modal: api/deployments/modal.md
+      - Fargate: api/deployments/fargate.md
     - Runtimes:
       - Abstract: api/runtimes/abstract.md
       - Local: api/runtimes/local.md
