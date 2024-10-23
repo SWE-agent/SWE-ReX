@@ -59,12 +59,12 @@ class RemoteRuntime(AbstractRuntime):
         self.port = port
         self._token = token
         self._timeout = timeout
-        
+
     def _get_timeout(self, timeout: float | None = None) -> float:
         if timeout is None:
             return self._timeout
         return timeout
-        
+
     @property
     def _headers(self) -> dict[str, str]:
         """Request headers to use for authentication."""
@@ -120,12 +120,10 @@ class RemoteRuntime(AbstractRuntime):
         except requests.RequestException:
             msg = f"Failed to connect to {self.host}\n"
             msg += traceback.format_exc()
-            self.logger.debug(msg)
             return IsAliveResponse(is_alive=False, message=msg)
         except Exception:
             msg = f"Failed to connect to {self.host}\n"
             msg += traceback.format_exc()
-            self.logger.debug(msg)
             return IsAliveResponse(is_alive=False, message=msg)
 
     async def wait_until_alive(self, *, timeout: float | None = None):
