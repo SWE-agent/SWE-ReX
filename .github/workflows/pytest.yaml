@@ -42,6 +42,7 @@ jobs:
           mv tests/setup_test_docker.sh .
           mv tests/swe_rex_test.Dockerfile .
           ./setup_test_docker.sh
+          mv swe_rex_test.Dockerfile tests/
       - name: Install uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
