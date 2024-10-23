@@ -3,16 +3,26 @@ from pathlib import Path
 
 import pytest
 
-from swerex.deployment.modal import ModalDeployment
+from swerex.deployment.modal import ModalDeployment, _ImageBuilder
 
 
 @pytest.mark.skipif(os.getenv("GITHUB_ACTIONS") == "true", reason="Skipping modal tests in github actions")
 @pytest.mark.slow
-async def test_modal_deployment():
+async def test_modal_deployment_from_docker_with_swerex_installed():
     dockerfile = Path(__file__).parent / "swe_rex_test.Dockerfile"
-    d = ModalDeployment(dockerfile=str(dockerfile), container_timeout=60)
+    image = _ImageBuilder().from_file(dockerfile, build_context=Path(__file__).resolve().parent.parent)
+    d = ModalDeployment(image=image, container_timeout=60)
     with pytest.raises(RuntimeError):
         await d.is_alive()
+    await d.start()
+    assert await d.is_alive()
+    await d.stop()
+
+
+@pytest.mark.skipif(os.getenv("GITHUB_ACTIONS") == "true", reason="Skipping modal tests in github actions")
+@pytest.mark.slow
+async def test_modal_deployment_from_docker_string():
+    d = ModalDeployment(image="python:3.11-slim")
     await d.start()
     assert await d.is_alive()
     await d.stop()
