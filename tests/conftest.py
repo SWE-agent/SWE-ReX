@@ -28,7 +28,7 @@ def remote_server() -> RemoteServer:
     print(f"Using port {port} for the remote server")
 
     def run_server():
-        swerex.server.API_KEY = TEST_API_KEY
+        swerex.server.AUTH_TOKEN = TEST_API_KEY
         uvicorn.run(swerex.server.app, host="127.0.0.1", port=port, log_level="error")
 
     thread = threading.Thread(target=run_server, daemon=True)
@@ -51,7 +51,7 @@ def remote_server() -> RemoteServer:
 
 @pytest.fixture
 def remote_runtime(remote_server: RemoteServer) -> Generator[RemoteRuntime, None]:
-    r = RemoteRuntime(port=remote_server.port, token=TEST_API_KEY)
+    r = RemoteRuntime(port=remote_server.port, auth_token=TEST_API_KEY)
     yield r
     asyncio.run(r.close())
 

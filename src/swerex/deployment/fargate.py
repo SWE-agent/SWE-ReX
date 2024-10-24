@@ -110,7 +110,7 @@ class FargateDeployment(AbstractDeployment):
             "apt-get update -y",
             "apt-get install pipx -y",
             "pipx ensurepath",
-            f"pipx run {pkg_name} --port {self._port} --api-key {token}",
+            f"pipx run {pkg_name} --port {self._port} --auth-token {token}",
         ]
         fallback_script = " && ".join(fallback_commands)
         # Wrap the entire command in bash -c to ensure timeout applies to everything
@@ -158,7 +158,7 @@ class FargateDeployment(AbstractDeployment):
                 self.logger.warning(f"Failed to get CloudWatch Logs URL: {str(e)}")
         public_ip = get_public_ip(self._task_arn, self._cluster_arn)
         self.logger.info(f"Container public IP: {public_ip}")
-        self._runtime = RemoteRuntime(host=public_ip, port=self._port, token=token)
+        self._runtime = RemoteRuntime(host=public_ip, port=self._port, auth_token=token)
         t0 = time.time()
         await self._wait_until_alive(timeout=timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")

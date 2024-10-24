@@ -81,7 +81,7 @@ class DockerDeployment(AbstractDeployment):
             self._container_name,
             self._image_name,
             REMOTE_EXECUTABLE_NAME,
-            "--api-key",
+            "--auth-token",
             token,
         ]
         self.logger.info(
@@ -90,7 +90,7 @@ class DockerDeployment(AbstractDeployment):
         self.logger.debug(f"Command: {' '.join(cmds)}")
         self._container_process = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.logger.info(f"Starting runtime at {self._port}")
-        self._runtime = RemoteRuntime(port=self._port, timeout=self._runtime_timeout, token=token)
+        self._runtime = RemoteRuntime(port=self._port, timeout=self._runtime_timeout, auth_token=token)
         t0 = time.time()
         await self._wait_until_alive(timeout=timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")

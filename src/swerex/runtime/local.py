@@ -107,12 +107,19 @@ class Session:
         """
         self.request = request
         self._ps1 = "SHELLPS1PREFIX"
-        self.shell: pexpect.spawn | None = None
+        self._shell: pexpect.spawn | None = None
         self.logger = get_logger(f"RexS ({request.session})")
+
+    @property
+    def shell(self) -> pexpect.spawn:
+        if self._shell is None:
+            msg = "shell not initialized"
+            raise RuntimeError(msg)
+        return self._shell
 
     async def start(self) -> CreateSessionResponse:
         """Spawn the session, source any startupfiles and set the PS1."""
-        self.shell = pexpect.spawn(
+        self._shell = pexpect.spawn(
             "/bin/bash",
             encoding="utf-8",
             echo=False,
@@ -242,11 +249,15 @@ class Session:
         return Observation(output=output, exit_code=exit_code, expect_string=matched_expect_string)
 
     async def close(self) -> CloseSessionResponse:
-        if self.shell is None:
+        if self._shell is None:
             return CloseSessionResponse()
         self.shell.close()
-        self.shell = None
+        self._shell = None
         return CloseSessionResponse()
+
+    def interact(self) -> None:
+        """Enter interactive mode."""
+        self.shell.interact()
 
 
 class Runtime(AbstractRuntime):

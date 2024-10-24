@@ -29,7 +29,7 @@ from swerex.runtime.local import Runtime
 app = FastAPI()
 runtime = Runtime()
 
-API_KEY = ""
+AUTH_TOKEN = ""
 api_key_header = APIKeyHeader(name="X-API-Key")
 
 
@@ -40,9 +40,9 @@ def serialize_model(model):
 @app.middleware("http")
 async def authenticate(request: Request, call_next):
     """Authenticate requests with an API key (if set)."""
-    if API_KEY:
+    if AUTH_TOKEN:
         api_key = await api_key_header(request)
-        if api_key != API_KEY:
+        if api_key != AUTH_TOKEN:
             raise HTTPException(status_code=401, detail="Invalid API Key")
     return await call_next(request)
 
@@ -136,11 +136,11 @@ def main():
     parser = argparse.ArgumentParser(description="Run the SWE-ReX FastAPI server")
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind the server to")
     parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
-    parser.add_argument("--api-key", default="", help="API key to authenticate requests", required=True)
+    parser.add_argument("--auth-token", default="", help="token to authenticate requests", required=True)
 
     args = parser.parse_args()
-    global API_KEY
-    API_KEY = args.api_key
+    global AUTH_TOKEN
+    AUTH_TOKEN = args.auth_token
     uvicorn.run(app, host=args.host, port=args.port)
 
 

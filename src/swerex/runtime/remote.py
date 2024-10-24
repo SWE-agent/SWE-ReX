@@ -38,7 +38,7 @@ class RemoteRuntime(AbstractRuntime):
     def __init__(
         self,
         *,
-        token: str,
+        auth_token: str,
         host: str = "http://127.0.0.1",
         port: int | None = None,
         timeout: float = 0.15,
@@ -48,7 +48,7 @@ class RemoteRuntime(AbstractRuntime):
         Args:
             host: The host to connect to.
             port: The port to connect to.
-            token: The API key to use for authentication (if any)
+            token: The token to use for authentication
             timeout: The timeout to use for requests.
         """
         self.logger = get_logger("RR")
@@ -57,7 +57,7 @@ class RemoteRuntime(AbstractRuntime):
             host = f"http://{host}"
         self.host = host
         self.port = port
-        self._token = token
+        self._token = auth_token
         self._timeout = timeout
 
     def _get_timeout(self, timeout: float | None = None) -> float:

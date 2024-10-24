@@ -24,7 +24,7 @@ async def test_server_alive(remote_runtime: RemoteRuntime):
 
 
 async def test_server_dead():
-    r = RemoteRuntime(host="http://doesnotexistadsfasdfasdf234123qw34.com", token="")
+    r = RemoteRuntime(host="http://doesnotexistadsfasdfasdf234123qw34.com", auth_token="")
     assert not await r.is_alive()
 
 

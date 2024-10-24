@@ -147,7 +147,7 @@ class ModalDeployment(AbstractDeployment):
         install pipx and then run swerex-server with pipx run
         """
         pkg_name = "0fdb5604"
-        return f"{REMOTE_EXECUTABLE_NAME} --port {self._port} --api-key {token} || pipx run {pkg_name} --port {self._port} --api-key {token}"
+        return f"{REMOTE_EXECUTABLE_NAME} --port {self._port} --auth-token {token} || pipx run {pkg_name} --port {self._port} --auth-token {token}"
 
     def get_modal_log_url(self) -> str:
         """Returns URL to modal logs"""
@@ -177,7 +177,7 @@ class ModalDeployment(AbstractDeployment):
         self.logger.info(f"Sandbox created with id {self._sandbox.object_id}")
         await asyncio.sleep(1)
         self.logger.info(f"Starting runtime at {tunnel.url}")
-        self._runtime = RemoteRuntime(host=tunnel.url, timeout=self._runtime_timeout, token=token)
+        self._runtime = RemoteRuntime(host=tunnel.url, timeout=self._runtime_timeout, auth_token=token)
         t0 = time.time()
         await self._wait_until_alive(timeout=timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
