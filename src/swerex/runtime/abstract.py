@@ -133,6 +133,8 @@ class CloseResponse(BaseModel):
 
 
 class _ExceptionTransfer(BaseModel):
+    """Helper class to transfer exceptions from the remote runtime to the client."""
+
     message: str = ""
     class_path: str = ""
     traceback: str = ""

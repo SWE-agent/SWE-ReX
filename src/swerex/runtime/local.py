@@ -251,7 +251,15 @@ class Session:
 
 class Runtime(AbstractRuntime):
     def __init__(self):
-        self.sessions: dict[str, Session] = {}
+        """A Runtime that runs locally and actually executes commands in a shell.
+        If you are deploying to Modal/Fargate/etc., this class will be running within the docker container
+        on Modal/Fargate/etc.
+        """
+        self._sessions: dict[str, Session] = {}
+
+    @property
+    def sessions(self) -> dict[str, Session]:
+        return self._sessions
 
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
         return IsAliveResponse(is_alive=True)

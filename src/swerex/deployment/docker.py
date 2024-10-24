@@ -13,7 +13,14 @@ __all__ = ["DockerDeployment"]
 
 
 class DockerDeployment(AbstractDeployment):
-    def __init__(self, image_name: str, port: int = 8000, docker_args: list[str] | None = None):
+    def __init__(self, image_name: str, *, port: int = 8000, docker_args: list[str] | None = None):
+        """Deployment to local docker image.
+
+        Args:
+            image_name: The name of the docker image to use.
+            port: The port that is being exposed by the docker container
+            docker_args: Additional arguments to pass to the docker run command.
+        """
         self._image_name = image_name
         self._runtime: RemoteRuntime | None = None
         self._port = port
