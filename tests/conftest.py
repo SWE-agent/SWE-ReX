@@ -1,7 +1,8 @@
+import asyncio
 import socket
 import threading
 import time
-from collections.abc import AsyncGenerator
+from collections.abc import Generator
 from dataclasses import dataclass, field
 
 import pytest
@@ -49,17 +50,17 @@ def remote_server() -> RemoteServer:
 
 
 @pytest.fixture
-async def remote_runtime(remote_server: RemoteServer) -> AsyncGenerator[RemoteRuntime, None]:
+def remote_runtime(remote_server: RemoteServer) -> Generator[RemoteRuntime, None]:
     r = RemoteRuntime(port=remote_server.port, token=TEST_API_KEY)
     yield r
-    await r.close()
+    asyncio.run(r.close())
 
 
 @pytest.fixture
-async def runtime_with_default_session(remote_runtime: RemoteRuntime) -> AsyncGenerator[RemoteRuntime, None]:
-    await remote_runtime.create_session(CreateSessionRequest())
+def runtime_with_default_session(remote_runtime: RemoteRuntime) -> Generator[RemoteRuntime, None]:
+    asyncio.run(remote_runtime.create_session(CreateSessionRequest()))
     yield remote_runtime
-    await remote_runtime.close_session(CloseSessionRequest())
+    asyncio.run(remote_runtime.close_session(CloseSessionRequest()))
 
 
 class _Action(Action):
