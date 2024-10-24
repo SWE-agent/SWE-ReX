@@ -145,7 +145,7 @@ class ModalDeployment(AbstractDeployment):
         install pipx and then run swerex-server with pipx run
         """
         pkg_name = "0fdb5604"
-        return f"{REMOTE_EXECUTABLE_NAME} --port {self._port} --api-token {token} || pipx run {pkg_name} --port {self._port} --api-token {token}"
+        return f"{REMOTE_EXECUTABLE_NAME} --port {self._port} --api-key {token} || pipx run {pkg_name} --port {self._port} --api-key {token}"
 
     def get_modal_log_url(self) -> str:
         """Returns URL to modal logs"""
