@@ -76,6 +76,7 @@ plugins:
         python:
           paths: ['src/swerex']
           options:
+            merge_init_into_class: true
             summary: false
             show_root_heading: true
             heading_level: 2
