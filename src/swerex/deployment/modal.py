@@ -2,6 +2,7 @@ import asyncio
 import os
 import time
 from pathlib import Path, PurePath
+from typing import Any
 
 import boto3
 import modal
@@ -94,7 +95,7 @@ class ModalDeployment(AbstractDeployment):
         image: str | modal.Image | PurePath,
         container_timeout: float = 1800,
         runtime_timeout: float = 0.4,
-        **modal_args,
+        modal_sandbox_kwargs: dict[str, Any] | None = None,
     ):
         """Deployment for modal.com. The deployment will only start when the
         `start` method is being called.
@@ -107,7 +108,7 @@ class ModalDeployment(AbstractDeployment):
                 4. ECR image name (e.g. `123456789012.dkr.ecr.us-east-1.amazonaws.com/my-image:tag`)
             container_timeout:
             runtime_timeout:
-            modal_args: Additional arguments to pass to the modal app
+            modal_sandbox_kwargs: Additional arguments to pass to `modal.Sandbox.create`
         """
         self._image = _ImageBuilder().auto(image)
         self._runtime: RemoteRuntime | None = None
@@ -118,7 +119,9 @@ class ModalDeployment(AbstractDeployment):
         self._app = modal.App.lookup("swe-rex", create_if_missing=True)
         self._user = _get_modal_user()
         self._runtime_timeout = runtime_timeout
-        self._modal_args = modal_args
+        if modal_sandbox_kwargs is None:
+            modal_sandbox_kwargs = {}
+        self._modal_kwargs = modal_sandbox_kwargs
 
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
         if self._runtime is None or self._sandbox is None:
@@ -161,6 +164,7 @@ class ModalDeployment(AbstractDeployment):
             timeout=int(self._container_timeout),
             unencrypted_ports=[self._port],
             app=self._app,
+            **self._modal_kwargs,
         )
         tunnel = self._sandbox.tunnels()[self._port]
         self.logger.info(f"Sandbox ({self._sandbox.object_id}) created in {time.time() - t0:.2f}s")
