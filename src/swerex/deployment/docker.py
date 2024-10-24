@@ -3,7 +3,7 @@ import time
 import uuid
 
 from swerex import REMOTE_EXECUTABLE_NAME
-from swerex.deployment.abstract import AbstractDeployment
+from swerex.deployment.abstract import AbstractDeployment, DeploymentNotStartedError
 from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.remote import RemoteRuntime
 from swerex.utils.log import get_logger
@@ -26,6 +26,7 @@ class DockerDeployment(AbstractDeployment):
         self._runtime_timeout = 0.15
 
     def _get_container_name(self) -> str:
+        """Returns a unique container name based on the image name."""
         image_name_sanitized = "".join(c for c in self._image_name if c.isalnum() or c in "-_.")
         return f"{image_name_sanitized}-{uuid.uuid4()}"
 
@@ -93,6 +94,5 @@ class DockerDeployment(AbstractDeployment):
     @property
     def runtime(self) -> RemoteRuntime:
         if self._runtime is None:
-            msg = "Runtime not started"
-            raise RuntimeError(msg)
+            raise DeploymentNotStartedError()
         return self._runtime

@@ -1,4 +1,4 @@
-from swerex.deployment.abstract import AbstractDeployment
+from swerex.deployment.abstract import AbstractDeployment, DeploymentNotStartedError
 from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.local import Runtime
 
@@ -28,6 +28,5 @@ class LocalDeployment(AbstractDeployment):
     @property
     def runtime(self) -> Runtime:
         if self._runtime is None:
-            msg = "Runtime not started"
-            raise RuntimeError(msg)
+            raise DeploymentNotStartedError()
         return self._runtime

@@ -12,6 +12,9 @@ async def _wait_until_alive(
         timeout: The maximum time to wait.
         function_timeout: The timeout passed to the function.
         sleep: The time to sleep between attempts.
+
+    Raises:
+        TimeoutError
     """
     if timeout is None:
         timeout = 10

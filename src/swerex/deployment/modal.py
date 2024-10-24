@@ -8,7 +8,7 @@ import modal
 from botocore.exceptions import NoCredentialsError
 
 from swerex import REMOTE_EXECUTABLE_NAME
-from swerex.deployment.abstract import AbstractDeployment
+from swerex.deployment.abstract import AbstractDeployment, DeploymentNotStartedError
 from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.remote import RemoteRuntime
 from swerex.utils.log import get_logger
@@ -92,16 +92,28 @@ class ModalDeployment(AbstractDeployment):
     def __init__(
         self,
         image: str | modal.Image | PurePath,
-        port: int = 8880,  # this is only used internally by the container, the runtime will connect to the modal tunnel url without the port
         container_timeout: float = 1800,
         runtime_timeout: float = 0.4,
         **modal_args,
     ):
+        """Deployment for modal.com. The deployment will only start when the
+        `start` method is being called.
+
+        Args:
+            image: Image to use for the deployment. One of the following:
+                1. `modal.Image` object
+                2. Path to a Dockerfile
+                3. Dockerhub image name (e.g. `python:3.11-slim`)
+                4. ECR image name (e.g. `123456789012.dkr.ecr.us-east-1.amazonaws.com/my-image:tag`)
+            container_timeout:
+            runtime_timeout:
+            modal_args: Additional arguments to pass to the modal app
+        """
         self._image = _ImageBuilder().auto(image)
         self._runtime: RemoteRuntime | None = None
         self._container_timeout = container_timeout
         self._sandbox: modal.Sandbox | None = None
-        self._port = port
+        self._port = 8880
         self.logger = get_logger("deploy")
         self._app = modal.App.lookup("swe-rex", create_if_missing=True)
         self._user = _get_modal_user()
@@ -109,12 +121,8 @@ class ModalDeployment(AbstractDeployment):
         self._modal_args = modal_args
 
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
-        if self._runtime is None:
-            msg = "Runtime not started"
-            raise RuntimeError(msg)
-        if self._sandbox is None:
-            msg = "Container process not started"
-            raise RuntimeError(msg)
+        if self._runtime is None or self._sandbox is None:
+            raise DeploymentNotStartedError()
         if self._sandbox.poll() is not None:
             msg = "Container process terminated."
             output = "stdout:\n" + self._sandbox.stdout.read()  # type: ignore
@@ -134,6 +142,10 @@ class ModalDeployment(AbstractDeployment):
         pkg_name = "0fdb5604"
         return f"{REMOTE_EXECUTABLE_NAME} --port {self._port} || pipx run {pkg_name} --port {self._port}"
 
+    def get_modal_log_url(self) -> str:
+        """Returns URL to modal logs"""
+        return f"https://modal.com/apps/{self._user}/main/deployed/{self.app.name}?activeTab=logs&taskId={self.sandbox._get_task_id()}"
+
     async def start(
         self,
         *,
@@ -152,8 +164,7 @@ class ModalDeployment(AbstractDeployment):
         )
         tunnel = self._sandbox.tunnels()[self._port]
         self.logger.info(f"Sandbox ({self._sandbox.object_id}) created in {time.time() - t0:.2f}s")
-        log_url = f"https://modal.com/apps/{self._user}/main/deployed/{self._app.name}?activeTab=logs&taskId={self._sandbox._get_task_id()}"
-        self.logger.info(f"Check sandbox logs at {log_url}")
+        self.logger.info(f"Check sandbox logs at {self.get_modal_log_url()}")
         self.logger.info(f"Sandbox created with id {self._sandbox.object_id}")
         await asyncio.sleep(1)
         self.logger.info(f"Starting runtime at {tunnel.url}")
@@ -169,11 +180,32 @@ class ModalDeployment(AbstractDeployment):
         if self._sandbox is not None and not self._sandbox.poll():
             self._sandbox.terminate()
         self._sandbox = None
-        self._container_name = None
+        self._app = None
 
     @property
     def runtime(self) -> RemoteRuntime:
         if self._runtime is None:
-            msg = "Runtime not started"
-            raise RuntimeError(msg)
+            raise DeploymentNotStartedError()
         return self._runtime
+
+    @property
+    def app(self) -> modal.App:
+        """Returns the modal app
+
+        Raises:
+            DeploymentNotStartedError: If the deployment is not started.
+        """
+        if self._app is None:
+            raise DeploymentNotStartedError()
+        return self._app
+
+    @property
+    def sandbox(self) -> modal.Sandbox:
+        """Returns the modal sandbox
+
+        Raises:
+            DeploymentNotStartedError: If the deployment is not started.
+        """
+        if self._sandbox is None:
+            raise DeploymentNotStartedError()
+        return self._sandbox
