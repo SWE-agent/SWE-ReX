@@ -49,20 +49,6 @@ jobs:
       - name: Install dependencies
         run: |
             uv pip install --python ${Python_ROOT_DIR} '.[dev]'
-      - name: Pip freeze
-        run: |
-          pip freeze
-      - name: Ensure multipart is installed
-        run: |
-          python -c "from fastapi.dependencies.utils import ensure_multipart_is_installed"
-        # ok to fail
-        continue-on-error: true
-      - name: Try again with normal pip
-        run: |
-          pip install python-multipart
-      - name: Ensure multipart is installed
-        run: |
-          python -c "from fastapi.dependencies.utils import ensure_multipart_is_installed"
       - name: Run pytest
         uses: sjvrijn/pytest-last-failed@v2
         with:
