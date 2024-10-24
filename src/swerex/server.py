@@ -32,8 +32,10 @@ runtime = Runtime()
 API_KEY = ""
 api_key_header = APIKeyHeader(name="X-API-Key")
 
+
 def serialize_model(model):
-    return model.model_dump() if hasattr(model, 'model_dump') else model.dict()
+    return model.model_dump() if hasattr(model, "model_dump") else model.dict()
+
 
 @app.middleware("http")
 async def authenticate(request: Request, call_next):
@@ -134,7 +136,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run the SWE-ReX FastAPI server")
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind the server to")
     parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
-    parser.add_argument("--api-key", default="", help="API key to authenticate requests")
+    parser.add_argument("--api-key", default="", help="API key to authenticate requests", required=True)
 
     args = parser.parse_args()
     global API_KEY

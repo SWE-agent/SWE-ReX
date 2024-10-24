@@ -1,28 +1,25 @@
-import hashlib
 import time
-import boto3
 import uuid
-import json
 
-from urllib.parse import quote
+import boto3
 
 from swerex import REMOTE_EXECUTABLE_NAME
 from swerex.deployment.abstract import AbstractDeployment
 from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.remote import RemoteRuntime
+from swerex.utils.aws import (
+    get_cloudwatch_log_url,
+    get_cluster_arn,
+    get_container_name,
+    get_default_vpc_and_subnet,
+    get_execution_role_arn,
+    get_public_ip,
+    get_security_group,
+    get_task_definition,
+    run_fargate_task,
+)
 from swerex.utils.log import get_logger
 from swerex.utils.wait import _wait_until_alive
-from swerex.utils.aws import (
-    get_cluster_arn,
-    get_execution_role_arn,
-    get_task_definition,
-    get_default_vpc_and_subnet,
-    get_security_group,
-    get_container_name,
-    run_fargate_task,
-    get_cloudwatch_log_url,
-    get_public_ip,
-)
 
 
 class FargateDeployment(AbstractDeployment):
@@ -61,7 +58,7 @@ class FargateDeployment(AbstractDeployment):
         self._task_arn = None
         self._security_group_id = None
         self._init_aws()
-    
+
     def _init_aws(self):
         self._cluster_arn = get_cluster_arn(self._cluster_name)
         self._execution_role_arn = get_execution_role_arn(execution_role_prefix=self._execution_role_prefix)
@@ -82,7 +79,7 @@ class FargateDeployment(AbstractDeployment):
 
     def _get_container_name(self) -> str:
         return self._container_name
-    
+
     @property
     def container_name(self) -> str | None:
         return self._container_name
@@ -96,24 +93,24 @@ class FargateDeployment(AbstractDeployment):
             raise RuntimeError(msg)
         else:
             # check if the task is running
-            ecs_client = boto3.client('ecs')
+            ecs_client = boto3.client("ecs")
             task_details = ecs_client.describe_tasks(cluster=self._cluster_arn, tasks=[self._task_arn])
-            if task_details['tasks'][0]['lastStatus'] != "RUNNING":
+            if task_details["tasks"][0]["lastStatus"] != "RUNNING":
                 msg = f"Container process not running: {task_details['tasks'][0]['lastStatus']}"
                 raise RuntimeError(msg)
         return await self._runtime.is_alive(timeout=timeout)
 
     async def _wait_until_alive(self, timeout: float | None = None):
         return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._container_timeout)
-    
-    def _get_command(self) -> list[str]:
+
+    def _get_command(self, *, token: str) -> list[str]:
         pkg_name = "0fdb5604"
-        main_command = f'{REMOTE_EXECUTABLE_NAME} --port {self._port}'
+        main_command = f"{REMOTE_EXECUTABLE_NAME} --port {self._port}"
         fallback_commands = [
             "apt-get update -y",
             "apt-get install pipx -y",
             "pipx ensurepath",
-            f"pipx run {pkg_name} --port {self._port}"
+            f"pipx run {pkg_name} --port {self._port} --api-key {token}",
         ]
         fallback_script = " && ".join(fallback_commands)
         # Wrap the entire command in bash -c to ensure timeout applies to everything
@@ -122,6 +119,9 @@ class FargateDeployment(AbstractDeployment):
         assert full_command.startswith("timeout "), "command must start with timeout!"
         return [full_command]
 
+    def _get_token(self) -> str:
+        return str(uuid.uuid4())
+
     async def start(
         self,
         *,
@@ -129,10 +129,11 @@ class FargateDeployment(AbstractDeployment):
     ):
         self._container_name = self._get_container_name()
         self.logger.info(f"Starting runtime with container name {self._container_name}")
+        token = self._get_token()
         self._task_arn = run_fargate_task(
-            command=self._get_command(),
+            command=self._get_command(token=token),
             name=self._container_name,
-            task_definition_arn=self._task_definition['taskDefinitionArn'],
+            task_definition_arn=self._task_definition["taskDefinitionArn"],
             subnet_id=self._subnet_id,
             security_group_id=self._security_group_id,
             cluster_arn=self._cluster_arn,
@@ -141,8 +142,8 @@ class FargateDeployment(AbstractDeployment):
         self.logger.info(f"Container task submitted: {self._task_arn} - waiting for it to start...")
         # wait until the container is running
         t0 = time.time()
-        ecs_client = boto3.client('ecs')
-        waiter = ecs_client.get_waiter('tasks_running')
+        ecs_client = boto3.client("ecs")
+        waiter = ecs_client.get_waiter("tasks_running")
         waiter.wait(cluster=self._cluster_arn, tasks=[self._task_arn])
         self.logger.info(f"Fargate container started in {time.time() - t0:.2f}s")
         if self._log_group:
@@ -157,7 +158,7 @@ class FargateDeployment(AbstractDeployment):
                 self.logger.warning(f"Failed to get CloudWatch Logs URL: {str(e)}")
         public_ip = get_public_ip(self._task_arn, self._cluster_arn)
         self.logger.info(f"Container public IP: {public_ip}")
-        self._runtime = RemoteRuntime(host=public_ip, port=self._port)
+        self._runtime = RemoteRuntime(host=public_ip, port=self._port, token=token)
         t0 = time.time()
         await self._wait_until_alive(timeout=timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
@@ -167,7 +168,7 @@ class FargateDeployment(AbstractDeployment):
             await self._runtime.close()
             self._runtime = None
         if self._task_arn is not None:
-            ecs_client = boto3.client('ecs')
+            ecs_client = boto3.client("ecs")
             ecs_client.stop_task(task=self._task_arn, cluster=self._cluster_arn)
         self._task_arn = None
         self._container_name = None

@@ -59,6 +59,9 @@ class DockerDeployment(AbstractDeployment):
     async def _wait_until_alive(self, timeout: float | None = None):
         return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._runtime_timeout)
 
+    def _get_token(self) -> str:
+        return str(uuid.uuid4())
+
     async def start(
         self,
         *,
@@ -66,6 +69,7 @@ class DockerDeployment(AbstractDeployment):
     ):
         assert self._container_name is None
         self._container_name = self._get_container_name()
+        token = self._get_token()
         cmds = [
             "docker",
             "run",
@@ -77,6 +81,8 @@ class DockerDeployment(AbstractDeployment):
             self._container_name,
             self._image_name,
             REMOTE_EXECUTABLE_NAME,
+            "--api-key",
+            token,
         ]
         self.logger.info(
             f"Starting container {self._container_name} with image {self._image_name} serving on port {self._port}"
@@ -84,7 +90,7 @@ class DockerDeployment(AbstractDeployment):
         self.logger.debug(f"Command: {' '.join(cmds)}")
         self._container_process = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.logger.info(f"Starting runtime at {self._port}")
-        self._runtime = RemoteRuntime(port=self._port, timeout=self._runtime_timeout)
+        self._runtime = RemoteRuntime(port=self._port, timeout=self._runtime_timeout, token=token)
         t0 = time.time()
         await self._wait_until_alive(timeout=timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")

@@ -125,7 +125,6 @@ class ModalDeployment(AbstractDeployment):
         self._modal_kwargs = modal_sandbox_kwargs
 
     def _get_token(self) -> str:
-        # generate random token
         return str(uuid.uuid4())
 
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:

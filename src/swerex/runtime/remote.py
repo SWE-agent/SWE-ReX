@@ -38,9 +38,9 @@ class RemoteRuntime(AbstractRuntime):
     def __init__(
         self,
         *,
+        token: str,
         host: str = "http://127.0.0.1",
         port: int | None = None,
-        token: str | None = None,
         timeout: float = 0.15,
     ):
         """A runtime that connects to a remote server.
