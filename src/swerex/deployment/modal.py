@@ -1,6 +1,7 @@
 import asyncio
 import os
 import time
+import uuid
 from pathlib import Path, PurePath
 
 import boto3
@@ -120,6 +121,10 @@ class ModalDeployment(AbstractDeployment):
         self._runtime_timeout = runtime_timeout
         self._modal_args = modal_args
 
+    def _get_token(self) -> str:
+        # generate random token
+        return str(uuid.uuid4())
+
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
         if self._runtime is None or self._sandbox is None:
             raise DeploymentNotStartedError()
@@ -135,12 +140,12 @@ class ModalDeployment(AbstractDeployment):
         assert self._runtime is not None
         return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._runtime._timeout)
 
-    def _start_swerex_cmd(self) -> str:
+    def _start_swerex_cmd(self, token: str) -> str:
         """Start swerex-server on the remote. If swerex is not installed arelady,
         install pipx and then run swerex-server with pipx run
         """
         pkg_name = "0fdb5604"
-        return f"{REMOTE_EXECUTABLE_NAME} --port {self._port} || pipx run {pkg_name} --port {self._port}"
+        return f"{REMOTE_EXECUTABLE_NAME} --port {self._port} --api-token {token} || pipx run {pkg_name} --port {self._port} --api-token {token}"
 
     def get_modal_log_url(self) -> str:
         """Returns URL to modal logs"""
@@ -153,10 +158,11 @@ class ModalDeployment(AbstractDeployment):
     ):
         self.logger.info("Starting modal sandbox")
         t0 = time.time()
+        token = self._get_token()
         self._sandbox = modal.Sandbox.create(
             "/bin/bash",
             "-c",
-            self._start_swerex_cmd(),
+            self._start_swerex_cmd(token),
             image=self._image,
             timeout=int(self._container_timeout),
             unencrypted_ports=[self._port],
@@ -168,7 +174,7 @@ class ModalDeployment(AbstractDeployment):
         self.logger.info(f"Sandbox created with id {self._sandbox.object_id}")
         await asyncio.sleep(1)
         self.logger.info(f"Starting runtime at {tunnel.url}")
-        self._runtime = RemoteRuntime(host=tunnel.url, timeout=self._runtime_timeout)
+        self._runtime = RemoteRuntime(host=tunnel.url, timeout=self._runtime_timeout, token=token)
         t0 = time.time()
         await self._wait_until_alive(timeout=timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
