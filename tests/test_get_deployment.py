@@ -2,6 +2,7 @@ import pytest
 
 from swerex.deployment import get_deployment
 from swerex.deployment.docker import DockerDeployment
+from swerex.deployment.fargate import FargateDeployment
 from swerex.deployment.local import LocalDeployment
 from swerex.deployment.modal import ModalDeployment
 from swerex.deployment.remote import RemoteDeployment
@@ -30,6 +31,11 @@ def test_get_deployment_invalid_type():
 def test_get_remote_deployment():
     deployment = get_deployment("remote")
     assert isinstance(deployment, RemoteDeployment)
+
+
+def test_get_fargate_deployment():
+    deployment = get_deployment("fargate", image="test")
+    assert isinstance(deployment, FargateDeployment)
 
 
 if __name__ == "__main__":

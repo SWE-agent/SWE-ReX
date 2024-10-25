@@ -4,7 +4,7 @@ import uuid
 import boto3
 
 from swerex import REMOTE_EXECUTABLE_NAME
-from swerex.deployment.abstract import AbstractDeployment
+from swerex.deployment.abstract import AbstractDeployment, DeploymentNotStartedError
 from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.remote import RemoteRuntime
 from swerex.utils.aws import (
@@ -57,7 +57,6 @@ class FargateDeployment(AbstractDeployment):
         self._subnet_id = None
         self._task_arn = None
         self._security_group_id = None
-        self._init_aws()
 
     def _init_aws(self):
         self._cluster_arn = get_cluster_arn(self._cluster_name)
@@ -85,12 +84,8 @@ class FargateDeployment(AbstractDeployment):
         return self._container_name
 
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
-        if self._runtime is None:
-            msg = "Runtime not started"
-            raise RuntimeError(msg)
-        if self._task_arn is None:
-            msg = "Container process not started."
-            raise RuntimeError(msg)
+        if self._runtime is None or self._task_arn is None:
+            raise DeploymentNotStartedError()
         else:
             # check if the task is running
             ecs_client = boto3.client("ecs")
@@ -127,6 +122,7 @@ class FargateDeployment(AbstractDeployment):
         *,
         timeout: float = 120,
     ):
+        self._init_aws()
         self._container_name = self._get_container_name()
         self.logger.info(f"Starting runtime with container name {self._container_name}")
         token = self._get_token()
