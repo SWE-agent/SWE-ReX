@@ -27,10 +27,15 @@ def _get_modal_user() -> str:
 class _ImageBuilder:
     """_ImageBuilder.auto() is used by ModalDeployment"""
 
+    def __init__(self):
+        self.logger = get_logger("_image_builder")
+
     def from_file(self, image: PurePath, *, build_context: PurePath | None = None) -> modal.Image:
+        self.logger.info(f"Building image from file {image}")
         if build_context is None:
             build_context = Path(image).resolve().parent
         build_context = Path(build_context)
+        self.logger.debug(f"Using build context {build_context}")
         context_mount = modal.Mount.from_local_dir(
             local_path=build_context,
             remote_path=".",  # to current WORKDIR
@@ -38,6 +43,7 @@ class _ImageBuilder:
         return modal.Image.from_dockerfile(str(image), context_mount=context_mount)
 
     def from_registry(self, image: str) -> modal.Image:
+        self.logger.info(f"Building image from docker registry {image}")
         if os.environ.get("DOCKER_USERNAME") and os.environ.get("DOCKER_PASSWORD"):
             secret = modal.Secret.from_dict(
                 {
@@ -47,10 +53,12 @@ class _ImageBuilder:
             )
             secrets = [secret]
         else:
+            self.logger.warning("DOCKER_USERNAME and DOCKER_PASSWORD not set. Using public images.")
             secrets = None
         return modal.Image.from_registry(image, secrets=secrets)
 
     def from_ecr(self, image: str) -> modal.Image:
+        self.logger.info(f"Building image from ECR {image}")
         try:
             session = boto3.Session()
             credentials = session.get_credentials()
