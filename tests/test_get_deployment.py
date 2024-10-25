@@ -14,7 +14,7 @@ def test_get_local_deployment():
 
 
 def test_get_docker_deployment():
-    deployment = get_deployment("docker", image_name="test")
+    deployment = get_deployment("docker", image="test")
     assert isinstance(deployment, DockerDeployment)
 
 
