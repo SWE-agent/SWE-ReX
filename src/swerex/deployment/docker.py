@@ -6,6 +6,7 @@ from swerex import REMOTE_EXECUTABLE_NAME
 from swerex.deployment.abstract import AbstractDeployment, DeploymentNotStartedError
 from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.remote import RemoteRuntime
+from swerex.utils.free_port import find_free_port
 from swerex.utils.log import get_logger
 from swerex.utils.wait import _wait_until_alive
 
@@ -13,12 +14,12 @@ __all__ = ["DockerDeployment"]
 
 
 class DockerDeployment(AbstractDeployment):
-    def __init__(self, image_name: str, *, port: int = 8000, docker_args: list[str] | None = None):
+    def __init__(self, image_name: str, *, port: int | None = None, docker_args: list[str] | None = None):
         """Deployment to local docker image.
 
         Args:
             image_name: The name of the docker image to use.
-            port: The port that is being exposed by the docker container
+            port: The port that the docker container connects to. If None, a free port is found.
             docker_args: Additional arguments to pass to the docker run command.
         """
         self._image_name = image_name
@@ -67,6 +68,7 @@ class DockerDeployment(AbstractDeployment):
         *,
         timeout: float | None = None,
     ):
+        port = self._port or find_free_port()
         assert self._container_name is None
         self._container_name = self._get_container_name()
         token = self._get_token()
@@ -75,7 +77,7 @@ class DockerDeployment(AbstractDeployment):
             "run",
             "--rm",
             "-p",
-            f"{self._port}:8000",
+            f"{port}:8000",
             *self._docker_args,
             "--name",
             self._container_name,
@@ -90,7 +92,7 @@ class DockerDeployment(AbstractDeployment):
         self.logger.debug(f"Command: {' '.join(cmds)}")
         self._container_process = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.logger.info(f"Starting runtime at {self._port}")
-        self._runtime = RemoteRuntime(port=self._port, timeout=self._runtime_timeout, auth_token=token)
+        self._runtime = RemoteRuntime(port=port, timeout=self._runtime_timeout, auth_token=token)
         t0 = time.time()
         await self._wait_until_alive(timeout=timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
