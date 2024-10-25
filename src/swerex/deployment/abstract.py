@@ -1,3 +1,4 @@
+import asyncio
 from abc import ABC, abstractmethod
 
 from swerex.runtime.abstract import AbstractRuntime, IsAliveResponse
@@ -26,6 +27,9 @@ class AbstractDeployment(ABC):
         Raises:
             DeploymentNotStartedError: If the deployment is not started.
         """
+
+    def __del__(self):
+        asyncio.run(self.stop())
 
 
 class DeploymentNotStartedError(RuntimeError):
