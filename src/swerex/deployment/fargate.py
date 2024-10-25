@@ -25,7 +25,7 @@ from swerex.utils.wait import _wait_until_alive
 class FargateDeployment(AbstractDeployment):
     def __init__(
         self,
-        image_name: str,
+        image: str,
         port: int = 8880,
         cluster_name: str = "swe-rex-cluster",
         execution_role_prefix: str = "swe-rex-execution-role",
@@ -35,7 +35,7 @@ class FargateDeployment(AbstractDeployment):
         fargate_args: dict | None = None,
         container_timeout: float = 60 * 15,
     ):
-        self._image_name = image_name
+        self._image = image
         self._runtime: RemoteRuntime | None = None
         self._port = port
         self._container_process = None
@@ -63,7 +63,7 @@ class FargateDeployment(AbstractDeployment):
         self._cluster_arn = get_cluster_arn(self._cluster_name)
         self._execution_role_arn = get_execution_role_arn(execution_role_prefix=self._execution_role_prefix)
         self._task_definition = get_task_definition(
-            image_name=self._image_name,
+            image_name=self._image,
             port=self._port,
             execution_role_arn=self._execution_role_arn,
             task_definition_prefix=self._task_definition_prefix,
@@ -75,7 +75,7 @@ class FargateDeployment(AbstractDeployment):
             port=self._port,
             security_group_prefix=self._security_group_prefix,
         )
-        self._container_name = get_container_name(self._image_name)
+        self._container_name = get_container_name(self._image)
 
     def _get_container_name(self) -> str:
         return self._container_name
