@@ -196,6 +196,9 @@ class Session:
         """
         assert self.shell is not None
         _check_bash_command(action.command)
+
+        # Part 2: Execute the command
+
         fallback_terminator = False
         # Running multiple interactive commands by sending them with linebreaks would break things
         # because we get multiple PS1s back to back. Instead we just join them with ;
@@ -222,30 +225,31 @@ class Session:
             msg = f"timeout while running command {action.command!r}"
             raise CommandTimeoutError(msg) from e
         output: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
-        self.shell.sendline("\necho $?")
+
+        # Part 3: Get the exit code
+
+        _exit_code_prefix = "EXITCODESTART"
+        _exit_code_suffix = "EXITCODEEND"
+        self.shell.sendline(f"\necho {_exit_code_prefix}$?{_exit_code_suffix}")
         try:
-            self.shell.expect(self._ps1, timeout=1)
+            self.shell.expect(_exit_code_suffix, timeout=1)
         except pexpect.TIMEOUT:
             msg = "timeout while getting exit code"
             raise NoExitCodeError(msg)
         exit_code_raw: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
-        # After quitting an interactive session, for some reason we oftentimes get double
-        # PS1 for all following commands. So we might need to call expect again.
-        # Alternatively we could have probably called `echo <<<$?>>>` or something.
-        for _ in range(2):
-            # Try 2 more times with very small timeout
-            if not exit_code_raw.strip():
-                self.logger.warning("exit_code_raw was empty, trying again")
-                self.shell.expect(self._ps1, timeout=0.1)
-                exit_code_raw = _strip_control_chars(self.shell.before).strip()  # type: ignore
-
-        output = output.replace(self._UNIQUE_STRING, "").replace(self._ps1, "")
-
+        exit_code = re.findall(f"{_exit_code_prefix}([0-9]+)", exit_code_raw)
+        if len(exit_code) != 1:
+            msg = f"failed to parse exit code from output {exit_code_raw!r} (command: {action.command!r}, matches: {exit_code})"
+            raise NoExitCodeError(msg)
+        output += exit_code_raw.split(_exit_code_prefix)[0]
+        exit_code = int(exit_code[0])
+        # We get at least one more PS1 here.
         try:
-            exit_code = int(exit_code_raw)
-        except ValueError as e:
-            msg = f"failed to parse exit code from output {exit_code_raw!r} (command: {action.command!r})"
-            raise NoExitCodeError(msg) from e
+            self.shell.expect(self._ps1, timeout=0.1)
+        except pexpect.TIMEOUT:
+            msg = "Timeout while getting PS1 after exit code extraction"
+            raise CommandTimeoutError(msg)
+        output = output.replace(self._UNIQUE_STRING, "").replace(self._ps1, "")
         return Observation(output=output, exit_code=exit_code, expect_string=matched_expect_string)
 
     async def close(self) -> CloseSessionResponse:
