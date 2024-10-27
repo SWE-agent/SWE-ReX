@@ -1,3 +1,5 @@
+from typing import Any
+
 from swerex.deployment.abstract import AbstractDeployment, DeploymentNotStartedError
 from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.remote import RemoteRuntime
@@ -5,7 +7,7 @@ from swerex.utils.log import get_logger
 
 
 class RemoteDeployment(AbstractDeployment):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         """This deployment is only a thin wrapper around the `RemoteRuntime`.
         Use this if you have deployed a runtime somewhere else but want to interact with it
         through the `AbstractDeployment` interface.

@@ -48,7 +48,7 @@ class RemoteRuntime(AbstractRuntime):
         Args:
             host: The host to connect to.
             port: The port to connect to.
-            token: The token to use for authentication
+            auth_token: The token to use for authentication
             timeout: The timeout to use for requests.
         """
         self.logger = get_logger("RR")

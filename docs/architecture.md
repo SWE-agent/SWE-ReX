@@ -5,10 +5,10 @@ Let's take a look how SWE-ReX works:
 3. After the `Deployment` has started your container _somewhere_, you are handed a [`RemoteRuntime` instance][remoteruntime].
   This is your main interface for interacting with the environment. You can use it start new shell or interactive sessions, read and write files, execute one-off commands, etc.
 
-[abstractdeployment]: /api/deployments/abstract/#swerex.deployment.abstract.AbstractDeployment
-[remoteruntime]: /api/runtimes/remote/#swerex.runtime.remote.RemoteRuntime
-[localruntime]: /api/runtimes/local/#swerex.runtime.local.Runtime
-[server]: /api/server/#swerex.server
+[abstractdeployment]: api/deployments/abstract.md#swerex.deployment.abstract.AbstractDeployment
+[remoteruntime]: api/runtimes/remote.md#swerex.runtime.remote.RemoteRuntime
+[localruntime]: api/runtimes/local.md#swerex.runtime.local.Runtime
+[server]: api/server.md#swerex.server
 
 ![architecture](./assets/architecture.svg)
 
@@ -24,8 +24,8 @@ Looking closer at the internals:
    This method allows you to run a command in an existing shell session (or an interactive tool running inside of it) and return the output.
    In fact, you can have multiple sessions open at the same time, running different commands and tools in parallel!
 
-[runtime]: /api/runtimes/abstract/#swerex.runtime.abstract.Runtime
-[abstractruntime]: /api/runtimes/abstract/#swerex.runtime.abstract.AbstractRuntime
-[abstractruntime.execute]: /api/runtimes/abstract/#swerex.runtime.abstract.AbstractRuntime.execute
-[abstractruntime.run_in_session]: /api/runtimes/abstract/#swerex.runtime.abstract.AbstractRuntime.run_in_session
+[runtime]: api/runtimes/abstract.md#swerex.runtime.abstract.Runtime
+[abstractruntime]: api/runtimes/abstract.md#swerex.runtime.abstract.AbstractRuntime
+[abstractruntime.execute]: api/runtimes/abstract.md#swerex.runtime.abstract.AbstractRuntime.execute
+[abstractruntime.run_in_session]: api/runtimes/abstract.md#swerex.runtime.abstract.AbstractRuntime.run_in_session
 
