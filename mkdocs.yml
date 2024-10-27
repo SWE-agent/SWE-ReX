@@ -92,8 +92,8 @@ plugins:
             extensions:
               - griffe_pydantic:
                   schema: false
-repo_url: https://github.com/klieret/swe-rex
-repo_name: klieret/SWE-ReX
+repo_url: https://github.com/SWE-agent/SWE-ReX
+repo_name: SWE-agent/SWE-ReX
 edit_uri: edit/main/docs/
 extra_css:
   - css/mkdocstrings.css
