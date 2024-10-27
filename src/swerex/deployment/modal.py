@@ -136,6 +136,12 @@ class ModalDeployment(AbstractDeployment):
         return str(uuid.uuid4())
 
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
+        """Checks if the runtime is alive. The return value can be
+        tested with bool().
+
+        Raises:
+            DeploymentNotStartedError: If the deployment was not started.
+        """
         if self._runtime is None or self._sandbox is None:
             raise DeploymentNotStartedError()
         if self._sandbox.poll() is not None:
@@ -166,6 +172,7 @@ class ModalDeployment(AbstractDeployment):
         *,
         timeout: float = 60,
     ):
+        """Starts the runtime."""
         self.logger.info("Starting modal sandbox")
         t0 = time.time()
         token = self._get_token()
@@ -191,6 +198,7 @@ class ModalDeployment(AbstractDeployment):
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
 
     async def stop(self):
+        """Stops the runtime."""
         if self._runtime is not None:
             await self._runtime.close()
             self._runtime = None
@@ -201,6 +209,11 @@ class ModalDeployment(AbstractDeployment):
 
     @property
     def runtime(self) -> RemoteRuntime:
+        """Returns the runtime if running.
+
+        Raises:
+            DeploymentNotStartedError: If the deployment was not started.
+        """
         if self._runtime is None:
             raise DeploymentNotStartedError()
         return self._runtime

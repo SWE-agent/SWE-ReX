@@ -138,24 +138,31 @@ class RemoteRuntime(AbstractRuntime):
         return output_class(**response.json())
 
     async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
+        """Creates a new session."""
         return self._request("create_session", request, CreateSessionResponse)
 
     async def run_in_session(self, action: Action) -> Observation:
+        """Runs a command in a session."""
         return self._request("run_in_session", action, Observation)
 
     async def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
+        """Closes a shell session."""
         return self._request("close_session", request, CloseSessionResponse)
 
     async def execute(self, command: Command) -> CommandResponse:
+        """Executes a command (independent of any shell session)."""
         return self._request("execute", command, CommandResponse)
 
     async def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
+        """Reads a file"""
         return self._request("read_file", request, ReadFileResponse)
 
     async def write_file(self, request: WriteFileRequest) -> WriteFileResponse:
+        """Writes a file"""
         return self._request("write_file", request, WriteFileResponse)
 
     async def upload(self, request: UploadRequest) -> UploadResponse:
+        """Uploads a file"""
         source = Path(request.source_path)
         if source.is_dir():
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -174,4 +181,5 @@ class RemoteRuntime(AbstractRuntime):
             return UploadResponse(**response.json())
 
     async def close(self) -> CloseResponse:
+        """Closes the runtime."""
         return self._request("close", None, CloseResponse)

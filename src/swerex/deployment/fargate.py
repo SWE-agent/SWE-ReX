@@ -84,6 +84,12 @@ class FargateDeployment(AbstractDeployment):
         return self._container_name
 
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
+        """Checks if the runtime is alive. The return value can be
+        tested with bool().
+
+        Raises:
+            DeploymentNotStartedError: If the deployment was not started.
+        """
         if self._runtime is None or self._task_arn is None:
             raise DeploymentNotStartedError()
         else:
@@ -122,6 +128,7 @@ class FargateDeployment(AbstractDeployment):
         *,
         timeout: float = 120,
     ):
+        """Starts the runtime."""
         self._init_aws()
         self._container_name = self._get_container_name()
         self.logger.info(f"Starting runtime with container name {self._container_name}")
@@ -160,6 +167,7 @@ class FargateDeployment(AbstractDeployment):
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
 
     async def stop(self):
+        """Stops the runtime."""
         if self._runtime is not None:
             await self._runtime.close()
             self._runtime = None
@@ -171,6 +179,11 @@ class FargateDeployment(AbstractDeployment):
 
     @property
     def runtime(self) -> RemoteRuntime:
+        """Returns the runtime if running.
+
+        Raises:
+            DeploymentNotStartedError: If the deployment was not started.
+        """
         if self._runtime is None:
             msg = "Runtime not started"
             raise RuntimeError(msg)

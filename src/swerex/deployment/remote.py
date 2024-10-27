@@ -22,17 +22,30 @@ class RemoteDeployment(AbstractDeployment):
 
     @property
     def runtime(self) -> RemoteRuntime:
+        """Returns the runtime if running.
+
+        Raises:
+            DeploymentNotStartedError: If the deployment was not started.
+        """
         if self._runtime is None:
             raise DeploymentNotStartedError()
         return self._runtime
 
     async def is_alive(self) -> IsAliveResponse:
+        """Checks if the runtime is alive. The return value can be
+        tested with bool().
+
+        Raises:
+            DeploymentNotStartedError: If the deployment was not started.
+        """
         return await self.runtime.is_alive()
 
     async def start(self):
+        """Starts the runtime."""
         self.logger.info(f"Starting remote runtime with {self._runtime_kwargs}")
         self._runtime = RemoteRuntime(**self._runtime_kwargs)
 
     async def stop(self):
+        """Stops the runtime."""
         await self.runtime.close()
         self._runtime = None

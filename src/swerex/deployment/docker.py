@@ -43,6 +43,12 @@ class DockerDeployment(AbstractDeployment):
         return self._container_name
 
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
+        """Checks if the runtime is alive. The return value can be
+        tested with bool().
+
+        Raises:
+            DeploymentNotStartedError: If the deployment was not started.
+        """
         if self._runtime is None:
             msg = "Runtime not started"
             raise RuntimeError(msg)
@@ -68,6 +74,7 @@ class DockerDeployment(AbstractDeployment):
         *,
         timeout: float | None = None,
     ):
+        """Starts the runtime."""
         port = self._port or find_free_port()
         assert self._container_name is None
         self._container_name = self._get_container_name()
@@ -98,6 +105,7 @@ class DockerDeployment(AbstractDeployment):
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
 
     async def stop(self):
+        """Stops the runtime."""
         if self._runtime is not None:
             await self._runtime.close()
             self._runtime = None
@@ -108,6 +116,11 @@ class DockerDeployment(AbstractDeployment):
 
     @property
     def runtime(self) -> RemoteRuntime:
+        """Returns the runtime if running.
+
+        Raises:
+            DeploymentNotStartedError: If the deployment was not started.
+        """
         if self._runtime is None:
             raise DeploymentNotStartedError()
         return self._runtime

@@ -11,13 +11,18 @@ class AbstractDeployment(ABC):
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
         """Checks if the runtime is alive. The return value can be
         tested with bool().
+
+        Raises:
+            DeploymentNotStartedError: If the deployment was not started.
         """
 
     @abstractmethod
-    async def start(self, *args, **kwargs): ...
+    async def start(self, *args, **kwargs):
+        """Starts the runtime."""
 
     @abstractmethod
-    async def stop(self, *args, **kwargs): ...
+    async def stop(self, *args, **kwargs):
+        """Stops the runtime."""
 
     @property
     @abstractmethod
@@ -25,7 +30,7 @@ class AbstractDeployment(ABC):
         """Returns the runtime if running.
 
         Raises:
-            DeploymentNotStartedError: If the deployment is not started.
+            DeploymentNotStartedError: If the deployment was not started.
         """
 
     def __del__(self):

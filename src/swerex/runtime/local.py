@@ -277,9 +277,11 @@ class Runtime(AbstractRuntime):
         return self._sessions
 
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
+        """Checks if the runtime is alive."""
         return IsAliveResponse(is_alive=True)
 
     async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
+        """Creates a new session."""
         if request.session in self.sessions:
             msg = f"session {request.session} already exists"
             raise SessionExistsError(msg)
@@ -288,12 +290,14 @@ class Runtime(AbstractRuntime):
         return await shell.start()
 
     async def run_in_session(self, action: Action) -> Observation:
+        """Runs a command in a session."""
         if action.session not in self.sessions:
             msg = f"session {action.session!r} does not exist"
             raise SessionDoesNotExistError(msg)
         return await self.sessions[action.session].run(action)
 
     async def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
+        """Closes a shell session."""
         if request.session not in self.sessions:
             msg = f"session {request.session!r} does not exist"
             raise SessionDoesNotExistError(msg)
@@ -302,6 +306,7 @@ class Runtime(AbstractRuntime):
         return out
 
     async def execute(self, command: Command) -> CommandResponse:
+        """Executes a command (independent of any shell session)."""
         try:
             result = subprocess.run(command.command, shell=command.shell, timeout=command.timeout, capture_output=True)
             return CommandResponse(
@@ -314,15 +319,18 @@ class Runtime(AbstractRuntime):
             raise CommandTimeoutError(msg) from e
 
     async def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
+        """Reads a file"""
         content = Path(request.path).read_text()
         return ReadFileResponse(content=content)
 
     async def write_file(self, request: WriteFileRequest) -> WriteFileResponse:
+        """Writes a file"""
         Path(request.path).parent.mkdir(parents=True, exist_ok=True)
         Path(request.path).write_text(request.content)
         return WriteFileResponse()
 
     async def upload(self, request: UploadRequest) -> UploadResponse:
+        """Uploads a file"""
         if Path(request.source_path).is_dir():
             shutil.copytree(request.source_path, request.target_path)
         else:
@@ -330,5 +338,6 @@ class Runtime(AbstractRuntime):
         return UploadResponse()
 
     async def close(self) -> CloseResponse:
+        """Closes the runtime."""
         await asyncio.gather(*[self.close_session(CloseSessionRequest(session=s)) for s in self.sessions])
         return CloseResponse()
