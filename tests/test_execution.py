@@ -5,9 +5,9 @@ import pytest
 
 from swerex.runtime.abstract import (
     BashIncorrectSyntaxError,
-    CloseSessionRequest,
+    CloseBashSessionRequest,
     CommandTimeoutError,
-    CreateSessionRequest,
+    CreateBashSessionRequest,
     ReadFileRequest,
     SessionDoesNotExistError,
     UploadRequest,
@@ -54,8 +54,8 @@ async def test_execute_command_timeout(remote_runtime: RemoteRuntime):
 
 
 async def test_create_close_shell(remote_runtime: RemoteRuntime):
-    await remote_runtime.create_session(CreateSessionRequest())
-    await remote_runtime.close_session(CloseSessionRequest())
+    await remote_runtime.create_session(CreateBashSessionRequest())
+    await remote_runtime.close_session(CloseBashSessionRequest())
 
 
 async def test_run_in_shell(runtime_with_default_session: RemoteRuntime):
@@ -76,15 +76,15 @@ async def test_run_in_shell_non_existent_session(remote_runtime: RemoteRuntime):
 
 async def test_close_shell_non_existent_session(remote_runtime: RemoteRuntime):
     with pytest.raises(SessionDoesNotExistError):
-        await remote_runtime.close_session(CloseSessionRequest(session="non_existent"))
+        await remote_runtime.close_session(CloseBashSessionRequest(session="non_existent"))
 
 
 async def test_close_shell_twice(remote_runtime: RemoteRuntime):
     n = "mynewsession"
-    await remote_runtime.create_session(CreateSessionRequest(session=n))
-    await remote_runtime.close_session(CloseSessionRequest(session=n))
+    await remote_runtime.create_session(CreateBashSessionRequest(session=n))
+    await remote_runtime.close_session(CloseBashSessionRequest(session=n))
     with pytest.raises(SessionDoesNotExistError):
-        await remote_runtime.close_session(CloseSessionRequest(session=n))
+        await remote_runtime.close_session(CloseBashSessionRequest(session=n))
 
 
 async def test_run_in_shell_timeout(runtime_with_default_session: RemoteRuntime):
@@ -155,8 +155,8 @@ async def test_read_large_file(remote_runtime: RemoteRuntime, tmp_path: Path):
 
 
 async def test_multiple_isolated_shells(remote_runtime: RemoteRuntime):
-    await remote_runtime.create_session(CreateSessionRequest(session="shell1"))
-    await remote_runtime.create_session(CreateSessionRequest(session="shell2"))
+    await remote_runtime.create_session(CreateBashSessionRequest(session="shell1"))
+    await remote_runtime.create_session(CreateBashSessionRequest(session="shell2"))
 
     await asyncio.gather(
         remote_runtime.run_in_session(A(command="x=42", session="shell1")),
@@ -175,8 +175,8 @@ async def test_multiple_isolated_shells(remote_runtime: RemoteRuntime):
     assert response3.output.strip() == ""
     assert response4.output.strip() == ""
 
-    await remote_runtime.close_session(CloseSessionRequest(session="shell1"))
-    await remote_runtime.close_session(CloseSessionRequest(session="shell2"))
+    await remote_runtime.close_session(CloseBashSessionRequest(session="shell1"))
+    await remote_runtime.close_session(CloseBashSessionRequest(session="shell2"))
 
 
 async def test_empty_command(remote_runtime: RemoteRuntime):

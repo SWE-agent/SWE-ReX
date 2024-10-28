@@ -1,7 +1,7 @@
 import asyncio
 
 from swerex.deployment.local import LocalDeployment
-from swerex.runtime.abstract import Action as A
+from swerex.runtime.abstract import BashAction as A
 from swerex.runtime.abstract import (
     CloseSessionRequest,
     CreateSessionRequest,

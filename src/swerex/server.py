@@ -14,7 +14,7 @@ from fastapi.security import APIKeyHeader
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from swerex.runtime.abstract import (
-    Action,
+    BashAction,
     CloseResponse,
     CloseSessionRequest,
     Command,
@@ -76,7 +76,7 @@ async def create_session(request: CreateSessionRequest):
 
 
 @app.post("/run_in_session")
-async def run(action: Action):
+async def run(action: BashAction):
     return serialize_model(await runtime.run_in_session(action))
 
 

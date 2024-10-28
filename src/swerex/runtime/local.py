@@ -1,8 +1,8 @@
-import asyncio
 import re
 import shutil
 import subprocess
 import time
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 import bashlex
@@ -13,13 +13,18 @@ import pexpect
 from swerex.runtime.abstract import (
     AbstractRuntime,
     Action,
+    BashAction,
     BashIncorrectSyntaxError,
+    BashObservation,
+    CloseBashSessionResponse,
     CloseResponse,
     CloseSessionRequest,
     CloseSessionResponse,
     Command,
     CommandResponse,
     CommandTimeoutError,
+    CreateBashSessionRequest,
+    CreateBashSessionResponse,
     CreateSessionRequest,
     CreateSessionResponse,
     IsAliveResponse,
@@ -36,7 +41,7 @@ from swerex.runtime.abstract import (
 )
 from swerex.utils.log import get_logger
 
-__all__ = ["Runtime", "Session"]
+__all__ = ["Runtime", "BashSession"]
 
 
 def _split_bash_command(inpt: str) -> list[str]:
@@ -97,10 +102,21 @@ def _check_bash_command(command: str) -> None:
     raise BashIncorrectSyntaxError(msg)
 
 
-class Session:
+class Session(ABC):
+    @abstractmethod
+    async def start(self) -> CreateSessionResponse: ...
+
+    @abstractmethod
+    async def run(self, action: Action) -> Observation: ...
+
+    @abstractmethod
+    async def close(self) -> CloseSessionResponse: ...
+
+
+class BashSession(Session):
     _UNIQUE_STRING = "UNIQUESTRING29234"
 
-    def __init__(self, request: CreateSessionRequest):
+    def __init__(self, request: CreateBashSessionRequest):
         """This basically represents one REPL that we control.
 
         It's pretty similar to a `pexpect.REPLWrapper`.
@@ -117,7 +133,7 @@ class Session:
             raise RuntimeError(msg)
         return self._shell
 
-    async def start(self) -> CreateSessionResponse:
+    async def start(self) -> CreateBashSessionResponse:
         """Spawn the session, source any startupfiles and set the PS1."""
         self._shell = pexpect.spawn(
             "/bin/bash",
@@ -146,9 +162,9 @@ class Session:
             msg = "timeout while setting PS1"
             raise pexpect.TIMEOUT(msg)
         output += "\n---\n" + _strip_control_chars(self.shell.before)  # type: ignore
-        return CreateSessionResponse(output=output)
+        return CreateBashSessionResponse(output=output)
 
-    async def run(self, action: Action) -> Observation:
+    async def run(self, action: BashAction) -> BashObservation:
         if self.shell is None:
             msg = "shell not initialized"
             raise RuntimeError(msg)
@@ -156,7 +172,7 @@ class Session:
             return await self._run_interactive(action)
         return await self._run_normal(action)
 
-    async def _run_interactive(self, action: Action) -> Observation:
+    async def _run_interactive(self, action: BashAction) -> BashObservation:
         """Run an interactive action. This is different because we don't seek to
         the PS1 and don't attempt to get the exit code.
         """
@@ -183,9 +199,9 @@ class Session:
             # For some reason, this often times enables echo mode within the shell.
             output = output.lstrip().removeprefix(action.command).strip()
 
-        return Observation(output=output, exit_code=0, expect_string=matched_expect_string)
+        return BashObservation(output=output, exit_code=0, expect_string=matched_expect_string)
 
-    async def _run_normal(self, action: Action) -> Observation:
+    async def _run_normal(self, action: BashAction) -> BashObservation:
         """Run a normal action. This is the default mode.
 
         There are three steps to this:
@@ -250,14 +266,14 @@ class Session:
             msg = "Timeout while getting PS1 after exit code extraction"
             raise CommandTimeoutError(msg)
         output = output.replace(self._UNIQUE_STRING, "").replace(self._ps1, "")
-        return Observation(output=output, exit_code=exit_code, expect_string=matched_expect_string)
+        return BashObservation(output=output, exit_code=exit_code, expect_string=matched_expect_string)
 
     async def close(self) -> CloseSessionResponse:
         if self._shell is None:
-            return CloseSessionResponse()
+            return CloseBashSessionResponse()
         self.shell.close()
         self._shell = None
-        return CloseSessionResponse()
+        return CloseBashSessionResponse()
 
     def interact(self) -> None:
         """Enter interactive mode."""
@@ -285,9 +301,13 @@ class Runtime(AbstractRuntime):
         if request.session in self.sessions:
             msg = f"session {request.session} already exists"
             raise SessionExistsError(msg)
-        shell = Session(request)
-        self.sessions[request.session] = shell
-        return await shell.start()
+        if isinstance(request, CreateBashSessionRequest):
+            session = BashSession(request)
+        else:
+            msg = f"unknown session type: {request!r}"
+            raise ValueError(msg)
+        self.sessions[request.session] = session
+        return await session.start()
 
     async def run_in_session(self, action: Action) -> Observation:
         """Runs a command in a session."""
@@ -339,5 +359,6 @@ class Runtime(AbstractRuntime):
 
     async def close(self) -> CloseResponse:
         """Closes the runtime."""
-        await asyncio.gather(*[self.close_session(CloseSessionRequest(session=s)) for s in self.sessions])
+        for session in self.sessions.values():
+            await session.close()
         return CloseResponse()

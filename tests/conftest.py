@@ -9,7 +9,12 @@ import pytest
 import uvicorn
 
 import swerex.server
-from swerex.runtime.abstract import Action, CloseSessionRequest, Command, CreateSessionRequest
+from swerex.runtime.abstract import (
+    BashAction,
+    CloseBashSessionRequest,
+    Command,
+    CreateBashSessionRequest,
+)
 from swerex.runtime.remote import RemoteRuntime
 from swerex.utils.free_port import find_free_port
 
@@ -58,12 +63,12 @@ def remote_runtime(remote_server: RemoteServer) -> Generator[RemoteRuntime, None
 
 @pytest.fixture
 def runtime_with_default_session(remote_runtime: RemoteRuntime) -> Generator[RemoteRuntime, None]:
-    asyncio.run(remote_runtime.create_session(CreateSessionRequest()))
+    asyncio.run(remote_runtime.create_session(CreateBashSessionRequest()))
     yield remote_runtime
-    asyncio.run(remote_runtime.close_session(CloseSessionRequest()))
+    asyncio.run(remote_runtime.close_session(CloseBashSessionRequest()))
 
 
-class _Action(Action):
+class _Action(BashAction):
     timeout: float | None = 5
 
 

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import Annotated, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class IsAliveResponse(BaseModel):
@@ -18,26 +19,33 @@ class IsAliveResponse(BaseModel):
         return self.is_alive
 
 
-class CreateSessionRequest(BaseModel):
-    session: str = "default"
-    """The name of the session to create."""
-
+class CreateBashSessionRequest(BaseModel):
     startup_source: list[str] = []
     """Source the following files before running commands.
     The reason this gets a special treatment is that these files
     often overwrite PS1, which we need to reset.
     """
+    session: str = "default"
+    session_type: Literal["bash"] = "bash"
 
 
-class CreateSessionResponse(BaseModel):
+CreateSessionRequest = Annotated[CreateBashSessionRequest, Field(discriminator="session_type")]
+"""Union type for all create session requests. Do not use this directly."""
+
+
+class CreateBashSessionResponse(BaseModel):
     output: str = ""
     """Output from starting the session."""
 
+    session_type: Literal["bash"] = "bash"
+
+
+CreateSessionResponse = Annotated[CreateBashSessionResponse, Field(discriminator="session_type")]
+"""Union type for all create session responses. Do not use this directly."""
+
 
 # todo: implement non-output-timeout
-class Action(BaseModel):
-    """An action to run in a session."""
-
+class BashAction(BaseModel):
     command: str
     """The command to run."""
 
@@ -60,8 +68,14 @@ class Action(BaseModel):
     expect: list[str] = []
     """Outputs to expect in addition to the PS1"""
 
+    session_type: Literal["bash"] = "bash"
 
-class Observation(BaseModel):
+
+Action = Annotated[BashAction, Field(discriminator="session_type")]
+"""Union type for all actions. Do not use this directly."""
+
+
+class BashObservation(BaseModel):
     output: str = ""
     exit_code: int | None = None
     failure_reason: str = ""
@@ -71,13 +85,28 @@ class Observation(BaseModel):
     Empty string if the command timed out etc.
     """
 
+    session_type: Literal["bash"] = "bash"
 
-class CloseSessionRequest(BaseModel):
+
+Observation = Annotated[BashObservation, Field(discriminator="session_type")]
+"""Union type for all observations. Do not use this directly."""
+
+
+class CloseBashSessionRequest(BaseModel):
     session: str = "default"
+    session_type: Literal["bash"] = "bash"
 
 
-class CloseSessionResponse(BaseModel):
-    pass
+CloseSessionRequest = Annotated[CloseBashSessionRequest, Field(discriminator="session_type")]
+"""Union type for all close session requests. Do not use this directly."""
+
+
+class CloseBashSessionResponse(BaseModel):
+    session_type: Literal["bash"] = "bash"
+
+
+CloseSessionResponse = Annotated[CloseBashSessionResponse, Field(discriminator="session_type")]
+"""Union type for all close session responses. Do not use this directly."""
 
 
 class Command(BaseModel):
@@ -181,7 +210,7 @@ class AbstractRuntime(ABC):
         pass
 
     @abstractmethod
-    async def run_in_session(self, action: Action) -> Observation:
+    async def run_in_session(self, action: BashAction) -> BashObservation:
         """Runs a command in a session."""
         pass
 
