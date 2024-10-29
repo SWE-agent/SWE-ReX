@@ -81,7 +81,7 @@ class RemoteRuntime(AbstractRuntime):
     def _handle_transfer_exception(self, exc_transfer: _ExceptionTransfer) -> None:
         """Reraise exceptions that were thrown on the remote."""
         if exc_transfer.traceback:
-            self.logger.debug("Traceback: %s", exc_transfer.traceback)
+            print("Traceback: ", exc_transfer.traceback, file=sys.stderr)
         try:
             module, _, exc_name = exc_transfer.class_path.rpartition(".")
             exception = getattr(sys.modules[module], exc_name)

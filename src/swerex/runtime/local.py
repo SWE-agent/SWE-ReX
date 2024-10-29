@@ -96,7 +96,7 @@ def _check_bash_command(command: str) -> None:
     stdout = result.stdout.decode(errors="backslashreplace")
     stderr = result.stderr.decode(errors="backslashreplace")
     msg = (
-        f"Error ({result.returncode}) while checking bash command \n{command!r}\n"
+        f"Error (exit code {result.returncode}) while checking bash command \n{command!r}\n"
         f"Stderr: {stderr!r}\nStdout: {stdout!r}"
     )
     raise BashIncorrectSyntaxError(msg)

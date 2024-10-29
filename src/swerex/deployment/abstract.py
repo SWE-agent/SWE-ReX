@@ -34,6 +34,8 @@ class AbstractDeployment(ABC):
         """
 
     def __del__(self):
+        """Stops the runtime when the object is deleted."""
+        print("Stopping runtime because Deployment object is deleted")
         asyncio.run(self.stop())
 
 
