@@ -163,22 +163,28 @@ class RemoteRuntime(AbstractRuntime):
 
     async def upload(self, request: UploadRequest) -> UploadResponse:
         """Uploads a file"""
-        source = Path(request.source_path)
+        source = Path(request.source_path).resolve()
+        self.logger.debug("Uploading file from %s to %s", request.source_path, request.target_path)
         if source.is_dir():
             with tempfile.TemporaryDirectory() as temp_dir:
-                zip_path = Path(temp_dir) / f"{source.name}.zip"
+                zip_path = Path(temp_dir) / "zipped_transfer.zip"
                 shutil.make_archive(str(zip_path.with_suffix("")), "zip", source)
+                self.logger.debug("Created zip file at %s", zip_path)
                 files = {"file": zip_path.open("rb")}
                 data = {"target_path": request.target_path, "unzip": "true"}
                 response = requests.post(f"{self._api_url}/upload", files=files, data=data, headers=self._headers)
                 self._handle_response_errors(response)
                 return UploadResponse(**response.json())
-        else:
+        elif source.is_file():
+            self.logger.debug("Uploading file from %s to %s", source, request.target_path)
             files = {"file": source.open("rb")}
             data = {"target_path": request.target_path, "unzip": "false"}
             response = requests.post(f"{self._api_url}/upload", files=files, data=data, headers=self._headers)
             self._handle_response_errors(response)
             return UploadResponse(**response.json())
+        else:
+            msg = f"Source path {source} is not a file or directory"
+            raise ValueError(msg)
 
     async def close(self) -> CloseResponse:
         """Closes the runtime."""

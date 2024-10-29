@@ -110,7 +110,7 @@ async def upload(
     target_path.parent.mkdir(parents=True, exist_ok=True)
     # First save the file to a temporary directory and potentially unzip it.
     with tempfile.TemporaryDirectory() as temp_dir:
-        file_path = Path(temp_dir) / target_path.name
+        file_path = Path(temp_dir) / "temp_file_transfer"
         try:
             with open(file_path, "wb") as f:
                 f.write(await file.read())
@@ -119,8 +119,9 @@ async def upload(
         if unzip:
             with zipfile.ZipFile(file_path, "r") as zip_ref:
                 zip_ref.extractall(target_path)
+            file_path.unlink()
         else:
-            shutil.copy(file_path, target_path)
+            shutil.move(file_path, target_path)
     return UploadResponse()
 
 
