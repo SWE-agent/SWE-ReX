@@ -35,6 +35,7 @@ dependencies = [
     "pexpect",
     "bashlex",
     "python-multipart",
+    "rich",
 ]
 
 [project.optional-dependencies]
