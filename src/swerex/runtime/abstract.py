@@ -65,10 +65,21 @@ class BashAction(BaseModel):
     interactive program, set this to False.
     """
 
+    check: bool = False
+    """Whether to check for the exit code. If True, we will raise a
+    `NonZeroExitCodeError` if the command has a non-zero exit code.
+    """
+
+    error_msg: str = ""
+    """This error message will be used in the `NonZeroExitCodeError` if the
+    command has a non-zero exit code and `check` is True.
+    """
+
     expect: list[str] = []
     """Outputs to expect in addition to the PS1"""
 
     session_type: Literal["bash"] = "bash"
+    """Used for type discrimination. Do not change."""
 
 
 Action = Annotated[BashAction, Field(discriminator="session_type")]
@@ -124,6 +135,16 @@ class Command(BaseModel):
     shell: bool = False
     """Same as the `subprocess.run()` `shell` argument."""
 
+    check: bool = False
+    """Whether to check for the exit code. If True, we will raise a
+    `CommandFailedError` if the command fails.
+    """
+
+    error_msg: str = ""
+    """This error message will be used in the `NonZeroExitCodeError` if the
+    command has a non-zero exit code and `check` is True.
+    """
+
 
 class CommandResponse(BaseModel):
     stdout: str = ""
@@ -169,7 +190,17 @@ class _ExceptionTransfer(BaseModel):
     traceback: str = ""
 
 
-class SweRexception(RuntimeError): ...
+# todo: move?
+class SweRexception(Exception):
+    """Any exception that is raised by SWE-Rex."""
+
+
+class SessionNotInitializedError(SweRexception, RuntimeError):
+    """Raised if we try to run a command in a shell that is not initialized."""
+
+
+class NonZeroExitCodeError(SweRexception, RuntimeError):
+    """Can be raised if we execute a command in the shell and it has a non-zero exit code."""
 
 
 class BashIncorrectSyntaxError(SweRexception, RuntimeError):
@@ -178,10 +209,7 @@ class BashIncorrectSyntaxError(SweRexception, RuntimeError):
     """
 
 
-class UninitializedShellError(SweRexception, ValueError): ...
-
-
-class CommandTimeoutError(SweRexception, RuntimeError): ...
+class CommandTimeoutError(SweRexception, RuntimeError, TimeoutError): ...
 
 
 class NoExitCodeError(SweRexception, RuntimeError): ...

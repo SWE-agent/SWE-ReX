@@ -29,11 +29,13 @@ from swerex.runtime.abstract import (
     CreateSessionResponse,
     IsAliveResponse,
     NoExitCodeError,
+    NonZeroExitCodeError,
     Observation,
     ReadFileRequest,
     ReadFileResponse,
     SessionDoesNotExistError,
     SessionExistsError,
+    SessionNotInitializedError,
     UploadRequest,
     UploadResponse,
     WriteFileRequest,
@@ -165,12 +167,31 @@ class BashSession(Session):
         return CreateBashSessionResponse(output=output)
 
     async def run(self, action: BashAction) -> BashObservation:
+        """Run a bash action.
+
+        Raises:
+            SessionNotInitializedError: If the shell is not initialized.
+            CommandTimeoutError: If the command times out.
+            NonZeroExitCodeError: If the command has a non-zero exit code and `action.check` is True.
+            NoExitCodeError: If we cannot get the exit code of the command.
+
+        Returns:
+            BashObservation: The observation of the command.
+        """
         if self.shell is None:
             msg = "shell not initialized"
-            raise RuntimeError(msg)
+            raise SessionNotInitializedError(msg)
         if action.is_interactive_command or action.is_interactive_quit:
             return await self._run_interactive(action)
-        return await self._run_normal(action)
+        r = await self._run_normal(action)
+        if action.check and r.exit_code != 0:
+            msg = (
+                f"Command {action.command!r} failed with exit code {r.exit_code}. " "Here is the output:\n{r.output!r}"
+            )
+            if action.error_msg:
+                msg = f"{action.error_msg}: {msg}"
+            raise NonZeroExitCodeError(msg)
+        return r
 
     async def _run_interactive(self, action: BashAction) -> BashObservation:
         """Run an interactive action. This is different because we don't seek to
@@ -326,10 +347,15 @@ class Runtime(AbstractRuntime):
         return out
 
     async def execute(self, command: Command) -> CommandResponse:
-        """Executes a command (independent of any shell session)."""
+        """Executes a command (independent of any shell session).
+
+        Raises:
+            CommandTimeoutError: If the command times out.
+            NonZeroExitCodeError: If the command has a non-zero exit code and `check` is True.
+        """
         try:
             result = subprocess.run(command.command, shell=command.shell, timeout=command.timeout, capture_output=True)
-            return CommandResponse(
+            r = CommandResponse(
                 stdout=result.stdout.decode(errors="backslashreplace"),
                 stderr=result.stderr.decode(errors="backslashreplace"),
                 exit_code=result.returncode,
@@ -337,6 +363,15 @@ class Runtime(AbstractRuntime):
         except subprocess.TimeoutExpired as e:
             msg = f"Timeout ({command.timeout}s) exceeded while running command"
             raise CommandTimeoutError(msg) from e
+        if command.check and result.returncode != 0:
+            msg = (
+                f"Command {command.command!r} failed with exit code {result.returncode}. "
+                "Stdout:\n{r.stdout!r}\nStderr:\n{r.stderr!r}"
+            )
+            if command.error_msg:
+                msg = f"{command.error_msg}: {msg}"
+            raise NonZeroExitCodeError(msg)
+        return r
 
     async def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
         """Reads a file"""
