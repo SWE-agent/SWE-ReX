@@ -6,6 +6,10 @@ from swerex.deployment.abstract import AbstractDeployment
 def get_deployment(
     deployment_type: Literal["local", "docker", "modal", "fargate", "remote"], **kwargs
 ) -> AbstractDeployment:
+    if deployment_type == "dummy":
+        from swerex.deployment.dummy import DummyDeployment
+
+        return DummyDeployment(**kwargs)
     if deployment_type == "local":
         from swerex.deployment.local import LocalDeployment
 

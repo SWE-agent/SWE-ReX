@@ -238,12 +238,12 @@ class AbstractRuntime(ABC):
         pass
 
     @abstractmethod
-    async def run_in_session(self, action: BashAction) -> BashObservation:
+    async def run_in_session(self, action: Action) -> Observation:
         """Runs a command in a session."""
         pass
 
     @abstractmethod
-    async def close_session(self, request: CloseSessionRequest):
+    async def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
         """Closes a shell session."""
         pass
 

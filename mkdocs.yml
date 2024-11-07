@@ -61,11 +61,13 @@ nav:
       - Docker: api/deployments/docker.md
       - Modal: api/deployments/modal.md
       - Fargate: api/deployments/fargate.md
+      - Dummy: api/deployments/dummy.md
     - Runtimes:
       - Abstract: api/runtimes/abstract.md
       - Local: api/runtimes/local.md
       - Remote: api/runtimes/remote.md
       - Data: api/runtimes/data.md
+      - Dummy: api/runtimes/dummy.md
     - Server: api/server.md
 plugins:
    - glightbox
