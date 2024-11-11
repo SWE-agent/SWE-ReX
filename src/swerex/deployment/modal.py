@@ -9,7 +9,7 @@ import boto3
 import modal
 from botocore.exceptions import NoCredentialsError
 
-from swerex import REMOTE_EXECUTABLE_NAME
+from swerex import PACKAGE_NAME, REMOTE_EXECUTABLE_NAME
 from swerex.deployment.abstract import AbstractDeployment, DeploymentNotStartedError
 from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.remote import RemoteRuntime
@@ -153,7 +153,7 @@ class ModalDeployment(AbstractDeployment):
             raise RuntimeError(msg)
         return await self._runtime.is_alive(timeout=timeout)
 
-    async def _wait_until_alive(self, timeout: float | None = None):
+    async def _wait_until_alive(self, timeout: float = 10.0):
         assert self._runtime is not None
         return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._runtime._timeout)
 
@@ -161,8 +161,9 @@ class ModalDeployment(AbstractDeployment):
         """Start swerex-server on the remote. If swerex is not installed arelady,
         install pipx and then run swerex-server with pipx run
         """
-        pkg_name = "0fdb5604"
-        return f"{REMOTE_EXECUTABLE_NAME} --port {self._port} --auth-token {token} || pipx run {pkg_name} --port {self._port} --auth-token {token}"
+        # todo: Change that to swe-rex after release
+        rex_args = f"--port {self._port} --auth-token {token}"
+        return f"{REMOTE_EXECUTABLE_NAME} {rex_args} || pipx run {PACKAGE_NAME} {rex_args}"
 
     def get_modal_log_url(self) -> str:
         """Returns URL to modal logs

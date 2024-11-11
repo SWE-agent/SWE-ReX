@@ -1,8 +1,9 @@
+import shlex
 import subprocess
 import time
 import uuid
 
-from swerex import REMOTE_EXECUTABLE_NAME
+from swerex import PACKAGE_NAME, REMOTE_EXECUTABLE_NAME
 from swerex.deployment.abstract import AbstractDeployment, DeploymentNotStartedError
 from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.remote import RemoteRuntime
@@ -77,6 +78,17 @@ class DockerDeployment(AbstractDeployment):
     def _get_token(self) -> str:
         return str(uuid.uuid4())
 
+    def _get_swerex_start_cmd(self, token: str) -> list[str]:
+        rex_args = f"--auth-token {token}"
+        pipx_install = "python3 -m pip install pipx && python3 -m pipx ensurepath"
+        # todo: update
+        # Need to wrap with /bin/sh -c to avoid having '&&' interpreted by the parent shell
+        return [
+            "/bin/sh",
+            "-c",
+            f"{REMOTE_EXECUTABLE_NAME} {rex_args} || ({pipx_install} && pipx run {PACKAGE_NAME} {rex_args})",
+        ]
+
     async def start(self, *, timeout: float = 10.0):
         """Starts the runtime."""
         port = self._port or find_free_port()
@@ -93,14 +105,14 @@ class DockerDeployment(AbstractDeployment):
             "--name",
             self._container_name,
             self._image_name,
-            REMOTE_EXECUTABLE_NAME,
-            "--auth-token",
-            token,
+            *self._get_swerex_start_cmd(token),
         ]
+        cmd_str = shlex.join(cmds)
         self.logger.info(
             f"Starting container {self._container_name} with image {self._image_name} serving on port {self._port}"
         )
-        self.logger.debug(f"Command: {' '.join(cmds)}")
+        self.logger.debug(f"Command: {cmd_str!r}")
+        # shell=True required for && etc.
         self._container_process = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.logger.info(f"Starting runtime at {self._port}")
         self._runtime = RemoteRuntime(port=port, timeout=self._runtime_timeout, auth_token=token)

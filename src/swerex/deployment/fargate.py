@@ -3,7 +3,7 @@ import uuid
 
 import boto3
 
-from swerex import REMOTE_EXECUTABLE_NAME
+from swerex import PACKAGE_NAME, REMOTE_EXECUTABLE_NAME
 from swerex.deployment.abstract import AbstractDeployment, DeploymentNotStartedError
 from swerex.runtime.abstract import IsAliveResponse
 from swerex.runtime.remote import RemoteRuntime
@@ -105,13 +105,12 @@ class FargateDeployment(AbstractDeployment):
         return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._container_timeout)
 
     def _get_command(self, *, token: str) -> list[str]:
-        pkg_name = "0fdb5604"
         main_command = f"{REMOTE_EXECUTABLE_NAME} --port {self._port}"
         fallback_commands = [
             "apt-get update -y",
             "apt-get install pipx -y",
             "pipx ensurepath",
-            f"pipx run {pkg_name} --port {self._port} --auth-token {token}",
+            f"pipx run {PACKAGE_NAME} --port {self._port} --auth-token {token}",
         ]
         fallback_script = " && ".join(fallback_commands)
         # Wrap the entire command in bash -c to ensure timeout applies to everything
