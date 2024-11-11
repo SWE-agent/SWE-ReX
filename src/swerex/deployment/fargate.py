@@ -34,6 +34,7 @@ class FargateDeployment(AbstractDeployment):
         security_group_prefix: str = "swe-rex-deployment-sg",
         fargate_args: dict | None = None,
         container_timeout: float = 60 * 15,
+        runtime_timeout: float = 30,
     ):
         self._image = image
         self._runtime: RemoteRuntime | None = None
@@ -57,6 +58,7 @@ class FargateDeployment(AbstractDeployment):
         self._subnet_id = None
         self._task_arn = None
         self._security_group_id = None
+        self._runtime_timeout = runtime_timeout
 
     def _init_aws(self):
         self._cluster_arn = get_cluster_arn(self._cluster_name)
@@ -124,8 +126,6 @@ class FargateDeployment(AbstractDeployment):
 
     async def start(
         self,
-        *,
-        timeout: float = 120,
     ):
         """Starts the runtime."""
         self._init_aws()
@@ -162,7 +162,7 @@ class FargateDeployment(AbstractDeployment):
         self.logger.info(f"Container public IP: {public_ip}")
         self._runtime = RemoteRuntime(host=public_ip, port=self._port, auth_token=token)
         t0 = time.time()
-        await self._wait_until_alive(timeout=timeout)
+        await self._wait_until_alive(timeout=self._runtime_timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
 
     async def stop(self):

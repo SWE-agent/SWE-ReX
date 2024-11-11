@@ -15,13 +15,21 @@ __all__ = ["DockerDeployment"]
 
 
 class DockerDeployment(AbstractDeployment):
-    def __init__(self, image: str, *, port: int | None = None, docker_args: list[str] | None = None):
+    def __init__(
+        self,
+        image: str,
+        *,
+        port: int | None = None,
+        docker_args: list[str] | None = None,
+        startup_timeout: float = 60.0,
+    ):
         """Deployment to local docker image.
 
         Args:
             image: The name of the docker image to use.
             port: The port that the docker container connects to. If None, a free port is found.
             docker_args: Additional arguments to pass to the docker run command.
+            startup_timeout: The time to wait for the runtime to start.
         """
         self._image_name = image
         self._runtime: RemoteRuntime | None = None
@@ -33,6 +41,7 @@ class DockerDeployment(AbstractDeployment):
         self._container_name = None
         self.logger = get_logger("deploy")
         self._runtime_timeout = 0.15
+        self._startup_timeout = startup_timeout
 
     def _get_container_name(self) -> str:
         """Returns a unique container name based on the image name."""
@@ -89,7 +98,7 @@ class DockerDeployment(AbstractDeployment):
             f"{REMOTE_EXECUTABLE_NAME} {rex_args} || ({pipx_install} && pipx run {PACKAGE_NAME} {rex_args})",
         ]
 
-    async def start(self, *, timeout: float = 10.0):
+    async def start(self):
         """Starts the runtime."""
         port = self._port or find_free_port()
         assert self._container_name is None
@@ -117,7 +126,7 @@ class DockerDeployment(AbstractDeployment):
         self.logger.info(f"Starting runtime at {self._port}")
         self._runtime = RemoteRuntime(port=port, timeout=self._runtime_timeout, auth_token=token)
         t0 = time.time()
-        await self._wait_until_alive(timeout=timeout)
+        await self._wait_until_alive(timeout=self._startup_timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
 
     async def stop(self):

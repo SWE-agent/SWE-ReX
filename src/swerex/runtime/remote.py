@@ -127,7 +127,7 @@ class RemoteRuntime(AbstractRuntime):
             msg += traceback.format_exc()
             return IsAliveResponse(is_alive=False, message=msg)
 
-    async def wait_until_alive(self, *, timeout: float | None = None):
+    async def wait_until_alive(self, *, timeout: float = 60.0):
         return await _wait_until_alive(self.is_alive, timeout=timeout)
 
     def _request(self, endpoint: str, request: BaseModel | None, output_class: Any):

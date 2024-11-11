@@ -103,7 +103,7 @@ class ModalDeployment(AbstractDeployment):
     def __init__(
         self,
         image: str | modal.Image | PurePath,
-        container_timeout: float = 1800,
+        startup_timeout: float = 1800,
         runtime_timeout: float = 0.4,
         modal_sandbox_kwargs: dict[str, Any] | None = None,
     ):
@@ -116,13 +116,13 @@ class ModalDeployment(AbstractDeployment):
                 2. Path to a Dockerfile
                 3. Dockerhub image name (e.g. `python:3.11-slim`)
                 4. ECR image name (e.g. `123456789012.dkr.ecr.us-east-1.amazonaws.com/my-image:tag`)
-            container_timeout:
-            runtime_timeout:
+            startup_timeout: The time to wait for the runtime to start.
+            runtime_timeout: The runtime timeout.
             modal_sandbox_kwargs: Additional arguments to pass to `modal.Sandbox.create`
         """
         self._image = _ImageBuilder().auto(image)
         self._runtime: RemoteRuntime | None = None
-        self._container_timeout = container_timeout
+        self._startup_timeout = startup_timeout
         self._sandbox: modal.Sandbox | None = None
         self._port = 8880
         self.logger = get_logger("deploy")
@@ -161,7 +161,6 @@ class ModalDeployment(AbstractDeployment):
         """Start swerex-server on the remote. If swerex is not installed arelady,
         install pipx and then run swerex-server with pipx run
         """
-        # todo: Change that to swe-rex after release
         rex_args = f"--port {self._port} --auth-token {token}"
         return f"{REMOTE_EXECUTABLE_NAME} {rex_args} || pipx run {PACKAGE_NAME} {rex_args}"
 
@@ -175,8 +174,6 @@ class ModalDeployment(AbstractDeployment):
 
     async def start(
         self,
-        *,
-        timeout: float = 60,
     ):
         """Starts the runtime."""
         self.logger.info("Starting modal sandbox")
@@ -187,21 +184,23 @@ class ModalDeployment(AbstractDeployment):
             "-c",
             self._start_swerex_cmd(token),
             image=self._image,
-            timeout=int(self._container_timeout),
+            timeout=int(self._startup_timeout),
             unencrypted_ports=[self._port],
             app=self._app,
             **self._modal_kwargs,
         )
         tunnel = self._sandbox.tunnels()[self._port]
-        self.logger.info(f"Sandbox ({self._sandbox.object_id}) created in {time.time() - t0:.2f}s")
+        elapsed_sandbox_creation = time.time() - t0
+        self.logger.info(f"Sandbox ({self._sandbox.object_id}) created in {elapsed_sandbox_creation:.2f}s")
         self.logger.info(f"Check sandbox logs at {self.get_modal_log_url()}")
         self.logger.info(f"Sandbox created with id {self._sandbox.object_id}")
         await asyncio.sleep(1)
         self.logger.info(f"Starting runtime at {tunnel.url}")
         self._runtime = RemoteRuntime(host=tunnel.url, timeout=self._runtime_timeout, auth_token=token)
-        t0 = time.time()
-        await self._wait_until_alive(timeout=timeout)
-        self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
+        remaining_startup_timeout = max(0, self._startup_timeout - elapsed_sandbox_creation)
+        t1 = time.time()
+        await self._wait_until_alive(timeout=self._runtime_timeout + remaining_startup_timeout)
+        self.logger.info(f"Runtime started in {time.time() - t1:.2f}s")
 
     async def stop(self):
         """Stops the runtime."""
