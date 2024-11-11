@@ -52,6 +52,7 @@ class _ImageBuilder:
                 }
             )
             secrets = [secret]
+            self.logger.debug("Docker login credentials were provided")
         else:
             self.logger.warning("DOCKER_USERNAME and DOCKER_PASSWORD not set. Using public images.")
             secrets = None

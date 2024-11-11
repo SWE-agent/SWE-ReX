@@ -63,17 +63,21 @@ class DockerDeployment(AbstractDeployment):
             raise RuntimeError(msg)
         return await self._runtime.is_alive(timeout=timeout)
 
-    async def _wait_until_alive(self, timeout: float | None = None):
-        return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._runtime_timeout)
+    async def _wait_until_alive(self, timeout: float = 10.0):
+        try:
+            return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._runtime_timeout)
+        except TimeoutError as e:
+            self.logger.error("Runtime did not start within timeout. Here's the output from the container process.")
+            assert self._container_process is not None
+            self._container_process.terminate()
+            self.logger.error(self._container_process.stdout.read().decode())  # type: ignore
+            self.logger.error(self._container_process.stderr.read().decode())  # type: ignore
+            raise e
 
     def _get_token(self) -> str:
         return str(uuid.uuid4())
 
-    async def start(
-        self,
-        *,
-        timeout: float | None = None,
-    ):
+    async def start(self, *, timeout: float = 10.0):
         """Starts the runtime."""
         port = self._port or find_free_port()
         assert self._container_name is None

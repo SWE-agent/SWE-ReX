@@ -3,7 +3,7 @@ from collections.abc import Callable
 
 
 async def _wait_until_alive(
-    function: Callable, timeout: float | None = None, function_timeout: float | None = 0.1, sleep: float = 0.1
+    function: Callable, timeout: float = 10.0, function_timeout: float | None = 0.1, sleep: float = 0.25
 ):
     """Wait until the function returns a truthy value.
 
@@ -16,8 +16,6 @@ async def _wait_until_alive(
     Raises:
         TimeoutError
     """
-    if timeout is None:
-        timeout = 10
     end_time = time.time() + timeout
     n_attempts = 0
     while time.time() < end_time:
@@ -28,6 +26,6 @@ async def _wait_until_alive(
         n_attempts += 1
     msg = (
         f"Runtime did not start within {timeout}s (tried to connect {n_attempts} times). "
-        f"The last await response was: {await_response.message!r}"
+        f"The last await response was:\n{await_response.message}"
     )
     raise TimeoutError(msg)
