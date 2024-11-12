@@ -2,6 +2,7 @@ import shlex
 import subprocess
 import time
 import uuid
+from typing import Literal
 
 from swerex import PACKAGE_NAME, REMOTE_EXECUTABLE_NAME
 from swerex.deployment.abstract import AbstractDeployment, DeploymentNotStartedError
@@ -14,6 +15,21 @@ from swerex.utils.wait import _wait_until_alive
 __all__ = ["DockerDeployment"]
 
 
+def _is_image_available(image: str) -> bool:
+    try:
+        subprocess.check_call(["docker", "inspect", image], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def _pull_image(image: str):
+    subprocess.check_output(["docker", "pull", image])
+
+def _remove_image(image: str):
+    subprocess.check_output(["docker", "rmi", image])
+
+
 class DockerDeployment(AbstractDeployment):
     def __init__(
         self,
@@ -22,6 +38,8 @@ class DockerDeployment(AbstractDeployment):
         port: int | None = None,
         docker_args: list[str] | None = None,
         startup_timeout: float = 60.0,
+        pull: Literal["never", "always", "missing"] = "missing",
+        remove_images: bool = False,
     ):
         """Deployment to local docker image.
 
@@ -30,6 +48,8 @@ class DockerDeployment(AbstractDeployment):
             port: The port that the docker container connects to. If None, a free port is found.
             docker_args: Additional arguments to pass to the docker run command.
             startup_timeout: The time to wait for the runtime to start.
+            pull: When to pull docker images.
+            remove_images: Whether to remove the imageafter it has stopped.
         """
         self._image_name = image
         self._runtime: RemoteRuntime | None = None
@@ -42,6 +62,8 @@ class DockerDeployment(AbstractDeployment):
         self.logger = get_logger("deploy")
         self._runtime_timeout = 0.15
         self._startup_timeout = startup_timeout
+        self._pull = pull
+        self._remove_images = remove_images
 
     def _get_container_name(self) -> str:
         """Returns a unique container name based on the image name."""
@@ -94,12 +116,22 @@ class DockerDeployment(AbstractDeployment):
         # Need to wrap with /bin/sh -c to avoid having '&&' interpreted by the parent shell
         return [
             "/bin/sh",
+            # "-l",
             "-c",
             f"{REMOTE_EXECUTABLE_NAME} {rex_args} || ({pipx_install} && pipx run {PACKAGE_NAME} {rex_args})",
         ]
+    
+    def _pull_image(self):
+        if self._pull == "never":
+            return
+        if self._pull == "missing" and _is_image_available(self._image_name):
+            return
+        self.logger.info(f"Pulling image {self._image_name!r}")
+        _pull_image(self._image_name)
 
     async def start(self):
         """Starts the runtime."""
+        self._pull_image()
         port = self._port or find_free_port()
         assert self._container_name is None
         self._container_name = self._get_container_name()
@@ -138,6 +170,9 @@ class DockerDeployment(AbstractDeployment):
             self._container_process.terminate()
             self._container_process = None
         self._container_name = None
+        if self._remove_images:
+            if _is_image_available(self._image_name):
+                self._remove_image(self._image_name)
 
     @property
     def runtime(self) -> RemoteRuntime:
