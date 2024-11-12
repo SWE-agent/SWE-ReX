@@ -100,7 +100,8 @@ class DockerDeployment(AbstractDeployment):
 
     async def start(self):
         """Starts the runtime."""
-        port = self._port or find_free_port()
+        if self._port is None:
+            self._port = find_free_port()
         assert self._container_name is None
         self._container_name = self._get_container_name()
         token = self._get_token()
@@ -109,7 +110,7 @@ class DockerDeployment(AbstractDeployment):
             "run",
             "--rm",
             "-p",
-            f"{port}:8000",
+            f"{self._port}:8000",
             *self._docker_args,
             "--name",
             self._container_name,
@@ -124,7 +125,7 @@ class DockerDeployment(AbstractDeployment):
         # shell=True required for && etc.
         self._container_process = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.logger.info(f"Starting runtime at {self._port}")
-        self._runtime = RemoteRuntime(port=port, timeout=self._runtime_timeout, auth_token=token)
+        self._runtime = RemoteRuntime(port=self._port, timeout=self._runtime_timeout, auth_token=token)
         t0 = time.time()
         await self._wait_until_alive(timeout=self._startup_timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
