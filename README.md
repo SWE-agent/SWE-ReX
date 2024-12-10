@@ -1,8 +1,10 @@
 <div align="center">
 
-<img src="docs/assets/swe-rex-logo.svg" alt="SWE-ReX" style="height: 10em"/>
+<a href="https://swe-rex.com"><img src="docs/assets/swe-rex-logo-bg.svg" alt="SWE-ReX" style="height: 10em"/></a>
 
 # SWE-agent Remote Execution Framework
+
+[👉 Read the documentation 👈](https://swe-rex.com)
 
 [![Pytest](https://github.com/SWE-agent/swe-rex/actions/workflows/pytest.yaml/badge.svg)](https://github.com/SWE-agent/swe-rex/actions/workflows/pytest.yaml)
 [![Check Markdown links](https://github.com/SWE-agent/swe-rex/actions/workflows/check-links.yaml/badge.svg)](https://github.com/SWE-agent/swe-rex/actions/workflows/check-links.yaml)
