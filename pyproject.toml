@@ -10,7 +10,7 @@ description = "Sandboxed code execution for AI agents, locally or on the cloud."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
-keywords = ["nlp", "agents", "code"]
+keywords = ["ai-agents", "shell", "sandbox", "cloud-computing", "deployment"]
 authors = [
     {name = "Kilian Lieret", email = "kilian.lieret@posteo.de" },
     {name = "Carlos E. Jimenez", email = "carlosej@princeton.edu" },
@@ -21,11 +21,14 @@ authors = [
 classifiers = [
   # How mature is this project? Common values are
   #   3 - Alpha, 4 - Beta, 5 - Production/Stable
+  "Development Status :: 4 - Beta",
   "Operating System :: OS Independent",
   # Indicate who your project is intended for
   "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
   # Pick your license as you wish
   "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3 :: Only",
 ]
@@ -77,11 +80,11 @@ version = {attr = "swerex.__version__"}
 where = ["src"]
 namespaces = false
 
-# [project.urls]
-# "Homepage" = "https://swe-agent.com"
-# "Bug Reports" = "http://github.com/princeton-nlp/SWE-agent/issues"
-# "Documentation" = "https://princeton-nlp.github.io/SWE-agent/"
-# "Source" = "http://github.com/princeton-nlp/SWE-agent"
+[project.urls]
+"Homepage" = "https://swe-rex.com"
+"Bug Reports" = "https://github.com/SWE-agent/SWE-ReX/issues"
+"Documentation" = "https://swe-rex.com"
+"Source" = "https://github.com/SWE-agent/SWE-ReX"
 
 [project.scripts]
 swerex-remote = "swerex.server:main"
