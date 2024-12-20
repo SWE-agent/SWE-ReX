@@ -217,12 +217,12 @@ class BashSession(Session):
 
         Raises:
             SessionNotInitializedError: If the shell is not initialized.
-            CommandTimeoutError: If the command times out.
+            CommandTimeoutError: If the command times out. The error will contain any output collected before the timeout.
             NonZeroExitCodeError: If the command has a non-zero exit code and `action.check` is True.
             NoExitCodeError: If we cannot get the exit code of the command.
 
         Returns:
-            BashObservation: The observation of the command.
+            BashObservation: The observation of the command, including any partial output if a timeout occurred.
         """
         if self.shell is None:
             msg = "shell not initialized"
@@ -231,7 +231,11 @@ class BashSession(Session):
             return await self.interrupt(action)
         if action.is_interactive_command or action.is_interactive_quit:
             return await self._run_interactive(action)
-        r = await self._run_normal(action)
+        try:
+            r = await self._run_normal(action)
+        except CommandTimeoutError as e:
+            # Return partial output on timeout
+            return BashObservation(output=e.partial_output, exit_code=None, failure_reason="timeout")
         if action.check == "raise" and r.exit_code != 0:
             msg = (
                 f"Command {action.command!r} failed with exit code {r.exit_code}. " f"Here is the output:\n{r.output!r}"
@@ -309,8 +313,9 @@ class BashSession(Session):
             expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
             matched_expect_string = expect_strings[expect_index]
         except pexpect.TIMEOUT as e:
+            partial_output = _strip_control_chars(self.shell.before).strip()  # type: ignore
             msg = f"timeout after {action.timeout} seconds while running command {action.command!r}"
-            raise CommandTimeoutError(msg) from e
+            raise CommandTimeoutError(msg, partial_output=partial_output) from e
         output: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
 
         # Part 3: Get the exit code
