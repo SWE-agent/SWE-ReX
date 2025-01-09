@@ -8,6 +8,8 @@
       
       
       
+        <link rel="canonical" href="https://swe-rex.com/latest/usage/">
+      
       
         <link rel="prev" href="../installation/">
       
@@ -16,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/swerex_no_text.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.48">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
     
     
       
@@ -1095,13 +1097,13 @@ Wait for the next example to see how to put it in a sandbox ;) </p>
 <p class="admonition-title">Note</p>
 <p>SWE-ReX is inherently asynchronous, so you might want to take a quick look at python's <code>asyncio</code> module before continuing (or click the <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 12a10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2a10 10 0 0 1 10 10m-12 6 6-6-6-6-1.4 1.4 4.6 4.6-4.6 4.6z"/></svg></span> icons in the next example).</p>
 </div>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">from</span> <span class="nn">swerex.deployment.local</span> <span class="kn">import</span> <span class="n">LocalDeployment</span>
-<span class="kn">from</span> <span class="nn">swerex.runtime.abstract</span> <span class="kn">import</span> <span class="n">CreateSessionRequest</span><span class="p">,</span> <span class="n">BashAction</span><span class="p">,</span> <span class="n">Command</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">swerex.deployment.local</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalDeployment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">swerex.runtime.abstract</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateSessionRequest</span><span class="p">,</span> <span class="n">BashAction</span><span class="p">,</span> <span class="n">Command</span>
 
 <span class="n">deployment</span> <span class="o">=</span> <span class="n">LocalDeployment</span><span class="p">()</span>
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">run_some_stuff</span><span class="p">(</span><span class="n">deployment</span><span class="p">):</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_some_stuff</span><span class="p">(</span><span class="n">deployment</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Spoiler: This function will work with any deployment.&quot;&quot;&quot;</span>
     <span class="k">await</span> <span class="n">deployment</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>  <span class="c1"># (1)!</span>
     <span class="n">runtime</span> <span class="o">=</span> <span class="n">deployment</span><span class="o">.</span><span class="n">runtime</span>
@@ -1135,7 +1137,7 @@ Wait for the next example to see how to put it in a sandbox ;) </p>
 <h2 id="our-first-remote-run">Our first "remote" run</h2>
 <p>The best thing about SWE-ReX is that you can switch between deployments without any changes to your code!
 We will simply use the same <code>run_some_stuff</code> function but change the deployment to a <code>DockerDeployment</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">swerex.deployment.docker</span> <span class="kn">import</span> <span class="n">DockerDeployment</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">swerex.deployment.docker</span><span class="w"> </span><span class="kn">import</span> <span class="n">DockerDeployment</span>
 
 <span class="n">deployment</span> <span class="o">=</span> <span class="n">DockerDeployment</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="s2">&quot;python:3.12&quot;</span><span class="p">)</span>
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run_some_stuff</span><span class="p">(</span><span class="n">deployment</span><span class="p">))</span>
@@ -1250,7 +1252,7 @@ output=&#39;test&#39; exit_code=0 failure_reason=&#39;&#39; expect_string=&#39;S
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "content.action.edit", "navigation.footer", "content.code.copy", "content.footnote.tooltips", "header.autohide", "announce.dismiss", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
+      <script src="../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
     
   <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
