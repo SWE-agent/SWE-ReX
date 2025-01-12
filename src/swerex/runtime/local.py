@@ -157,6 +157,7 @@ class BashSession(Session):
         self._shell = pexpect.spawn(
             "/bin/bash",
             encoding="utf-8",
+            codec_errors="backslashreplace",
             echo=False,
             env={"PS1": self._ps1, "PS2": "", "PS0": ""},  # type: ignore
         )
