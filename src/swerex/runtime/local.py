@@ -295,7 +295,9 @@ class BashSession(Session):
         # (which is also somewhat brittle, so we don't do this by default).
         try:
             individual_commands = _split_bash_command(action.command)
-        except bashlex.errors.ParsingError as e:
+        except Exception as e:
+            # Bashlex is very buggy and can throw a variety of errors, including
+            # ParsingErrors, NotImplementedErrors, TypeErrors, possibly more. So we catch them all
             self.logger.error("Bashlex fail: %s", e)
             action.command += f"\n TMPEXITCODE=$? ; sleep 0.1; echo '{self._UNIQUE_STRING}' ; (exit $TMPEXITCODE)"
             fallback_terminator = True
