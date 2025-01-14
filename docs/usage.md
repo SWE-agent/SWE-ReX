@@ -14,7 +14,7 @@ Here are a few examples of how to use SWE-ReX.
 ```python
 import asyncio
 from swerex.deployment.local import LocalDeployment
-from swerex.runtime.abstract import CreateSessionRequest, BashAction, Command
+from swerex.runtime.abstract import CreateBashSessionRequest, BashAction, Command
 
 deployment = LocalDeployment()
 
@@ -27,7 +27,7 @@ async def run_some_stuff(deployment):
     print(await runtime.execute(Command(command=["echo", "Hello, world!"])))
 
     # Create a bash session
-    await runtime.create_session(CreateSessionRequest())
+    await runtime.create_session(CreateBashSessionRequest())
 
     # Run a command in the session
     # The difference to the one-off commands is that environment state persists!
