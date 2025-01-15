@@ -25,7 +25,18 @@ class BashIncorrectSyntaxError(SwerexException, RuntimeError):
         self.extra_info = extra_info
 
 
-class CommandTimeoutError(SwerexException, RuntimeError, TimeoutError): ...
+class CommandTimeoutError(SwerexException, RuntimeError, TimeoutError):
+    """Raised when a command times out, but includes any output collected before the timeout.
+
+    Attributes:
+        partial_output (str): The output that was collected before the timeout occurred
+    """
+    def __init__(self, message: str, partial_output: str = "", *, extra_info: dict[str, Any] = None):
+        super().__init__(message)
+        self.partial_output = partial_output
+        if extra_info is None:
+            extra_info = {}
+        self.extra_info = extra_info
 
 
 class NoExitCodeError(SwerexException, RuntimeError): ...

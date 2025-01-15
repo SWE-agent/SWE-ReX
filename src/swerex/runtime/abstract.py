@@ -58,6 +58,11 @@ class BashAction(BaseModel):
     timeout: float | None = None
     """The timeout for the command. None means no timeout."""
 
+    no_output_timeout: float | None = None
+    """The timeout to use when no output has been received.
+    This is useful for commands that might hang without producing any output.
+    If None, the regular timeout will be used."""
+
     is_interactive_command: bool = False
     """For a non-exiting command to an interactive program
     (e.g., gdb), set this to True."""
