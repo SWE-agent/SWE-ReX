@@ -689,6 +689,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#swerex.deployment.config.DockerDeploymentConfig.python_standalone_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;python_standalone_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swerex.deployment.config.DockerDeploymentConfig.type" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;type
@@ -1628,6 +1637,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#swerex.deployment.config.DockerDeploymentConfig.python_standalone_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;python_standalone_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swerex.deployment.config.DockerDeploymentConfig.type" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;type
@@ -2267,6 +2285,10 @@
                 (<code>bool</code>)
             </li>
             <li>
+              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.python_standalone_dir" href="#swerex.deployment.config.DockerDeploymentConfig.python_standalone_dir">python_standalone_dir</a></code>
+                (<code>str | None</code>)
+            </li>
+            <li>
               <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.type" href="#swerex.deployment.config.DockerDeploymentConfig.type">type</a></code>
                 (<code><span title="typing.Literal">Literal</span>[&#39;docker&#39;]</code>)
             </li>
@@ -2417,6 +2439,29 @@
     <div class="doc doc-contents ">
 
         <p>Whether to remove the image after it has stopped.</p>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="swerex.deployment.config.DockerDeploymentConfig.python_standalone_dir" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">python_standalone_dir</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-pydantic-field"><code>pydantic-field</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">python_standalone_dir</span><span class="p">:</span> <span class="n">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The directory to use for the python standalone.</p>
     </div>
 
 </div>
@@ -3066,7 +3111,7 @@ installing pipx might fail (or be slow).</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">runtime_timeout</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="mi">30</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">runtime_timeout</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="mi">60</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
