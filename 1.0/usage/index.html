@@ -1099,7 +1099,7 @@ Wait for the next example to see how to put it in a sandbox ;) </p>
 </div>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">swerex.deployment.local</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalDeployment</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">swerex.runtime.abstract</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateSessionRequest</span><span class="p">,</span> <span class="n">BashAction</span><span class="p">,</span> <span class="n">Command</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">swerex.runtime.abstract</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateBashSessionRequest</span><span class="p">,</span> <span class="n">BashAction</span><span class="p">,</span> <span class="n">Command</span>
 
 <span class="n">deployment</span> <span class="o">=</span> <span class="n">LocalDeployment</span><span class="p">()</span>
 
@@ -1112,7 +1112,7 @@ Wait for the next example to see how to put it in a sandbox ;) </p>
     <span class="nb">print</span><span class="p">(</span><span class="k">await</span> <span class="n">runtime</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">Command</span><span class="p">(</span><span class="n">command</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;echo&quot;</span><span class="p">,</span> <span class="s2">&quot;Hello, world!&quot;</span><span class="p">])))</span>
 
     <span class="c1"># Create a bash session</span>
-    <span class="k">await</span> <span class="n">runtime</span><span class="o">.</span><span class="n">create_session</span><span class="p">(</span><span class="n">CreateSessionRequest</span><span class="p">())</span>
+    <span class="k">await</span> <span class="n">runtime</span><span class="o">.</span><span class="n">create_session</span><span class="p">(</span><span class="n">CreateBashSessionRequest</span><span class="p">())</span>
 
     <span class="c1"># Run a command in the session</span>
     <span class="c1"># The difference to the one-off commands is that environment state persists!</span>
