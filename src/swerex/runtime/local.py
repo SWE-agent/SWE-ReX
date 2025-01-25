@@ -452,7 +452,7 @@ class LocalRuntime(AbstractRuntime):
 
     async def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
         """Reads a file"""
-        content = Path(request.path).read_text()
+        content = Path(request.path).read_text(encoding=request.encoding, errors=request.errors)
         return ReadFileResponse(content=content)
 
     async def write_file(self, request: WriteFileRequest) -> WriteFileResponse:

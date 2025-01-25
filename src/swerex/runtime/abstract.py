@@ -180,6 +180,15 @@ class CommandResponse(BaseModel):
 
 class ReadFileRequest(BaseModel):
     path: str
+    """Path to read from."""
+
+    encoding: str | None = None
+    """Encoding to use when reading the file. None means default encoding. 
+    This is the same as the `encoding` argument of `Path.read_text()`."""
+
+    errors: str | None = None
+    """Error handling to use when reading the file. None means default error handling. 
+    This is the same as the `errors` argument of `Path.read_text()`."""
 
 
 class ReadFileResponse(BaseModel):
