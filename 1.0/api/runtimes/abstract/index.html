@@ -1266,8 +1266,8 @@
 
                   <details class="quote">
                     <summary>Source code in <code>swerex/runtime/abstract.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">227</span>
-<span class="normal">228</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">236</span>
+<span class="normal">237</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span>
 </code></pre></div></td></tr></table></div>
                   </details>
@@ -1327,10 +1327,10 @@
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/abstract.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CloseResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Closes the runtime.&quot;&quot;&quot;</span>
     <span class="k">pass</span>
@@ -1362,10 +1362,10 @@
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/abstract.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">CloseSessionRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CloseSessionResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Closes a shell session (e.g., a bash shell that we started earlier).&quot;&quot;&quot;</span>
     <span class="k">pass</span>
@@ -1397,10 +1397,10 @@
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/abstract.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">CreateSessionRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CreateSessionResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a new session (e.g., a bash shell).&quot;&quot;&quot;</span>
     <span class="k">pass</span>
@@ -1432,10 +1432,10 @@
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/abstract.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="n">Command</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Executes a command (in a sub-shell, similar to `subprocess.run()`).&quot;&quot;&quot;</span>
     <span class="k">pass</span>
@@ -1467,10 +1467,10 @@
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/abstract.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_alive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IsAliveResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks if the runtime is alive and running.&quot;&quot;&quot;</span>
     <span class="k">pass</span>
@@ -1502,10 +1502,10 @@
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/abstract.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">ReadFileRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReadFileResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reads a file and returns the content as a string.&quot;&quot;&quot;</span>
     <span class="k">pass</span>
@@ -1538,12 +1538,12 @@ The name of the session is determined by the <code>session</code> field in the <
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/abstract.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_in_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Action</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Observation</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs a command in a session (e.g., a bash shell).</span>
 <span class="sd">    The name of the session is determined by the `session` field in the `Action`.</span>
@@ -1577,10 +1577,10 @@ The name of the session is determined by the <code>session</code> field in the <
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/abstract.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">UploadRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UploadResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Uploads a file from the local machine to the remote machine.&quot;&quot;&quot;</span>
     <span class="k">pass</span>
@@ -1612,10 +1612,10 @@ The name of the session is determined by the <code>session</code> field in the <
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/abstract.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">write_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">WriteFileRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WriteFileResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Writes a string to a file.&quot;&quot;&quot;</span>
     <span class="k">pass</span>

@@ -1498,6 +1498,24 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#swerex.runtime.abstract.ReadFileRequest.encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;encoding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swerex.runtime.abstract.ReadFileRequest.errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;errors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swerex.runtime.abstract.ReadFileRequest.path" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;path
@@ -2291,6 +2309,24 @@
   
     <nav class="md-nav" aria-label=" ReadFileRequest">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#swerex.runtime.abstract.ReadFileRequest.encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;encoding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swerex.runtime.abstract.ReadFileRequest.errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;errors
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#swerex.runtime.abstract.ReadFileRequest.path" class="md-nav__link">
@@ -4408,6 +4444,14 @@ often overwrite PS1, which we need to reset.</p>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.ReadFileRequest.path" href="#swerex.runtime.abstract.ReadFileRequest.path">path</a></code>
                 (<code>str</code>)
             </li>
+            <li>
+              <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.ReadFileRequest.encoding" href="#swerex.runtime.abstract.ReadFileRequest.encoding">encoding</a></code>
+                (<code>str | None</code>)
+            </li>
+            <li>
+              <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.ReadFileRequest.errors" href="#swerex.runtime.abstract.ReadFileRequest.errors">errors</a></code>
+                (<code>str | None</code>)
+            </li>
         </ul>
 
 
@@ -4420,6 +4464,54 @@ often overwrite PS1, which we need to reset.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="swerex.runtime.abstract.ReadFileRequest.encoding" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">encoding</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-pydantic-field"><code>pydantic-field</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">encoding</span><span class="p">:</span> <span class="n">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Encoding to use when reading the file. None means default encoding. 
+This is the same as the <code>encoding</code> argument of <code>Path.read_text()</code>.</p>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="swerex.runtime.abstract.ReadFileRequest.errors" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">errors</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-pydantic-field"><code>pydantic-field</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">errors</span><span class="p">:</span> <span class="n">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Error handling to use when reading the file. None means default error handling. 
+This is the same as the <code>errors</code> argument of <code>Path.read_text()</code>.</p>
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-attribute">
 
@@ -4438,6 +4530,8 @@ often overwrite PS1, which we need to reset.</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
+        <p>Path to read from.</p>
     </div>
 
 </div>
