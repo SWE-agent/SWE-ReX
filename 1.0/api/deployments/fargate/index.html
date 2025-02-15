@@ -95,7 +95,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#swerex.deployment.fargate.FargateDeployment" class="md-skip">
+        <a href="#aws-resource-cleanup" class="md-skip">
           Skip to content
         </a>
       
@@ -766,6 +766,30 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#aws-resource-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      AWS Resource Cleanup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AWS Resource Cleanup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cleaning-up-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cleaning Up Resources
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#swerex.deployment.fargate.FargateDeployment" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FargateDeployment
@@ -1258,6 +1282,30 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#aws-resource-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      AWS Resource Cleanup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AWS Resource Cleanup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cleaning-up-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cleaning Up Resources
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#swerex.deployment.fargate.FargateDeployment" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FargateDeployment
@@ -1517,6 +1565,31 @@
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This deployment is currently in alpha stage. Expect breaking changes.</p>
+</div>
+<h2 id="aws-resource-cleanup">AWS Resource Cleanup</h2>
+<p>The Fargate deployment creates several AWS resources that persist even after your deployment stops. These resources include:</p>
+<ul>
+<li>ECS Clusters</li>
+<li>Task Definitions </li>
+<li>Security Groups</li>
+<li>IAM Roles</li>
+</ul>
+<p>All resources created by the Fargate deployment are tagged with <code>origin=swe-rex-deployment-auto</code> for tracking purposes.</p>
+<h3 id="cleaning-up-resources">Cleaning Up Resources</h3>
+<p>To clean up all AWS resources created by the Fargate deployment, you can use the built-in teardown utility:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swerex.utils.aws_teardown
+</code></pre></div>
+<p>This utility will:</p>
+<ol>
+<li>Preview all resources tagged with <code>origin=swe-rex-deployment-auto</code></li>
+<li>Request confirmation before deletion</li>
+<li>Delete resources in the correct order to handle dependencies</li>
+<li>Provide status updates during the cleanup process</li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>It's recommended to run the teardown utility periodically to avoid accumulating unused AWS resources, which may incur costs.
+Running the fargate deployment again will recreate the necessary resources on the fly.</p>
 </div>
 
 
