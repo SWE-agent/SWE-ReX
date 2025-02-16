@@ -228,7 +228,7 @@ class DockerDeployment(AbstractDeployment):
         self._container_name = self._get_container_name()
         token = self._get_token()
         platform_arg = []
-        if "--platform" not in self._config.docker_args and self._config.platform:
+        if self._config.platform is not None:
             platform_arg = ["--platform", self._config.platform]
         cmds = [
             "docker",

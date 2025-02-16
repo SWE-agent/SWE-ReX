@@ -1,7 +1,7 @@
 from pathlib import PurePath
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from swerex.deployment.abstract import AbstractDeployment
 
@@ -28,7 +28,7 @@ class DockerDeploymentConfig(BaseModel):
     port: int | None = None
     """The port that the docker container connects to. If None, a free port is found."""
     docker_args: list[str] = []
-    """Additional arguments to pass to the docker run command."""
+    """Additional arguments to pass to the docker run command. If --platform is specified here, it will be moved to the platform field."""
     startup_timeout: float = 180.0
     """The time to wait for the runtime to start."""
     pull: Literal["never", "always", "missing"] = "missing"
@@ -44,6 +44,35 @@ class DockerDeploymentConfig(BaseModel):
     """Discriminator for (de)serialization/CLI. Do not change."""
 
     model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode='before')
+    def validate_platform_args(cls, data: dict) -> dict:
+        if not isinstance(data, dict):
+            return data
+            
+        docker_args = data.get('docker_args', [])
+        platform = data.get('platform')
+        
+        platform_arg_idx = next((i for i, arg in enumerate(docker_args) if arg.startswith("--platform")), -1)
+        
+        if platform_arg_idx != -1:
+            if platform is not None:
+                raise ValueError(
+                    "Cannot specify platform both via 'platform' field and '--platform' in docker_args"
+                )
+            # Extract platform value from --platform argument
+            if "=" in docker_args[platform_arg_idx]:
+                # Handle case where platform is specified as --platform=value
+                data['platform'] = docker_args[platform_arg_idx].split("=", 1)[1]
+                data['docker_args'] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 1:]
+            elif platform_arg_idx + 1 < len(docker_args):
+                data['platform'] = docker_args[platform_arg_idx + 1]
+                # Remove the --platform and its value from docker_args
+                data['docker_args'] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 2:]
+            else:
+                raise ValueError("--platform argument must be followed by a value")
+        
+        return data
 
     def get_deployment(self) -> AbstractDeployment:
         from swerex.deployment.docker import DockerDeployment
