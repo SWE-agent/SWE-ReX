@@ -1,6 +1,7 @@
 import pytest
 
 from swerex.deployment.docker import DockerDeployment
+from swerex.deployment.config import DockerDeploymentConfig
 from swerex.utils.free_port import find_free_port
 
 
@@ -24,3 +25,19 @@ async def test_docker_deployment_with_python_standalone():
     await d.start()
     assert await d.is_alive()
     await d.stop()
+
+
+def test_docker_deployment_config_platform():
+    config = DockerDeploymentConfig(docker_args=["--platform", "linux/amd64", "--other-arg"])
+    assert config.platform == "linux/amd64"
+
+    config = DockerDeploymentConfig(docker_args=["--platform=linux/amd64", "--other-arg"])
+    assert config.platform == "linux/amd64"
+
+    config = DockerDeploymentConfig(docker_args=["--other-arg"])
+    assert config.platform is None
+
+    with pytest.raises(ValueError):
+        config = DockerDeploymentConfig(platform="linux/amd64", docker_args=["--platform", "linux/amd64"])
+    with pytest.raises(ValueError):
+        config = DockerDeploymentConfig(platform="linux/amd64", docker_args=["--platform=linux/amd64"])
