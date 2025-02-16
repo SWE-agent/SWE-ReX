@@ -145,11 +145,15 @@ class DockerDeployment(AbstractDeployment):
     @property
     def glibc_dockerfile(self) -> str:
         # will only work with glibc-based systems
+        if self._config.platform:
+            platform_arg = f"--platform={self._config.platform}"
+        else:
+            platform_arg = ""
         text = (
             "ARG BASE_IMAGE\n\n"
             
             # Build stage for standalone Python
-            "FROM python:3.11-slim AS builder\n"
+            f"FROM {platform_arg} python:3.11-slim AS builder\n"
             
             # Install build dependencies
             "RUN apt-get update && apt-get install -y \\\n"
@@ -165,36 +169,48 @@ class DockerDeployment(AbstractDeployment):
             "RUN wget https://www.python.org/ftp/python/3.11.8/Python-3.11.8.tgz \\\n"
             "    && tar xzf Python-3.11.8.tgz\n"
             "WORKDIR /build/Python-3.11.8\n"
-            "RUN ./configure --prefix=/root/python3.11 --enable-shared \\\n"
-            "    && make -j$(nproc) \\\n"
-            "    && make install\n\n"
+            "RUN ./configure \\\n"
+            "    --prefix=/root/python3.11 \\\n"
+            "    --enable-shared \\\n"
+            "    LDFLAGS='-Wl,-rpath=/root/python3.11/lib' && \\\n"
+            "    make -j$(nproc) && \\\n"
+            "    make install && \\\n"
+            "    ldconfig\n\n"
             
-            # Install swe-rex using the standalone Python
-            f"RUN /root/python3.11/bin/pip3 install --no-cache-dir {PACKAGE_NAME}\n\n"
-
             # Production stage
-            "FROM $BASE_IMAGE\n"
+            f"FROM {platform_arg} $BASE_IMAGE\n"
+            
+            # Ensure we have the required runtime libraries
+            "RUN apt-get update && apt-get install -y \\\n"
+            "    libc6 \\\n"
+            "    && rm -rf /var/lib/apt/lists/*\n"
             
             # Copy the standalone Python installation
             f"COPY --from=builder /root/python3.11 {self._config.python_standalone_dir}/python3.11\n"
-            
-            # Append to LD_LIBRARY_PATH instead of overwriting it
-            f"ENV LD_LIBRARY_PATH={self._config.python_standalone_dir}/python3.11/lib:${{LD_LIBRARY_PATH}}\n"
-            
+            f"ENV LD_LIBRARY_PATH={self._config.python_standalone_dir}/python3.11/lib:${{LD_LIBRARY_PATH:-}}\n"
             # Verify installation
             f"RUN {self._config.python_standalone_dir}/python3.11/bin/python3 --version\n"
-            # Create symlink to make the executable available in PATH
-            f"RUN {self._config.python_standalone_dir}/python3.11/bin/{REMOTE_EXECUTABLE_NAME} --version\n"
+
+            # Install swe-rex using the standalone Python
+            f"RUN /root/python3.11/bin/pip3 install --no-cache-dir {PACKAGE_NAME}\n\n"
+            f"RUN ln -s /root/python3.11/bin/{REMOTE_EXECUTABLE_NAME} /usr/local/bin/{REMOTE_EXECUTABLE_NAME}\n\n"
+            f"RUN {REMOTE_EXECUTABLE_NAME} --version\n"
         )
         return text
     
     def _build_image(self):
         dockerfile = self.glibc_dockerfile
-        # build docker image without a tag, but get the image id
+        platform_arg = []
+        if self._config.platform:
+            platform_arg = ["--platform", self._config.platform]
+        build_cmd = [
+            "docker", "build", "-q",
+            *platform_arg,
+            "--build-arg", f"BASE_IMAGE={self._config.image}",
+            "-",
+        ]
         image_id = subprocess.check_output(
-            [
-                "docker", "build", "-q", "--build-arg", f"BASE_IMAGE={self._config.image}", "-",
-            ],
+            build_cmd,
             input=dockerfile.encode(),
         ).decode().strip()
         return image_id
@@ -211,12 +227,16 @@ class DockerDeployment(AbstractDeployment):
         assert self._container_name is None
         self._container_name = self._get_container_name()
         token = self._get_token()
+        platform_arg = []
+        if "--platform" not in self._config.docker_args and self._config.platform:
+            platform_arg = ["--platform", self._config.platform]
         cmds = [
             "docker",
             "run",
             "--rm",
             "-p",
             f"{self._config.port}:8000",
+            *platform_arg,
             *self._config.docker_args,
             "--name",
             self._container_name,
