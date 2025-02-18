@@ -1,12 +1,12 @@
 [data-md-color-scheme="default"] {
   --md-default-bg-color: #fff7ec;
-  --md-primary-fg-color: #B8271C;
+  --md-primary-fg-color: #b8271c;
   --md-typeset-a-color: #0099ff;
   --md-code-bg-color: #e7e7e7;
 }
 
 [data-md-color-scheme="slate"] {
-  --md-primary-fg-color: #B8271C;
+  --md-primary-fg-color: #b8271c;
   --md-default-fg-color: #fff7ec;
   --md-default-bg-color: #111111;
 }
@@ -31,5 +31,7 @@
 .md-typeset h2,
 .md-typeset h3 {
   font-weight: 400;
-  color: var(--md-primary-fg-color-dark); /* this actually works for both light and dark themes */
+  color: var(
+    --md-primary-fg-color-dark
+  ); /* this actually works for both light and dark themes */
 }

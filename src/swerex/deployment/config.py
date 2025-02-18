@@ -37,7 +37,7 @@ class DockerDeploymentConfig(BaseModel):
     """Whether to remove the image after it has stopped."""
     python_standalone_dir: str | None = None
     """The directory to use for the python standalone."""
-    
+
     type: Literal["docker"] = "docker"
     """Discriminator for (de)serialization/CLI. Do not change."""
 

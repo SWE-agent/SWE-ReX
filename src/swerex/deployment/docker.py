@@ -146,7 +146,7 @@ class DockerDeployment(AbstractDeployment):
     @property
     def glibc_dockerfile(self) -> str:
         # will only work with glibc-based systems
-        text = (
+        return (
             "ARG BASE_IMAGE\n\n"
             # Build stage for standalone Python
             "FROM python:3.11-slim AS builder\n"
@@ -179,12 +179,11 @@ class DockerDeployment(AbstractDeployment):
             # Create symlink to make the executable available in PATH
             f"RUN {self._config.python_standalone_dir}/python3.11/bin/{REMOTE_EXECUTABLE_NAME} --version\n"
         )
-        return text
 
     def _build_image(self):
         dockerfile = self.glibc_dockerfile
         # build docker image without a tag, but get the image id
-        image_id = (
+        return (
             subprocess.check_output(
                 [
                     "docker",
@@ -199,7 +198,6 @@ class DockerDeployment(AbstractDeployment):
             .decode()
             .strip()
         )
-        return image_id
 
     async def start(self):
         """Starts the runtime."""
