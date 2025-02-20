@@ -2381,7 +2381,7 @@ tested with bool().</p>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container_process</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span>
-                <span class="p">[</span><span class="s2">&quot;docker&quot;</span><span class="p">,</span> <span class="s2">&quot;kill&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container_name</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;docker&quot;</span><span class="p">,</span> <span class="s2">&quot;kill&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container_name</span><span class="p">],</span>  <span class="c1"># type: ignore</span>
                 <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span>
                 <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span>
                 <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>

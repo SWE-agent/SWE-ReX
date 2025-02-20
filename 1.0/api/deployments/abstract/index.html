@@ -1347,11 +1347,19 @@
 <span class="normal">53</span>
 <span class="normal">54</span>
 <span class="normal">55</span>
-<span class="normal">56</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stops the runtime when the object is deleted.&quot;&quot;&quot;</span>
     <span class="c1"># Need to be check whether we are in an async event loop or not</span>
     <span class="c1"># https://stackoverflow.com/questions/54770360/</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Ensuring deployment is stopped because object is deleted&quot;</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Ensuring deployment is stopped because object is deleted&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">loop</span><span class="o">.</span><span class="n">is_running</span><span class="p">():</span>
