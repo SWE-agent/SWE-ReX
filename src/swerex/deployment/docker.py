@@ -138,7 +138,9 @@ class DockerDeployment(AbstractDeployment):
         try:
             _pull_image(self._config.image)
         except subprocess.CalledProcessError as e:
-            msg = f"Failed to pull image {self._config.image}"
+            msg = f"Failed to pull image {self._config.image}. "
+            msg += f"Error: {e.stderr.decode()}"
+            msg += f"Output: {e.output.decode()}"
             raise DockerPullError(msg) from e
 
     @property

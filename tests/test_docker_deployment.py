@@ -26,7 +26,6 @@ async def test_docker_deployment_with_python_standalone():
     assert await d.is_alive()
     await d.stop()
 
-
 def test_docker_deployment_config_platform():
     config = DockerDeploymentConfig(docker_args=["--platform", "linux/amd64", "--other-arg"])
     assert config.platform == "linux/amd64"
