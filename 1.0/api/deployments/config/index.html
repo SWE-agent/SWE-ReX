@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../../assets/swerex_no_text.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
     
     
       
@@ -705,6 +705,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#swerex.deployment.config.DockerDeploymentConfig.platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;platform
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swerex.deployment.config.DockerDeploymentConfig.type" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;type
@@ -717,6 +726,15 @@
   <a href="#swerex.deployment.config.DockerDeploymentConfig.model_config" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;model_config
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swerex.deployment.config.DockerDeploymentConfig.validate_platform_args" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;validate_platform_args
     </span>
   </a>
   
@@ -1668,6 +1686,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#swerex.deployment.config.DockerDeploymentConfig.platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;platform
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swerex.deployment.config.DockerDeploymentConfig.type" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;type
@@ -1680,6 +1707,15 @@
   <a href="#swerex.deployment.config.DockerDeploymentConfig.model_config" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;model_config
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swerex.deployment.config.DockerDeploymentConfig.validate_platform_args" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;validate_platform_args
     </span>
   </a>
   
@@ -2312,11 +2348,21 @@
                 (<code>str | None</code>)
             </li>
             <li>
+              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.platform" href="#swerex.deployment.config.DockerDeploymentConfig.platform">platform</a></code>
+                (<code>str | None</code>)
+            </li>
+            <li>
               <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.type" href="#swerex.deployment.config.DockerDeploymentConfig.type">type</a></code>
                 (<code><span title="typing.Literal">Literal</span>[&#39;docker&#39;]</code>)
             </li>
         </ul>
 
+        <p>Validators:</p>
+        <ul>
+            <li>
+              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.validate_platform_args" href="#swerex.deployment.config.DockerDeploymentConfig.validate_platform_args">validate_platform_args</a></code>
+            </li>
+        </ul>
 
 
 
@@ -2392,7 +2438,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Additional arguments to pass to the docker run command.</p>
+        <p>Additional arguments to pass to the docker run command. If --platform is specified here, it will be moved to the platform field.</p>
     </div>
 
 </div>
@@ -2493,6 +2539,29 @@
 
 
 
+<h3 id="swerex.deployment.config.DockerDeploymentConfig.platform" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">platform</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-pydantic-field"><code>pydantic-field</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">platform</span><span class="p">:</span> <span class="n">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The platform to use for the docker image.</p>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h3 id="swerex.deployment.config.DockerDeploymentConfig.type" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">type</span>
 
@@ -2535,6 +2604,27 @@
 </div>
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="swerex.deployment.config.DockerDeploymentConfig.validate_platform_args" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">validate_platform_args</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-pydantic-validator"><code>pydantic-validator</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">validate_platform_args</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dict</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
