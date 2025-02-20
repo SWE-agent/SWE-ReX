@@ -14,7 +14,6 @@ from fastapi.security import APIKeyHeader
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from swerex import __version__
-
 from swerex.runtime.abstract import (
     Action,
     CloseResponse,

@@ -1,7 +1,7 @@
 import pytest
 
-from swerex.deployment.docker import DockerDeployment
 from swerex.deployment.config import DockerDeploymentConfig
+from swerex.deployment.docker import DockerDeployment
 from swerex.utils.free_port import find_free_port
 
 

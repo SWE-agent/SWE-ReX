@@ -39,39 +39,39 @@ class DockerDeploymentConfig(BaseModel):
     """The directory to use for the python standalone."""
     platform: str | None = None
     """The platform to use for the docker image."""
-    
+
     type: Literal["docker"] = "docker"
     """Discriminator for (de)serialization/CLI. Do not change."""
 
     model_config = ConfigDict(extra="forbid")
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     def validate_platform_args(cls, data: dict) -> dict:
         if not isinstance(data, dict):
             return data
-            
-        docker_args = data.get('docker_args', [])
-        platform = data.get('platform')
-        
+
+        docker_args = data.get("docker_args", [])
+        platform = data.get("platform")
+
         platform_arg_idx = next((i for i, arg in enumerate(docker_args) if arg.startswith("--platform")), -1)
-        
+
         if platform_arg_idx != -1:
             if platform is not None:
-                raise ValueError(
-                    "Cannot specify platform both via 'platform' field and '--platform' in docker_args"
-                )
+                msg = "Cannot specify platform both via 'platform' field and '--platform' in docker_args"
+                raise ValueError(msg)
             # Extract platform value from --platform argument
             if "=" in docker_args[platform_arg_idx]:
                 # Handle case where platform is specified as --platform=value
-                data['platform'] = docker_args[platform_arg_idx].split("=", 1)[1]
-                data['docker_args'] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 1:]
+                data["platform"] = docker_args[platform_arg_idx].split("=", 1)[1]
+                data["docker_args"] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 1 :]
             elif platform_arg_idx + 1 < len(docker_args):
-                data['platform'] = docker_args[platform_arg_idx + 1]
+                data["platform"] = docker_args[platform_arg_idx + 1]
                 # Remove the --platform and its value from docker_args
-                data['docker_args'] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 2:]
+                data["docker_args"] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 2 :]
             else:
-                raise ValueError("--platform argument must be followed by a value")
-        
+                msg = "--platform argument must be followed by a value"
+                raise ValueError(msg)
+
         return data
 
     def get_deployment(self) -> AbstractDeployment:

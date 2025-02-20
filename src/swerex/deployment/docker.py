@@ -3,7 +3,6 @@ import shlex
 import subprocess
 import time
 import uuid
-import time
 from typing import Any
 
 from typing_extensions import Self
@@ -149,12 +148,10 @@ class DockerDeployment(AbstractDeployment):
             platform_arg = f"--platform={self._config.platform}"
         else:
             platform_arg = ""
-        text = (
+        return (
             "ARG BASE_IMAGE\n\n"
-            
             # Build stage for standalone Python
             f"FROM {platform_arg} python:3.11-slim AS builder\n"
-            
             # Install build dependencies
             "RUN apt-get update && apt-get install -y \\\n"
             "    wget \\\n"
@@ -163,7 +160,6 @@ class DockerDeployment(AbstractDeployment):
             "    zlib1g-dev \\\n"
             "    libssl-dev \\\n"
             "    && rm -rf /var/lib/apt/lists/*\n\n"
-            
             # Download and compile Python as standalone
             "WORKDIR /build\n"
             "RUN wget https://www.python.org/ftp/python/3.11.8/Python-3.11.8.tgz \\\n"
@@ -176,44 +172,45 @@ class DockerDeployment(AbstractDeployment):
             "    make -j$(nproc) && \\\n"
             "    make install && \\\n"
             "    ldconfig\n\n"
-            
             # Production stage
             f"FROM {platform_arg} $BASE_IMAGE\n"
-            
             # Ensure we have the required runtime libraries
             "RUN apt-get update && apt-get install -y \\\n"
             "    libc6 \\\n"
             "    && rm -rf /var/lib/apt/lists/*\n"
-            
             # Copy the standalone Python installation
             f"COPY --from=builder /root/python3.11 {self._config.python_standalone_dir}/python3.11\n"
             f"ENV LD_LIBRARY_PATH={self._config.python_standalone_dir}/python3.11/lib:${{LD_LIBRARY_PATH:-}}\n"
             # Verify installation
             f"RUN {self._config.python_standalone_dir}/python3.11/bin/python3 --version\n"
-
             # Install swe-rex using the standalone Python
             f"RUN /root/python3.11/bin/pip3 install --no-cache-dir {PACKAGE_NAME}\n\n"
             f"RUN ln -s /root/python3.11/bin/{REMOTE_EXECUTABLE_NAME} /usr/local/bin/{REMOTE_EXECUTABLE_NAME}\n\n"
             f"RUN {REMOTE_EXECUTABLE_NAME} --version\n"
         )
-        return text
-    
+
     def _build_image(self):
         dockerfile = self.glibc_dockerfile
         platform_arg = []
         if self._config.platform:
             platform_arg = ["--platform", self._config.platform]
         build_cmd = [
-            "docker", "build", "-q",
+            "docker",
+            "build",
+            "-q",
             *platform_arg,
-            "--build-arg", f"BASE_IMAGE={self._config.image}",
+            "--build-arg",
+            f"BASE_IMAGE={self._config.image}",
             "-",
         ]
-        image_id = subprocess.check_output(
-            build_cmd,
-            input=dockerfile.encode(),
-        ).decode().strip()
-        return image_id
+        return (
+            subprocess.check_output(
+                build_cmd,
+                input=dockerfile.encode(),
+            )
+            .decode()
+            .strip()
+        )
 
     async def start(self):
         """Starts the runtime."""
