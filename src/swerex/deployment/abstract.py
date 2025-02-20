@@ -45,7 +45,11 @@ class AbstractDeployment(ABC):
         """Stops the runtime when the object is deleted."""
         # Need to be check whether we are in an async event loop or not
         # https://stackoverflow.com/questions/54770360/
-        self.logger.debug("Ensuring deployment is stopped because object is deleted")
+        msg = "Ensuring deployment is stopped because object is deleted"
+        try:
+            self.logger.debug(msg)
+        except Exception:
+            print(msg)
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():

@@ -267,7 +267,7 @@ class DockerDeployment(AbstractDeployment):
         if self._container_process is not None:
             try:
                 subprocess.check_call(
-                    ["docker", "kill", self._container_name],
+                    ["docker", "kill", self._container_name],  # type: ignore
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     timeout=10,
