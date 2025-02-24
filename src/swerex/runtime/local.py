@@ -234,9 +234,7 @@ class BashSession(Session):
             return await self._run_interactive(action)
         r = await self._run_normal(action)
         if action.check == "raise" and r.exit_code != 0:
-            msg = (
-                f"Command {action.command!r} failed with exit code {r.exit_code}. " f"Here is the output:\n{r.output!r}"
-            )
+            msg = f"Command {action.command!r} failed with exit code {r.exit_code}. Here is the output:\n{r.output!r}"
             if action.error_msg:
                 msg = f"{action.error_msg}: {msg}"
             raise NonZeroExitCodeError(msg)
