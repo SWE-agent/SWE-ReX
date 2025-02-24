@@ -1523,7 +1523,7 @@
 
 
 </h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">ModalDeployment</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n"><span title="logging.Logger">Logger</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">str</span> <span class="o">|</span> <span class="n"><span title="modal.Image">Image</span></span> <span class="o">|</span> <span class="n"><span title="pathlib.PurePath">PurePath</span></span><span class="p">,</span> <span class="n">startup_timeout</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">runtime_timeout</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="mf">1800.0</span><span class="p">,</span> <span class="n">modal_sandbox_kwargs</span><span class="p">:</span> <span class="n">dict</span><span class="p">[</span><span class="n">str</span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">install_pipx</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">deployment_timeout</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="mf">1800.0</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">ModalDeployment</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n"><span title="logging.Logger">Logger</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="n"><span title="modal.Image">Image</span></span> <span class="o">|</span> <span class="n"><span title="pathlib.PurePath">PurePath</span></span><span class="p">,</span> <span class="n">startup_timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">runtime_timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">1800.0</span><span class="p">,</span> <span class="n">modal_sandbox_kwargs</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">install_pipx</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">deployment_timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">1800.0</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -1551,7 +1551,7 @@
                 <code>image</code>
             </td>
             <td>
-                  <code>str | <span title="modal.Image">Image</span> | <span title="pathlib.PurePath">PurePath</span></code>
+                  <code><span title="str">str</span> | <span title="modal.Image">Image</span> | <span title="pathlib.PurePath">PurePath</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1571,7 +1571,7 @@
                 <code>startup_timeout</code>
             </td>
             <td>
-                  <code>float</code>
+                  <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1587,7 +1587,7 @@
                 <code>runtime_timeout</code>
             </td>
             <td>
-                  <code>float</code>
+                  <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1603,7 +1603,7 @@
                 <code>deployment_timeout</code>
             </td>
             <td>
-                  <code>float</code>
+                  <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1619,7 +1619,7 @@
                 <code>modal_sandbox_kwargs</code>
             </td>
             <td>
-                  <code>dict[str, <span title="typing.Any">Any</span>] | None</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1806,7 +1806,7 @@
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">_image</span> <span class="o">=</span> <span class="n">auto</span><span class="p">(</span><span class="n"><span title="swerex.deployment.modal.ModalDeployment(image)">image</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">_image</span> <span class="o">=</span> <span class="n"><span title="auto">auto</span></span><span class="p">(</span><span class="n"><span title="swerex.deployment.modal.ModalDeployment(image)">image</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2130,7 +2130,7 @@
 
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">_get_token</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">str</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">_get_token</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2154,7 +2154,7 @@
 
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">_start_swerex_cmd</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="n">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">str</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">_start_swerex_cmd</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2193,7 +2193,7 @@ install pipx and then run swerex-server with pipx run</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">_wait_until_alive</span><span class="p">(</span><span class="n">timeout</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">_wait_until_alive</span><span class="p">(</span><span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2287,7 +2287,7 @@ install pipx and then run swerex-server with pipx run</p>
 
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_modal_log_url</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">str</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_modal_log_url</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2350,7 +2350,7 @@ install pipx and then run swerex-server with pipx run</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_alive</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.IsAliveResponse" href="../../runtimes/data/#swerex.runtime.abstract.IsAliveResponse">IsAliveResponse</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_alive</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.IsAliveResponse" href="../../runtimes/data/#swerex.runtime.abstract.IsAliveResponse">IsAliveResponse</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">

@@ -2911,23 +2911,23 @@
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashAction.command" href="#swerex.runtime.abstract.BashAction.command">command</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashAction.session" href="#swerex.runtime.abstract.BashAction.session">session</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashAction.timeout" href="#swerex.runtime.abstract.BashAction.timeout">timeout</a></code>
-                (<code>float | None</code>)
+                (<code><span title="float">float</span> | None</code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashAction.is_interactive_command" href="#swerex.runtime.abstract.BashAction.is_interactive_command">is_interactive_command</a></code>
-                (<code>bool</code>)
+                (<code><span title="bool">bool</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashAction.is_interactive_quit" href="#swerex.runtime.abstract.BashAction.is_interactive_quit">is_interactive_quit</a></code>
-                (<code>bool</code>)
+                (<code><span title="bool">bool</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashAction.check" href="#swerex.runtime.abstract.BashAction.check">check</a></code>
@@ -2935,11 +2935,11 @@
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashAction.error_msg" href="#swerex.runtime.abstract.BashAction.error_msg">error_msg</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashAction.expect" href="#swerex.runtime.abstract.BashAction.expect">expect</a></code>
-                (<code>list[str]</code>)
+                (<code><span title="list">list</span>[<span title="str">str</span>]</code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashAction.action_type" href="#swerex.runtime.abstract.BashAction.action_type">action_type</a></code>
@@ -3020,7 +3020,7 @@ If "ignore", we will not attempt to extract the exit code, but always leave it a
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">command</span><span class="p">:</span> <span class="n">str</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">command</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3043,7 +3043,7 @@ If "ignore", we will not attempt to extract the exit code, but always leave it a
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">error_msg</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">error_msg</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3067,7 +3067,7 @@ command has a non-zero exit code and <code>check</code> is True.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">expect</span><span class="p">:</span> <span class="n">list</span><span class="p">[</span><span class="n">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">expect</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3090,7 +3090,7 @@ command has a non-zero exit code and <code>check</code> is True.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">is_interactive_command</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">is_interactive_command</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3114,7 +3114,7 @@ command has a non-zero exit code and <code>check</code> is True.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">is_interactive_quit</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">is_interactive_quit</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3139,7 +3139,7 @@ interactive program, set this to False.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3162,7 +3162,7 @@ interactive program, set this to False.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">timeout</span><span class="p">:</span> <span class="n">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3207,19 +3207,19 @@ interactive program, set this to False.</p>
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashInterruptAction.session" href="#swerex.runtime.abstract.BashInterruptAction.session">session</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashInterruptAction.timeout" href="#swerex.runtime.abstract.BashInterruptAction.timeout">timeout</a></code>
-                (<code>float</code>)
+                (<code><span title="float">float</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashInterruptAction.n_retry" href="#swerex.runtime.abstract.BashInterruptAction.n_retry">n_retry</a></code>
-                (<code>int</code>)
+                (<code><span title="int">int</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashInterruptAction.expect" href="#swerex.runtime.abstract.BashInterruptAction.expect">expect</a></code>
-                (<code>list[str]</code>)
+                (<code><span title="list">list</span>[<span title="str">str</span>]</code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashInterruptAction.action_type" href="#swerex.runtime.abstract.BashInterruptAction.action_type">action_type</a></code>
@@ -3272,7 +3272,7 @@ interactive program, set this to False.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">expect</span><span class="p">:</span> <span class="n">list</span><span class="p">[</span><span class="n">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">expect</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3295,7 +3295,7 @@ interactive program, set this to False.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">n_retry</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="mi">3</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">n_retry</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">=</span> <span class="mi">3</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3318,7 +3318,7 @@ interactive program, set this to False.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3339,7 +3339,7 @@ interactive program, set this to False.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">timeout</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="mf">0.2</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.2</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3384,19 +3384,19 @@ interactive program, set this to False.</p>
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashObservation.output" href="#swerex.runtime.abstract.BashObservation.output">output</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashObservation.exit_code" href="#swerex.runtime.abstract.BashObservation.exit_code">exit_code</a></code>
-                (<code>int | None</code>)
+                (<code><span title="int">int</span> | None</code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashObservation.failure_reason" href="#swerex.runtime.abstract.BashObservation.failure_reason">failure_reason</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashObservation.expect_string" href="#swerex.runtime.abstract.BashObservation.expect_string">expect_string</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.BashObservation.session_type" href="#swerex.runtime.abstract.BashObservation.session_type">session_type</a></code>
@@ -3428,7 +3428,7 @@ interactive program, set this to False.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">exit_code</span><span class="p">:</span> <span class="n">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">exit_code</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3449,7 +3449,7 @@ interactive program, set this to False.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">expect_string</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">expect_string</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3473,7 +3473,7 @@ Empty string if the command timed out etc.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">failure_reason</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">failure_reason</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3494,7 +3494,7 @@ Empty string if the command timed out etc.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">output</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">output</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3558,7 +3558,7 @@ Empty string if the command timed out etc.</p>
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CloseBashSessionRequest.session" href="#swerex.runtime.abstract.CloseBashSessionRequest.session">session</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CloseBashSessionRequest.session_type" href="#swerex.runtime.abstract.CloseBashSessionRequest.session_type">session_type</a></code>
@@ -3590,7 +3590,7 @@ Empty string if the command timed out etc.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3754,31 +3754,31 @@ Empty string if the command timed out etc.</p>
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Command.command" href="#swerex.runtime.abstract.Command.command">command</a></code>
-                (<code>str | list[str]</code>)
+                (<code><span title="str">str</span> | <span title="list">list</span>[<span title="str">str</span>]</code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Command.timeout" href="#swerex.runtime.abstract.Command.timeout">timeout</a></code>
-                (<code>float | None</code>)
+                (<code><span title="float">float</span> | None</code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Command.shell" href="#swerex.runtime.abstract.Command.shell">shell</a></code>
-                (<code>bool</code>)
+                (<code><span title="bool">bool</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Command.check" href="#swerex.runtime.abstract.Command.check">check</a></code>
-                (<code>bool</code>)
+                (<code><span title="bool">bool</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Command.error_msg" href="#swerex.runtime.abstract.Command.error_msg">error_msg</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Command.env" href="#swerex.runtime.abstract.Command.env">env</a></code>
-                (<code>dict[str, str] | None</code>)
+                (<code><span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span>] | None</code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Command.cwd" href="#swerex.runtime.abstract.Command.cwd">cwd</a></code>
-                (<code>str | None</code>)
+                (<code><span title="str">str</span> | None</code>)
             </li>
         </ul>
 
@@ -3806,7 +3806,7 @@ Empty string if the command timed out etc.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">check</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">check</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3830,7 +3830,7 @@ Empty string if the command timed out etc.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">command</span><span class="p">:</span> <span class="n">str</span> <span class="o">|</span> <span class="n">list</span><span class="p">[</span><span class="n">str</span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">command</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3855,7 +3855,7 @@ of automatic escaping of spaces etc.) unless you set <code>shell=True</code>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">cwd</span><span class="p">:</span> <span class="n">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">cwd</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3878,7 +3878,7 @@ of automatic escaping of spaces etc.) unless you set <code>shell=True</code>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">env</span><span class="p">:</span> <span class="n">dict</span><span class="p">[</span><span class="n">str</span><span class="p">,</span> <span class="n">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">env</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3901,7 +3901,7 @@ of automatic escaping of spaces etc.) unless you set <code>shell=True</code>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">error_msg</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">error_msg</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3925,7 +3925,7 @@ command has a non-zero exit code and <code>check</code> is True.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">shell</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">shell</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3948,7 +3948,7 @@ command has a non-zero exit code and <code>check</code> is True.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">timeout</span><span class="p">:</span> <span class="n">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3993,15 +3993,15 @@ command has a non-zero exit code and <code>check</code> is True.</p>
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CommandResponse.stdout" href="#swerex.runtime.abstract.CommandResponse.stdout">stdout</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CommandResponse.stderr" href="#swerex.runtime.abstract.CommandResponse.stderr">stderr</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CommandResponse.exit_code" href="#swerex.runtime.abstract.CommandResponse.exit_code">exit_code</a></code>
-                (<code>int | None</code>)
+                (<code><span title="int">int</span> | None</code>)
             </li>
         </ul>
 
@@ -4029,7 +4029,7 @@ command has a non-zero exit code and <code>check</code> is True.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">exit_code</span><span class="p">:</span> <span class="n">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">exit_code</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4050,7 +4050,7 @@ command has a non-zero exit code and <code>check</code> is True.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">stderr</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">stderr</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4071,7 +4071,7 @@ command has a non-zero exit code and <code>check</code> is True.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">stdout</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">stdout</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4114,11 +4114,11 @@ command has a non-zero exit code and <code>check</code> is True.</p>
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CreateBashSessionRequest.startup_source" href="#swerex.runtime.abstract.CreateBashSessionRequest.startup_source">startup_source</a></code>
-                (<code>list[str]</code>)
+                (<code><span title="list">list</span>[<span title="str">str</span>]</code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CreateBashSessionRequest.session" href="#swerex.runtime.abstract.CreateBashSessionRequest.session">session</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CreateBashSessionRequest.session_type" href="#swerex.runtime.abstract.CreateBashSessionRequest.session_type">session_type</a></code>
@@ -4126,7 +4126,7 @@ command has a non-zero exit code and <code>check</code> is True.</p>
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CreateBashSessionRequest.startup_timeout" href="#swerex.runtime.abstract.CreateBashSessionRequest.startup_timeout">startup_timeout</a></code>
-                (<code>float</code>)
+                (<code><span title="float">float</span></code>)
             </li>
         </ul>
 
@@ -4154,7 +4154,7 @@ command has a non-zero exit code and <code>check</code> is True.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">session</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4196,7 +4196,7 @@ command has a non-zero exit code and <code>check</code> is True.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">startup_source</span><span class="p">:</span> <span class="n">list</span><span class="p">[</span><span class="n">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">startup_source</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4221,7 +4221,7 @@ often overwrite PS1, which we need to reset.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">startup_timeout</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">startup_timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">1.0</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4266,7 +4266,7 @@ often overwrite PS1, which we need to reset.</p>
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CreateBashSessionResponse.output" href="#swerex.runtime.abstract.CreateBashSessionResponse.output">output</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CreateBashSessionResponse.session_type" href="#swerex.runtime.abstract.CreateBashSessionResponse.session_type">session_type</a></code>
@@ -4298,7 +4298,7 @@ often overwrite PS1, which we need to reset.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">output</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">output</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4367,11 +4367,11 @@ often overwrite PS1, which we need to reset.</p>
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.IsAliveResponse.is_alive" href="#swerex.runtime.abstract.IsAliveResponse.is_alive">is_alive</a></code>
-                (<code>bool</code>)
+                (<code><span title="bool">bool</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.IsAliveResponse.message" href="#swerex.runtime.abstract.IsAliveResponse.message">message</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
         </ul>
 
@@ -4399,7 +4399,7 @@ often overwrite PS1, which we need to reset.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">is_alive</span><span class="p">:</span> <span class="n">bool</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">is_alive</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4420,7 +4420,7 @@ often overwrite PS1, which we need to reset.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">message</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">message</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4465,15 +4465,15 @@ often overwrite PS1, which we need to reset.</p>
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.ReadFileRequest.path" href="#swerex.runtime.abstract.ReadFileRequest.path">path</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.ReadFileRequest.encoding" href="#swerex.runtime.abstract.ReadFileRequest.encoding">encoding</a></code>
-                (<code>str | None</code>)
+                (<code><span title="str">str</span> | None</code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.ReadFileRequest.errors" href="#swerex.runtime.abstract.ReadFileRequest.errors">errors</a></code>
-                (<code>str | None</code>)
+                (<code><span title="str">str</span> | None</code>)
             </li>
         </ul>
 
@@ -4501,7 +4501,7 @@ often overwrite PS1, which we need to reset.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">encoding</span><span class="p">:</span> <span class="n">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">encoding</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4525,7 +4525,7 @@ This is the same as the <code>encoding</code> argument of <code>Path.read_text()
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">errors</span><span class="p">:</span> <span class="n">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">errors</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4549,7 +4549,7 @@ This is the same as the <code>errors</code> argument of <code>Path.read_text()</
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">path</span><span class="p">:</span> <span class="n">str</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4594,7 +4594,7 @@ This is the same as the <code>errors</code> argument of <code>Path.read_text()</
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.ReadFileResponse.content" href="#swerex.runtime.abstract.ReadFileResponse.content">content</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
         </ul>
 
@@ -4622,7 +4622,7 @@ This is the same as the <code>errors</code> argument of <code>Path.read_text()</
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">content</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">content</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4665,11 +4665,11 @@ This is the same as the <code>errors</code> argument of <code>Path.read_text()</
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.UploadRequest.source_path" href="#swerex.runtime.abstract.UploadRequest.source_path">source_path</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.UploadRequest.target_path" href="#swerex.runtime.abstract.UploadRequest.target_path">target_path</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
         </ul>
 
@@ -4697,7 +4697,7 @@ This is the same as the <code>errors</code> argument of <code>Path.read_text()</
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">source_path</span><span class="p">:</span> <span class="n">str</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">source_path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4718,7 +4718,7 @@ This is the same as the <code>errors</code> argument of <code>Path.read_text()</
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">target_path</span><span class="p">:</span> <span class="n">str</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">target_path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4788,11 +4788,11 @@ This is the same as the <code>errors</code> argument of <code>Path.read_text()</
         <ul>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.WriteFileRequest.content" href="#swerex.runtime.abstract.WriteFileRequest.content">content</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
             <li>
               <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.WriteFileRequest.path" href="#swerex.runtime.abstract.WriteFileRequest.path">path</a></code>
-                (<code>str</code>)
+                (<code><span title="str">str</span></code>)
             </li>
         </ul>
 
@@ -4820,7 +4820,7 @@ This is the same as the <code>errors</code> argument of <code>Path.read_text()</
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">content</span><span class="p">:</span> <span class="n">str</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">content</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4841,7 +4841,7 @@ This is the same as the <code>errors</code> argument of <code>Path.read_text()</
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">path</span><span class="p">:</span> <span class="n">str</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">

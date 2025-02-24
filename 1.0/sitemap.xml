@@ -2,74 +2,74 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://swe-rex.com/latest/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/architecture/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/installation/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/usage/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/server/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/deployments/abstract/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/deployments/config/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/deployments/docker/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/deployments/dummy/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/deployments/fargate/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/deployments/local/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/deployments/modal/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/deployments/remote/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/runtimes/abstract/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/runtimes/data/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/runtimes/dummy/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/runtimes/local/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
     <url>
          <loc>https://swe-rex.com/latest/api/runtimes/remote/</loc>
-         <lastmod>2025-02-20</lastmod>
+         <lastmod>2025-02-24</lastmod>
     </url>
 </urlset>
