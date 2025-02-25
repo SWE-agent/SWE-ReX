@@ -191,7 +191,8 @@ class DockerDeployment(AbstractDeployment):
             f"RUN {REMOTE_EXECUTABLE_NAME} --version\n"
         )
 
-    def _build_image(self):
+    def _build_image(self) -> str:
+        """Builds image, returns image ID."""
         dockerfile = self.glibc_dockerfile
         platform_arg = []
         if self._config.platform:
@@ -205,7 +206,7 @@ class DockerDeployment(AbstractDeployment):
             f"BASE_IMAGE={self._config.image}",
             "-",
         ]
-        return (
+        image_id = (
             subprocess.check_output(
                 build_cmd,
                 input=dockerfile.encode(),
@@ -213,6 +214,10 @@ class DockerDeployment(AbstractDeployment):
             .decode()
             .strip()
         )
+        if not image_id.startswith("sha256:"):
+            msg = f"Failed to build image. Image ID is not a SHA256: {image_id}"
+            raise RuntimeError(msg)
+        return image_id
 
     async def start(self):
         """Starts the runtime."""
