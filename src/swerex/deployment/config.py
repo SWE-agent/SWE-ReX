@@ -39,6 +39,8 @@ class DockerDeploymentConfig(BaseModel):
     """The directory to use for the python standalone."""
     platform: str | None = None
     """The platform to use for the docker image."""
+    remove_container: bool = True
+    """Whether to remove the container after it has stopped."""
 
     type: Literal["docker"] = "docker"
     """Discriminator for (de)serialization/CLI. Do not change."""
