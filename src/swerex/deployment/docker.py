@@ -193,6 +193,10 @@ class DockerDeployment(AbstractDeployment):
 
     def _build_image(self) -> str:
         """Builds image, returns image ID."""
+        self.logger.info(
+            f"Building image {self._config.image} to install a standalone python to {self._config.python_standalone_dir}. "
+            "This might take a while (but you only have to do it once). To skip this step, set `python_standalone_dir` to None."
+        )
         dockerfile = self.glibc_dockerfile
         platform_arg = []
         if self._config.platform:
