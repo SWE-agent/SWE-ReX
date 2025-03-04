@@ -191,7 +191,8 @@ class RemoteRuntime(AbstractRuntime):
         source = Path(request.source_path).resolve()
         self.logger.debug("Uploading file from %s to %s", request.source_path, request.target_path)
         if source.is_dir():
-            with tempfile.TemporaryDirectory() as temp_dir:
+            # Ignore cleanup errors: See https://github.com/SWE-agent/SWE-agent/issues/1005
+            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
                 zip_path = Path(temp_dir) / "zipped_transfer.zip"
                 shutil.make_archive(str(zip_path.with_suffix("")), "zip", source)
                 self.logger.debug("Created zip file at %s", zip_path)
