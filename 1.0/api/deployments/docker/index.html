@@ -2297,7 +2297,10 @@ tested with bool().</p>
 <span class="normal">265</span>
 <span class="normal">266</span>
 <span class="normal">267</span>
-<span class="normal">268</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Starts the runtime.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_pull_image</span><span class="p">()</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">python_standalone_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -2312,10 +2315,13 @@ tested with bool().</p>
     <span class="n">platform_arg</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">platform</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">platform_arg</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;--platform&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">platform</span><span class="p">]</span>
+    <span class="n">rm_arg</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">remove_container</span><span class="p">:</span>
+        <span class="n">rm_arg</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;--rm&quot;</span><span class="p">]</span>
     <span class="n">cmds</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;docker&quot;</span><span class="p">,</span>
         <span class="s2">&quot;run&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--rm&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">rm_arg</span><span class="p">,</span>
         <span class="s2">&quot;-p&quot;</span><span class="p">,</span>
         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">port</span><span class="si">}</span><span class="s2">:8000&quot;</span><span class="p">,</span>
         <span class="o">*</span><span class="n">platform_arg</span><span class="p">,</span>
@@ -2367,10 +2373,7 @@ tested with bool().</p>
 
             <details class="quote">
               <summary>Source code in <code>swerex/deployment/docker.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">273</span>
 <span class="normal">274</span>
 <span class="normal">275</span>
 <span class="normal">276</span>
@@ -2404,7 +2407,10 @@ tested with bool().</p>
 <span class="normal">304</span>
 <span class="normal">305</span>
 <span class="normal">306</span>
-<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stops the runtime.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
