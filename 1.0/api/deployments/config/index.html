@@ -2168,6 +2168,7 @@
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -2189,12 +2190,43 @@
   </span>
 
 </h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">DeploymentConfig</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.config.LocalDeploymentConfig" href="#swerex.deployment.config.LocalDeploymentConfig">LocalDeploymentConfig</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig" href="#swerex.deployment.config.DockerDeploymentConfig">DockerDeploymentConfig</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.config.ModalDeploymentConfig" href="#swerex.deployment.config.ModalDeploymentConfig">ModalDeploymentConfig</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig" href="#swerex.deployment.config.FargateDeploymentConfig">FargateDeploymentConfig</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.config.RemoteDeploymentConfig" href="#swerex.deployment.config.RemoteDeploymentConfig">RemoteDeploymentConfig</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.config.DummyDeploymentConfig" href="#swerex.deployment.config.DummyDeploymentConfig">DummyDeploymentConfig</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">DeploymentConfig</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            LocalDeploymentConfig
+
+
+  
+      pydantic-model
+   (swerex.deployment.config.LocalDeploymentConfig)" href="#swerex.deployment.config.LocalDeploymentConfig">LocalDeploymentConfig</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            DockerDeploymentConfig
+
+
+  
+      pydantic-model
+   (swerex.deployment.config.DockerDeploymentConfig)" href="#swerex.deployment.config.DockerDeploymentConfig">DockerDeploymentConfig</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            ModalDeploymentConfig
+
+
+  
+      pydantic-model
+   (swerex.deployment.config.ModalDeploymentConfig)" href="#swerex.deployment.config.ModalDeploymentConfig">ModalDeploymentConfig</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FargateDeploymentConfig
+
+
+  
+      pydantic-model
+   (swerex.deployment.config.FargateDeploymentConfig)" href="#swerex.deployment.config.FargateDeploymentConfig">FargateDeploymentConfig</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            RemoteDeploymentConfig
+
+
+  
+      pydantic-model
+   (swerex.deployment.config.RemoteDeploymentConfig)" href="#swerex.deployment.config.RemoteDeploymentConfig">RemoteDeploymentConfig</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            DummyDeploymentConfig
+
+
+  
+      pydantic-model
+   (swerex.deployment.config.DummyDeploymentConfig)" href="#swerex.deployment.config.DummyDeploymentConfig">DummyDeploymentConfig</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Union of all deployment configurations. Useful for type hints.</p>
+
     </div>
 
 </div>
@@ -2230,7 +2262,12 @@
         <p>Fields:</p>
         <ul>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.LocalDeploymentConfig.type" href="#swerex.deployment.config.LocalDeploymentConfig.type">type</a></code>
+              <code><a class="autorefs autorefs-internal" title="            type
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.LocalDeploymentConfig.type)" href="#swerex.deployment.config.LocalDeploymentConfig.type">type</a></code>
                 (<code><span title="typing.Literal">Literal</span>[&#39;local&#39;]</code>)
             </li>
         </ul>
@@ -2265,6 +2302,7 @@
     <div class="doc doc-contents ">
 
         <p>Discriminator for (de)serialization/CLI. Do not change.</p>
+
     </div>
 
 </div>
@@ -2287,6 +2325,7 @@
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -2301,10 +2340,11 @@
 
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
     </div>
 
@@ -2348,43 +2388,93 @@
         <p>Fields:</p>
         <ul>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.image" href="#swerex.deployment.config.DockerDeploymentConfig.image">image</a></code>
+              <code><a class="autorefs autorefs-internal" title="            image
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DockerDeploymentConfig.image)" href="#swerex.deployment.config.DockerDeploymentConfig.image">image</a></code>
                 (<code><span title="str">str</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.port" href="#swerex.deployment.config.DockerDeploymentConfig.port">port</a></code>
+              <code><a class="autorefs autorefs-internal" title="            port
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DockerDeploymentConfig.port)" href="#swerex.deployment.config.DockerDeploymentConfig.port">port</a></code>
                 (<code><span title="int">int</span> | None</code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.docker_args" href="#swerex.deployment.config.DockerDeploymentConfig.docker_args">docker_args</a></code>
+              <code><a class="autorefs autorefs-internal" title="            docker_args
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DockerDeploymentConfig.docker_args)" href="#swerex.deployment.config.DockerDeploymentConfig.docker_args">docker_args</a></code>
                 (<code><span title="list">list</span>[<span title="str">str</span>]</code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.startup_timeout" href="#swerex.deployment.config.DockerDeploymentConfig.startup_timeout">startup_timeout</a></code>
+              <code><a class="autorefs autorefs-internal" title="            startup_timeout
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DockerDeploymentConfig.startup_timeout)" href="#swerex.deployment.config.DockerDeploymentConfig.startup_timeout">startup_timeout</a></code>
                 (<code><span title="float">float</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.pull" href="#swerex.deployment.config.DockerDeploymentConfig.pull">pull</a></code>
+              <code><a class="autorefs autorefs-internal" title="            pull
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DockerDeploymentConfig.pull)" href="#swerex.deployment.config.DockerDeploymentConfig.pull">pull</a></code>
                 (<code><span title="typing.Literal">Literal</span>[&#39;never&#39;, &#39;always&#39;, &#39;missing&#39;]</code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.remove_images" href="#swerex.deployment.config.DockerDeploymentConfig.remove_images">remove_images</a></code>
+              <code><a class="autorefs autorefs-internal" title="            remove_images
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DockerDeploymentConfig.remove_images)" href="#swerex.deployment.config.DockerDeploymentConfig.remove_images">remove_images</a></code>
                 (<code><span title="bool">bool</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.python_standalone_dir" href="#swerex.deployment.config.DockerDeploymentConfig.python_standalone_dir">python_standalone_dir</a></code>
+              <code><a class="autorefs autorefs-internal" title="            python_standalone_dir
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DockerDeploymentConfig.python_standalone_dir)" href="#swerex.deployment.config.DockerDeploymentConfig.python_standalone_dir">python_standalone_dir</a></code>
                 (<code><span title="str">str</span> | None</code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.platform" href="#swerex.deployment.config.DockerDeploymentConfig.platform">platform</a></code>
+              <code><a class="autorefs autorefs-internal" title="            platform
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DockerDeploymentConfig.platform)" href="#swerex.deployment.config.DockerDeploymentConfig.platform">platform</a></code>
                 (<code><span title="str">str</span> | None</code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.remove_container" href="#swerex.deployment.config.DockerDeploymentConfig.remove_container">remove_container</a></code>
+              <code><a class="autorefs autorefs-internal" title="            remove_container
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DockerDeploymentConfig.remove_container)" href="#swerex.deployment.config.DockerDeploymentConfig.remove_container">remove_container</a></code>
                 (<code><span title="bool">bool</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.type" href="#swerex.deployment.config.DockerDeploymentConfig.type">type</a></code>
+              <code><a class="autorefs autorefs-internal" title="            type
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DockerDeploymentConfig.type)" href="#swerex.deployment.config.DockerDeploymentConfig.type">type</a></code>
                 (<code><span title="typing.Literal">Literal</span>[&#39;docker&#39;]</code>)
             </li>
         </ul>
@@ -2392,7 +2482,12 @@
         <p>Validators:</p>
         <ul>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DockerDeploymentConfig.validate_platform_args" href="#swerex.deployment.config.DockerDeploymentConfig.validate_platform_args">validate_platform_args</a></code>
+              <code><a class="autorefs autorefs-internal" title="            validate_platform_args
+
+
+  
+      pydantic-validator
+   (swerex.deployment.config.DockerDeploymentConfig.validate_platform_args)" href="#swerex.deployment.config.DockerDeploymentConfig.validate_platform_args">validate_platform_args</a></code>
             </li>
         </ul>
 
@@ -2425,6 +2520,7 @@
     <div class="doc doc-contents ">
 
         <p>The name of the docker image to use.</p>
+
     </div>
 
 </div>
@@ -2448,6 +2544,7 @@
     <div class="doc doc-contents ">
 
         <p>The port that the docker container connects to. If None, a free port is found.</p>
+
     </div>
 
 </div>
@@ -2471,6 +2568,7 @@
     <div class="doc doc-contents ">
 
         <p>Additional arguments to pass to the docker run command. If --platform is specified here, it will be moved to the platform field.</p>
+
     </div>
 
 </div>
@@ -2494,6 +2592,7 @@
     <div class="doc doc-contents ">
 
         <p>The time to wait for the runtime to start.</p>
+
     </div>
 
 </div>
@@ -2517,6 +2616,7 @@
     <div class="doc doc-contents ">
 
         <p>When to pull docker images.</p>
+
     </div>
 
 </div>
@@ -2540,6 +2640,7 @@
     <div class="doc doc-contents ">
 
         <p>Whether to remove the image after it has stopped.</p>
+
     </div>
 
 </div>
@@ -2563,6 +2664,7 @@
     <div class="doc doc-contents ">
 
         <p>The directory to use for the python standalone.</p>
+
     </div>
 
 </div>
@@ -2586,6 +2688,7 @@
     <div class="doc doc-contents ">
 
         <p>The platform to use for the docker image.</p>
+
     </div>
 
 </div>
@@ -2609,6 +2712,7 @@
     <div class="doc doc-contents ">
 
         <p>Whether to remove the container after it has stopped.</p>
+
     </div>
 
 </div>
@@ -2632,6 +2736,7 @@
     <div class="doc doc-contents ">
 
         <p>Discriminator for (de)serialization/CLI. Do not change.</p>
+
     </div>
 
 </div>
@@ -2654,6 +2759,7 @@
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -2677,6 +2783,7 @@
 
     <div class="doc doc-contents ">
 
+
     </div>
 
 </div>
@@ -2689,10 +2796,11 @@
 
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
     </div>
 
@@ -2736,31 +2844,66 @@
         <p>Fields:</p>
         <ul>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.ModalDeploymentConfig.image" href="#swerex.deployment.config.ModalDeploymentConfig.image">image</a></code>
+              <code><a class="autorefs autorefs-internal" title="            image
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.ModalDeploymentConfig.image)" href="#swerex.deployment.config.ModalDeploymentConfig.image">image</a></code>
                 (<code><span title="str">str</span> | <span title="pathlib.PurePath">PurePath</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.ModalDeploymentConfig.startup_timeout" href="#swerex.deployment.config.ModalDeploymentConfig.startup_timeout">startup_timeout</a></code>
+              <code><a class="autorefs autorefs-internal" title="            startup_timeout
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.ModalDeploymentConfig.startup_timeout)" href="#swerex.deployment.config.ModalDeploymentConfig.startup_timeout">startup_timeout</a></code>
                 (<code><span title="float">float</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.ModalDeploymentConfig.runtime_timeout" href="#swerex.deployment.config.ModalDeploymentConfig.runtime_timeout">runtime_timeout</a></code>
+              <code><a class="autorefs autorefs-internal" title="            runtime_timeout
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.ModalDeploymentConfig.runtime_timeout)" href="#swerex.deployment.config.ModalDeploymentConfig.runtime_timeout">runtime_timeout</a></code>
                 (<code><span title="float">float</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.ModalDeploymentConfig.deployment_timeout" href="#swerex.deployment.config.ModalDeploymentConfig.deployment_timeout">deployment_timeout</a></code>
+              <code><a class="autorefs autorefs-internal" title="            deployment_timeout
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.ModalDeploymentConfig.deployment_timeout)" href="#swerex.deployment.config.ModalDeploymentConfig.deployment_timeout">deployment_timeout</a></code>
                 (<code><span title="float">float</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.ModalDeploymentConfig.modal_sandbox_kwargs" href="#swerex.deployment.config.ModalDeploymentConfig.modal_sandbox_kwargs">modal_sandbox_kwargs</a></code>
+              <code><a class="autorefs autorefs-internal" title="            modal_sandbox_kwargs
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.ModalDeploymentConfig.modal_sandbox_kwargs)" href="#swerex.deployment.config.ModalDeploymentConfig.modal_sandbox_kwargs">modal_sandbox_kwargs</a></code>
                 (<code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.ModalDeploymentConfig.type" href="#swerex.deployment.config.ModalDeploymentConfig.type">type</a></code>
+              <code><a class="autorefs autorefs-internal" title="            type
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.ModalDeploymentConfig.type)" href="#swerex.deployment.config.ModalDeploymentConfig.type">type</a></code>
                 (<code><span title="typing.Literal">Literal</span>[&#39;modal&#39;]</code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.ModalDeploymentConfig.install_pipx" href="#swerex.deployment.config.ModalDeploymentConfig.install_pipx">install_pipx</a></code>
+              <code><a class="autorefs autorefs-internal" title="            install_pipx
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.ModalDeploymentConfig.install_pipx)" href="#swerex.deployment.config.ModalDeploymentConfig.install_pipx">install_pipx</a></code>
                 (<code><span title="bool">bool</span></code>)
             </li>
         </ul>
@@ -2795,6 +2938,7 @@
     <div class="doc doc-contents ">
 
         <p>Image to use for the deployment.</p>
+
     </div>
 
 </div>
@@ -2818,6 +2962,7 @@
     <div class="doc doc-contents ">
 
         <p>The time to wait for the runtime to start.</p>
+
     </div>
 
 </div>
@@ -2841,6 +2986,7 @@
     <div class="doc doc-contents ">
 
         <p>Runtime timeout (default timeout for all runtime requests)</p>
+
     </div>
 
 </div>
@@ -2866,6 +3012,7 @@
         <p>Kill deployment after this many seconds no matter what.
 This is a useful killing switch to ensure that you don't spend too 
 much money on modal.</p>
+
     </div>
 
 </div>
@@ -2889,6 +3036,7 @@ much money on modal.</p>
     <div class="doc doc-contents ">
 
         <p>Additional arguments to pass to <code>modal.Sandbox.create</code></p>
+
     </div>
 
 </div>
@@ -2912,6 +3060,7 @@ much money on modal.</p>
     <div class="doc doc-contents ">
 
         <p>Discriminator for (de)serialization/CLI. Do not change.</p>
+
     </div>
 
 </div>
@@ -2938,6 +3087,7 @@ much money on modal.</p>
 This is enabled by default so we can fall back to installing swe-rex
 with pipx if the image does not have it. However, depending on your image,
 installing pipx might fail (or be slow).</p>
+
     </div>
 
 </div>
@@ -2960,6 +3110,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -2974,10 +3125,11 @@ installing pipx might fail (or be slow).</p>
 
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
     </div>
 
@@ -3021,47 +3173,102 @@ installing pipx might fail (or be slow).</p>
         <p>Fields:</p>
         <ul>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig.image" href="#swerex.deployment.config.FargateDeploymentConfig.image">image</a></code>
+              <code><a class="autorefs autorefs-internal" title="            image
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.FargateDeploymentConfig.image)" href="#swerex.deployment.config.FargateDeploymentConfig.image">image</a></code>
                 (<code><span title="str">str</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig.port" href="#swerex.deployment.config.FargateDeploymentConfig.port">port</a></code>
+              <code><a class="autorefs autorefs-internal" title="            port
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.FargateDeploymentConfig.port)" href="#swerex.deployment.config.FargateDeploymentConfig.port">port</a></code>
                 (<code><span title="int">int</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig.cluster_name" href="#swerex.deployment.config.FargateDeploymentConfig.cluster_name">cluster_name</a></code>
+              <code><a class="autorefs autorefs-internal" title="            cluster_name
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.FargateDeploymentConfig.cluster_name)" href="#swerex.deployment.config.FargateDeploymentConfig.cluster_name">cluster_name</a></code>
                 (<code><span title="str">str</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig.execution_role_prefix" href="#swerex.deployment.config.FargateDeploymentConfig.execution_role_prefix">execution_role_prefix</a></code>
+              <code><a class="autorefs autorefs-internal" title="            execution_role_prefix
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.FargateDeploymentConfig.execution_role_prefix)" href="#swerex.deployment.config.FargateDeploymentConfig.execution_role_prefix">execution_role_prefix</a></code>
                 (<code><span title="str">str</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig.task_definition_prefix" href="#swerex.deployment.config.FargateDeploymentConfig.task_definition_prefix">task_definition_prefix</a></code>
+              <code><a class="autorefs autorefs-internal" title="            task_definition_prefix
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.FargateDeploymentConfig.task_definition_prefix)" href="#swerex.deployment.config.FargateDeploymentConfig.task_definition_prefix">task_definition_prefix</a></code>
                 (<code><span title="str">str</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig.log_group" href="#swerex.deployment.config.FargateDeploymentConfig.log_group">log_group</a></code>
+              <code><a class="autorefs autorefs-internal" title="            log_group
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.FargateDeploymentConfig.log_group)" href="#swerex.deployment.config.FargateDeploymentConfig.log_group">log_group</a></code>
                 (<code><span title="str">str</span> | None</code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig.security_group_prefix" href="#swerex.deployment.config.FargateDeploymentConfig.security_group_prefix">security_group_prefix</a></code>
+              <code><a class="autorefs autorefs-internal" title="            security_group_prefix
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.FargateDeploymentConfig.security_group_prefix)" href="#swerex.deployment.config.FargateDeploymentConfig.security_group_prefix">security_group_prefix</a></code>
                 (<code><span title="str">str</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig.fargate_args" href="#swerex.deployment.config.FargateDeploymentConfig.fargate_args">fargate_args</a></code>
+              <code><a class="autorefs autorefs-internal" title="            fargate_args
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.FargateDeploymentConfig.fargate_args)" href="#swerex.deployment.config.FargateDeploymentConfig.fargate_args">fargate_args</a></code>
                 (<code><span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span>]</code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig.container_timeout" href="#swerex.deployment.config.FargateDeploymentConfig.container_timeout">container_timeout</a></code>
+              <code><a class="autorefs autorefs-internal" title="            container_timeout
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.FargateDeploymentConfig.container_timeout)" href="#swerex.deployment.config.FargateDeploymentConfig.container_timeout">container_timeout</a></code>
                 (<code><span title="float">float</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig.runtime_timeout" href="#swerex.deployment.config.FargateDeploymentConfig.runtime_timeout">runtime_timeout</a></code>
+              <code><a class="autorefs autorefs-internal" title="            runtime_timeout
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.FargateDeploymentConfig.runtime_timeout)" href="#swerex.deployment.config.FargateDeploymentConfig.runtime_timeout">runtime_timeout</a></code>
                 (<code><span title="float">float</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.FargateDeploymentConfig.type" href="#swerex.deployment.config.FargateDeploymentConfig.type">type</a></code>
+              <code><a class="autorefs autorefs-internal" title="            type
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.FargateDeploymentConfig.type)" href="#swerex.deployment.config.FargateDeploymentConfig.type">type</a></code>
                 (<code><span title="typing.Literal">Literal</span>[&#39;fargate&#39;]</code>)
             </li>
         </ul>
@@ -3094,6 +3301,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3115,6 +3323,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3136,6 +3345,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3157,6 +3367,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3178,6 +3389,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3199,6 +3411,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3220,6 +3433,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3241,6 +3455,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3262,6 +3477,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3283,6 +3499,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3306,6 +3523,7 @@ installing pipx might fail (or be slow).</p>
     <div class="doc doc-contents ">
 
         <p>Discriminator for (de)serialization/CLI. Do not change.</p>
+
     </div>
 
 </div>
@@ -3328,6 +3546,7 @@ installing pipx might fail (or be slow).</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3342,10 +3561,11 @@ installing pipx might fail (or be slow).</p>
 
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
     </div>
 
@@ -3390,23 +3610,48 @@ swerex server.</p>
         <p>Fields:</p>
         <ul>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.RemoteDeploymentConfig.auth_token" href="#swerex.deployment.config.RemoteDeploymentConfig.auth_token">auth_token</a></code>
+              <code><a class="autorefs autorefs-internal" title="            auth_token
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.RemoteDeploymentConfig.auth_token)" href="#swerex.deployment.config.RemoteDeploymentConfig.auth_token">auth_token</a></code>
                 (<code><span title="str">str</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.RemoteDeploymentConfig.host" href="#swerex.deployment.config.RemoteDeploymentConfig.host">host</a></code>
+              <code><a class="autorefs autorefs-internal" title="            host
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.RemoteDeploymentConfig.host)" href="#swerex.deployment.config.RemoteDeploymentConfig.host">host</a></code>
                 (<code><span title="str">str</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.RemoteDeploymentConfig.port" href="#swerex.deployment.config.RemoteDeploymentConfig.port">port</a></code>
+              <code><a class="autorefs autorefs-internal" title="            port
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.RemoteDeploymentConfig.port)" href="#swerex.deployment.config.RemoteDeploymentConfig.port">port</a></code>
                 (<code><span title="int">int</span> | None</code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.RemoteDeploymentConfig.timeout" href="#swerex.deployment.config.RemoteDeploymentConfig.timeout">timeout</a></code>
+              <code><a class="autorefs autorefs-internal" title="            timeout
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.RemoteDeploymentConfig.timeout)" href="#swerex.deployment.config.RemoteDeploymentConfig.timeout">timeout</a></code>
                 (<code><span title="float">float</span></code>)
             </li>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.RemoteDeploymentConfig.type" href="#swerex.deployment.config.RemoteDeploymentConfig.type">type</a></code>
+              <code><a class="autorefs autorefs-internal" title="            type
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.RemoteDeploymentConfig.type)" href="#swerex.deployment.config.RemoteDeploymentConfig.type">type</a></code>
                 (<code><span title="typing.Literal">Literal</span>[&#39;remote&#39;]</code>)
             </li>
         </ul>
@@ -3441,6 +3686,7 @@ swerex server.</p>
     <div class="doc doc-contents ">
 
         <p>The token to use for authentication.</p>
+
     </div>
 
 </div>
@@ -3464,6 +3710,7 @@ swerex server.</p>
     <div class="doc doc-contents ">
 
         <p>The host to connect to.</p>
+
     </div>
 
 </div>
@@ -3487,6 +3734,7 @@ swerex server.</p>
     <div class="doc doc-contents ">
 
         <p>The port to connect to.</p>
+
     </div>
 
 </div>
@@ -3508,6 +3756,7 @@ swerex server.</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3531,6 +3780,7 @@ swerex server.</p>
     <div class="doc doc-contents ">
 
         <p>Discriminator for (de)serialization/CLI. Do not change.</p>
+
     </div>
 
 </div>
@@ -3553,6 +3803,7 @@ swerex server.</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3567,10 +3818,11 @@ swerex server.</p>
 
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
     </div>
 
@@ -3614,7 +3866,12 @@ swerex server.</p>
         <p>Fields:</p>
         <ul>
             <li>
-              <code><a class="autorefs autorefs-internal" title="swerex.deployment.config.DummyDeploymentConfig.type" href="#swerex.deployment.config.DummyDeploymentConfig.type">type</a></code>
+              <code><a class="autorefs autorefs-internal" title="            type
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DummyDeploymentConfig.type)" href="#swerex.deployment.config.DummyDeploymentConfig.type">type</a></code>
                 (<code><span title="typing.Literal">Literal</span>[&#39;dummy&#39;]</code>)
             </li>
         </ul>
@@ -3649,6 +3906,7 @@ swerex server.</p>
     <div class="doc doc-contents ">
 
         <p>Discriminator for (de)serialization/CLI. Do not change.</p>
+
     </div>
 
 </div>
@@ -3671,6 +3929,7 @@ swerex server.</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -3685,10 +3944,11 @@ swerex server.</p>
 
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
     </div>
 
@@ -3711,10 +3971,16 @@ swerex server.</p>
 
 
 </h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.config.DeploymentConfig" href="#swerex.deployment.config.DeploymentConfig">DeploymentConfig</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_deployment</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            DeploymentConfig
+
+
+  
+      module-attribute
+   (swerex.deployment.config.DeploymentConfig)" href="#swerex.deployment.config.DeploymentConfig">DeploymentConfig</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
     </div>
 

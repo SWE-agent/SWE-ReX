@@ -1448,7 +1448,7 @@
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.AbstractRuntime" href="../abstract/#swerex.runtime.abstract.AbstractRuntime">AbstractRuntime</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            swerex.runtime.abstract.AbstractRuntime" href="../abstract/#swerex.runtime.abstract.AbstractRuntime">AbstractRuntime</a></code></p>
 
 
         <p>A runtime that connects to a remote server.</p>
@@ -1483,6 +1483,7 @@
           </tr>
       </tbody>
     </table>
+
 
 
 
@@ -1552,6 +1553,7 @@
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -1573,6 +1575,7 @@
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -1596,6 +1599,7 @@
     <div class="doc doc-contents ">
 
         <p>Request headers to use for authentication.</p>
+
     </div>
 
 </div>
@@ -1617,6 +1621,7 @@
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -1635,6 +1640,7 @@
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
@@ -1665,6 +1671,7 @@
     <div class="doc doc-contents ">
 
         <p>Raise exceptions found in the request response.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
@@ -1707,6 +1714,7 @@
     <div class="doc doc-contents ">
 
         <p>Reraise exceptions that were thrown on the remote.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
@@ -1794,6 +1802,7 @@
 
         <p>Small helper to make requests to the server and handle errors and output.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">157</span>
@@ -1827,12 +1836,18 @@
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">close</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CloseResponse" href="../data/#swerex.runtime.abstract.CloseResponse">CloseResponse</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">close</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            CloseResponse
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.CloseResponse)" href="../data/#swerex.runtime.abstract.CloseResponse">CloseResponse</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Closes the runtime.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
@@ -1859,12 +1874,23 @@
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">close_session</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CloseSessionRequest" href="../data/#swerex.runtime.abstract.CloseSessionRequest">CloseSessionRequest</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CloseSessionResponse" href="../data/#swerex.runtime.abstract.CloseSessionResponse">CloseSessionResponse</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">close_session</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            CloseSessionRequest
+
+
+  
+      module-attribute
+   (swerex.runtime.abstract.CloseSessionRequest)" href="../data/#swerex.runtime.abstract.CloseSessionRequest">CloseSessionRequest</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            CloseSessionResponse
+
+
+  
+      module-attribute
+   (swerex.runtime.abstract.CloseSessionResponse)" href="../data/#swerex.runtime.abstract.CloseSessionResponse">CloseSessionResponse</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Closes a shell session.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
@@ -1891,12 +1917,23 @@
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_session</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CreateSessionRequest" href="../data/#swerex.runtime.abstract.CreateSessionRequest">CreateSessionRequest</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CreateSessionResponse" href="../data/#swerex.runtime.abstract.CreateSessionResponse">CreateSessionResponse</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_session</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            CreateSessionRequest
+
+
+  
+      module-attribute
+   (swerex.runtime.abstract.CreateSessionRequest)" href="../data/#swerex.runtime.abstract.CreateSessionRequest">CreateSessionRequest</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            CreateSessionResponse
+
+
+  
+      module-attribute
+   (swerex.runtime.abstract.CreateSessionResponse)" href="../data/#swerex.runtime.abstract.CreateSessionResponse">CreateSessionResponse</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Creates a new session.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
@@ -1923,12 +1960,23 @@
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">execute</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Command" href="../data/#swerex.runtime.abstract.Command">Command</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CommandResponse" href="../data/#swerex.runtime.abstract.CommandResponse">CommandResponse</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">execute</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Command
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.Command)" href="../data/#swerex.runtime.abstract.Command">Command</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            CommandResponse
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.CommandResponse)" href="../data/#swerex.runtime.abstract.CommandResponse">CommandResponse</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Executes a command (independent of any shell session).</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
@@ -1960,6 +2008,7 @@
 
     <div class="doc doc-contents ">
 
+
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">59</span>
@@ -1985,7 +2034,12 @@
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_alive</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.IsAliveResponse" href="../data/#swerex.runtime.abstract.IsAliveResponse">IsAliveResponse</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_alive</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            IsAliveResponse
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.IsAliveResponse)" href="../data/#swerex.runtime.abstract.IsAliveResponse">IsAliveResponse</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1993,6 +2047,7 @@
         <p>Checks if the runtime is alive.</p>
 <p>Internal server errors are thrown, everything else just has us return False
 together with the message.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
@@ -2069,12 +2124,23 @@ together with the message.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">read_file</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.ReadFileRequest" href="../data/#swerex.runtime.abstract.ReadFileRequest">ReadFileRequest</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.ReadFileResponse" href="../data/#swerex.runtime.abstract.ReadFileResponse">ReadFileResponse</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">read_file</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            ReadFileRequest
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.ReadFileRequest)" href="../data/#swerex.runtime.abstract.ReadFileRequest">ReadFileRequest</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            ReadFileResponse
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.ReadFileResponse)" href="../data/#swerex.runtime.abstract.ReadFileResponse">ReadFileResponse</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Reads a file</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
@@ -2101,12 +2167,23 @@ together with the message.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run_in_session</span><span class="p">(</span><span class="n">action</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Action" href="../data/#swerex.runtime.abstract.Action">Action</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Observation" href="../data/#swerex.runtime.abstract.Observation">Observation</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run_in_session</span><span class="p">(</span><span class="n">action</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Action
+
+
+  
+      module-attribute
+   (swerex.runtime.abstract.Action)" href="../data/#swerex.runtime.abstract.Action">Action</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Observation
+
+
+  
+      module-attribute
+   (swerex.runtime.abstract.Observation)" href="../data/#swerex.runtime.abstract.Observation">Observation</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Runs a command in a session.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
@@ -2133,12 +2210,23 @@ together with the message.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">upload</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.UploadRequest" href="../data/#swerex.runtime.abstract.UploadRequest">UploadRequest</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.UploadResponse" href="../data/#swerex.runtime.abstract.UploadResponse">UploadResponse</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">upload</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            UploadRequest
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.UploadRequest)" href="../data/#swerex.runtime.abstract.UploadRequest">UploadRequest</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            UploadResponse
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.UploadResponse)" href="../data/#swerex.runtime.abstract.UploadResponse">UploadResponse</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Uploads a file</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
@@ -2214,6 +2302,7 @@ together with the message.</p>
 
     <div class="doc doc-contents ">
 
+
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">154</span>
@@ -2237,12 +2326,23 @@ together with the message.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">write_file</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.WriteFileRequest" href="../data/#swerex.runtime.abstract.WriteFileRequest">WriteFileRequest</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.WriteFileResponse" href="../data/#swerex.runtime.abstract.WriteFileResponse">WriteFileResponse</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">write_file</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            WriteFileRequest
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.WriteFileRequest)" href="../data/#swerex.runtime.abstract.WriteFileRequest">WriteFileRequest</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            WriteFileResponse
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.WriteFileResponse)" href="../data/#swerex.runtime.abstract.WriteFileResponse">WriteFileResponse</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Writes a file</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/runtime/remote.py</code></summary>

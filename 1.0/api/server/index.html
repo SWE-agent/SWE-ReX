@@ -1384,6 +1384,7 @@
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -1409,6 +1410,7 @@
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -1430,6 +1432,7 @@
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -1454,6 +1457,7 @@
     <div class="doc doc-contents ">
 
         <p>Authenticate requests with an API key (if set).</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
@@ -1495,6 +1499,7 @@
 
     <div class="doc doc-contents ">
 
+
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">133</span>
@@ -1522,10 +1527,16 @@
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">close_session</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CloseSessionRequest" href="../runtimes/data/#swerex.runtime.abstract.CloseSessionRequest">CloseSessionRequest</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">close_session</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            CloseSessionRequest
+
+
+  
+      module-attribute
+   (swerex.runtime.abstract.CloseSessionRequest)" href="../runtimes/data/#swerex.runtime.abstract.CloseSessionRequest">CloseSessionRequest</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
@@ -1552,10 +1563,16 @@
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_session</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.CreateSessionRequest" href="../runtimes/data/#swerex.runtime.abstract.CreateSessionRequest">CreateSessionRequest</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create_session</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            CreateSessionRequest
+
+
+  
+      module-attribute
+   (swerex.runtime.abstract.CreateSessionRequest)" href="../runtimes/data/#swerex.runtime.abstract.CreateSessionRequest">CreateSessionRequest</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
@@ -1589,6 +1606,7 @@
 
         <p>We catch exceptions that are thrown by the runtime, serialize them to JSON and
 return them to the client so they can reraise them in their own code.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
@@ -1639,10 +1657,16 @@ return them to the client so they can reraise them in their own code.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">execute</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Command" href="../runtimes/data/#swerex.runtime.abstract.Command">Command</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">execute</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Command
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.Command)" href="../runtimes/data/#swerex.runtime.abstract.Command">Command</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
@@ -1674,6 +1698,7 @@ return them to the client so they can reraise them in their own code.</p>
 
     <div class="doc doc-contents ">
 
+
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">73</span>
@@ -1699,10 +1724,16 @@ return them to the client so they can reraise them in their own code.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">read_file</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.ReadFileRequest" href="../runtimes/data/#swerex.runtime.abstract.ReadFileRequest">ReadFileRequest</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">read_file</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            ReadFileRequest
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.ReadFileRequest)" href="../runtimes/data/#swerex.runtime.abstract.ReadFileRequest">ReadFileRequest</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
@@ -1734,6 +1765,7 @@ return them to the client so they can reraise them in their own code.</p>
 
     <div class="doc doc-contents ">
 
+
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">68</span>
@@ -1759,10 +1791,16 @@ return them to the client so they can reraise them in their own code.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run</span><span class="p">(</span><span class="n">action</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.Action" href="../runtimes/data/#swerex.runtime.abstract.Action">Action</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run</span><span class="p">(</span><span class="n">action</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Action
+
+
+  
+      module-attribute
+   (swerex.runtime.abstract.Action)" href="../runtimes/data/#swerex.runtime.abstract.Action">Action</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
@@ -1789,6 +1827,7 @@ return them to the client so they can reraise them in their own code.</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
@@ -1817,6 +1856,7 @@ return them to the client so they can reraise them in their own code.</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>
@@ -1883,10 +1923,16 @@ return them to the client so they can reraise them in their own code.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">write_file</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.WriteFileRequest" href="../runtimes/data/#swerex.runtime.abstract.WriteFileRequest">WriteFileRequest</a></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">write_file</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            WriteFileRequest
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.WriteFileRequest)" href="../runtimes/data/#swerex.runtime.abstract.WriteFileRequest">WriteFileRequest</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/server.py</code></summary>

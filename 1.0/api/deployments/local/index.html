@@ -1286,7 +1286,7 @@
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            swerex.deployment.abstract.AbstractDeployment" href="../abstract/#swerex.deployment.abstract.AbstractDeployment">AbstractDeployment</a></code></p>
 
 
         <p>The most boring of the deployment classes.
@@ -1323,6 +1323,7 @@ your deployment method.</p>
           </tr>
       </tbody>
     </table>
+
 
 
 
@@ -1390,10 +1391,16 @@ your deployment method.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">_config</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.config.LocalDeploymentConfig" href="../config/#swerex.deployment.config.LocalDeploymentConfig">LocalDeploymentConfig</a></span><span class="p">(</span><span class="o">**</span><span class="n"><span title="swerex.deployment.local.LocalDeployment(kwargs)">kwargs</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">_config</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            LocalDeploymentConfig
+
+
+  
+      pydantic-model
+   (swerex.deployment.config.LocalDeploymentConfig)" href="../config/#swerex.deployment.config.LocalDeploymentConfig">LocalDeploymentConfig</a></span><span class="p">(</span><span class="o">**</span><span class="n"><span title="swerex.deployment.local.LocalDeployment(kwargs)">kwargs</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -1415,6 +1422,7 @@ your deployment method.</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -1436,6 +1444,7 @@ your deployment method.</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -1457,6 +1466,7 @@ your deployment method.</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
     </div>
 
 </div>
@@ -1474,7 +1484,7 @@ your deployment method.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">runtime</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.local.LocalRuntime" href="../../runtimes/local/#swerex.runtime.local.LocalRuntime">LocalRuntime</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">runtime</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            swerex.runtime.local.LocalRuntime" href="../../runtimes/local/#swerex.runtime.local.LocalRuntime">LocalRuntime</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1503,6 +1513,7 @@ your deployment method.</p>
           </tr>
       </tbody>
     </table>
+
     </div>
 
 </div>
@@ -1521,6 +1532,7 @@ your deployment method.</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/deployment/local.py</code></summary>
@@ -1545,10 +1557,16 @@ your deployment method.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.deployment.config.LocalDeploymentConfig" href="../config/#swerex.deployment.config.LocalDeploymentConfig">LocalDeploymentConfig</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing_extensions.Self">Self</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            LocalDeploymentConfig
+
+
+  
+      pydantic-model
+   (swerex.deployment.config.LocalDeploymentConfig)" href="../config/#swerex.deployment.config.LocalDeploymentConfig">LocalDeploymentConfig</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing_extensions.Self">Self</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/deployment/local.py</code></summary>
@@ -1575,7 +1593,12 @@ your deployment method.</p>
   </span>
 
 </h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_alive</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="swerex.runtime.abstract.IsAliveResponse" href="../../runtimes/data/#swerex.runtime.abstract.IsAliveResponse">IsAliveResponse</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_alive</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            IsAliveResponse
+
+
+  
+      pydantic-model
+   (swerex.runtime.abstract.IsAliveResponse)" href="../../runtimes/data/#swerex.runtime.abstract.IsAliveResponse">IsAliveResponse</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1605,6 +1628,7 @@ tested with bool().</p>
           </tr>
       </tbody>
     </table>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/deployment/local.py</code></summary>
@@ -1652,6 +1676,7 @@ tested with bool().</p>
 
         <p>Starts the runtime.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>swerex/deployment/local.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">54</span>
@@ -1683,6 +1708,7 @@ tested with bool().</p>
     <div class="doc doc-contents ">
 
         <p>Stops the runtime.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>swerex/deployment/local.py</code></summary>
