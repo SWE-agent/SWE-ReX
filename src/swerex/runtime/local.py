@@ -99,7 +99,7 @@ def _strip_control_chars(s: str) -> str:
 def _check_bash_command(command: str) -> None:
     """Check if a bash command is valid. Raises BashIncorrectSyntaxError if it's not."""
     _unique_string = "SOUNIQUEEOF"
-    cmd = f"/bin/bash -n << '{_unique_string}'\n{command}\n{_unique_string}"
+    cmd = f"/usr/bin/env bash -n << '{_unique_string}'\n{command}\n{_unique_string}"
     result = subprocess.run(cmd, shell=True, capture_output=True)
     if result.returncode == 0:
         return
@@ -155,7 +155,7 @@ class BashSession(Session):
     async def start(self) -> CreateBashSessionResponse:
         """Spawn the session, source any startupfiles and set the PS1."""
         self._shell = pexpect.spawn(
-            "/bin/bash",
+            "/usr/bin/env bash",
             encoding="utf-8",
             codec_errors="backslashreplace",
             echo=False,

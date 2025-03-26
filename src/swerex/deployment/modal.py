@@ -214,7 +214,8 @@ class ModalDeployment(AbstractDeployment):
         t0 = time.time()
         token = self._get_token()
         self._sandbox = modal.Sandbox.create(
-            "/bin/bash",
+            "/usr/bin/env",
+            "bash",
             "-c",
             self._start_swerex_cmd(token),
             image=self._image,
