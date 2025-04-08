@@ -46,7 +46,6 @@ class DaytonaDeployment(AbstractDeployment):
         """Initialize the Daytona client with configuration."""
         daytona_config = DaytonaConfig(
             api_key=self._config.api_key,
-            server_url=self._config.server_url,
             target=self._config.target
         )
         self._daytona = Daytona(daytona_config)

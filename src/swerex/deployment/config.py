@@ -192,10 +192,6 @@ class DaytonaDeploymentConfig(BaseModel):
         default="",
         description="Daytona API key for authentication"
     )
-    server_url: str = Field(
-        default="https://app.daytona.io/api",
-        description="URL of the Daytona server"
-    )
     target: str = Field(
         default="us",
         description="Daytona target region (us, eu, etc.)"
