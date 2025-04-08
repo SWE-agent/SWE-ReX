@@ -241,7 +241,9 @@ async def test_run_in_shell_bashlex_errors(runtime_with_default_session: RemoteR
 
 
 async def test_run_shell_check_exit_code(runtime_with_default_session: RemoteRuntime):
-    r = await runtime_with_default_session.run_in_session(A(command="/bin/bash -n <<'EOF'\necho 'hello world'\nEOF"))
+    r = await runtime_with_default_session.run_in_session(
+        A(command="/usr/bin/env bash -n <<'EOF'\necho 'hello world'\nEOF")
+    )
     assert r.exit_code == 0
 
 
