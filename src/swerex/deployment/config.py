@@ -1,7 +1,7 @@
 from pathlib import PurePath
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator, Field
 
 from swerex.deployment.abstract import AbstractDeployment
 
@@ -185,6 +185,27 @@ class DummyDeploymentConfig(BaseModel):
         return DummyDeployment.from_config(self)
 
 
+class DaytonaDeploymentConfig(BaseModel):
+    """Configuration for Daytona deployment."""
+    
+    api_key: str = Field(
+        default="",
+        description="Daytona API key for authentication"
+    )
+    target: str = Field(
+        default="us",
+        description="Daytona target region (us, eu, etc.)"
+    )
+    language: str = Field(
+        default="python",
+        description="Programming language for the sandbox"
+    )
+    port: int = Field(
+        default=8000,
+        description="Port to expose for the SWE Rex server"
+    )
+
+
 DeploymentConfig = (
     LocalDeploymentConfig
     | DockerDeploymentConfig
@@ -192,6 +213,7 @@ DeploymentConfig = (
     | FargateDeploymentConfig
     | RemoteDeploymentConfig
     | DummyDeploymentConfig
+    | DaytonaDeploymentConfig
 )
 """Union of all deployment configurations. Useful for type hints."""
 
