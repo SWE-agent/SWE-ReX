@@ -2,7 +2,7 @@ site_name: SWE-ReX documentation
 site_url: https://swe-rex.com
 theme:
   name: material
-  # custom_dir: docs/overrides
+  custom_dir: docs/overrides
   icon:
     repo: fontawesome/brands/github
     annotation: material/chevron-right-circle
@@ -110,6 +110,7 @@ edit_uri: edit/main/docs/
 extra_css:
   - css/custom.css
   - css/mkdocstrings.css
+  - css/bubbles.css
 extra:
   version:
     provider: mike
