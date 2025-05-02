@@ -139,9 +139,7 @@ class RemoteRuntime(AbstractRuntime):
             session = await self._ensure_session()
             timeout_value = self._get_timeout(timeout)
             async with session.get(
-                f"{self._api_url}/is_alive", 
-                headers=self._headers, 
-                timeout=aiohttp.ClientTimeout(total=timeout_value)
+                f"{self._api_url}/is_alive", headers=self._headers, timeout=aiohttp.ClientTimeout(total=timeout_value)
             ) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -150,12 +148,9 @@ class RemoteRuntime(AbstractRuntime):
                     data = await response.json()
                     exc_transfer = _ExceptionTransfer(**data["swerexception"])
                     self._handle_transfer_exception(exc_transfer)
-                
+
                 data = await response.json()
-                msg = (
-                    f"Status code {response.status} from {self._api_url}/is_alive. "
-                    f"Message: {data.get('detail')}"
-                )
+                msg = f"Status code {response.status} from {self._api_url}/is_alive. Message: {data.get('detail')}"
                 return IsAliveResponse(is_alive=False, message=msg)
         except aiohttp.ClientError:
             msg = f"Failed to connect to {self._config.host}\n"
@@ -172,11 +167,9 @@ class RemoteRuntime(AbstractRuntime):
     async def _request(self, endpoint: str, request: BaseModel | None, output_class: Any):
         """Small helper to make requests to the server and handle errors and output."""
         session = await self._ensure_session()
-        
+
         async with session.post(
-            f"{self._api_url}/{endpoint}", 
-            json=request.model_dump() if request else None, 
-            headers=self._headers
+            f"{self._api_url}/{endpoint}", json=request.model_dump() if request else None, headers=self._headers
         ) as response:
             await self._handle_response_errors(response)
             data = await response.json()
@@ -210,46 +203,33 @@ class RemoteRuntime(AbstractRuntime):
         """Uploads a file"""
         source = Path(request.source_path).resolve()
         self.logger.debug("Uploading file from %s to %s", request.source_path, request.target_path)
-        
+
         session = await self._ensure_session()
-        
+
         if source.is_dir():
             # Ignore cleanup errors: See https://github.com/SWE-agent/SWE-agent/issues/1005
             with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
                 zip_path = Path(temp_dir) / "zipped_transfer.zip"
                 shutil.make_archive(str(zip_path.with_suffix("")), "zip", source)
                 self.logger.debug("Created zip file at %s", zip_path)
-                
+
                 data = aiohttp.FormData()
-                data.add_field('file', 
-                              open(zip_path, 'rb'),
-                              filename=zip_path.name,
-                              content_type='application/zip')
-                data.add_field('target_path', request.target_path)
-                data.add_field('unzip', 'true')
-                
-                async with session.post(
-                    f"{self._api_url}/upload", 
-                    data=data,
-                    headers=self._headers
-                ) as response:
+                data.add_field("file", open(zip_path, "rb"), filename=zip_path.name, content_type="application/zip")
+                data.add_field("target_path", request.target_path)
+                data.add_field("unzip", "true")
+
+                async with session.post(f"{self._api_url}/upload", data=data, headers=self._headers) as response:
                     await self._handle_response_errors(response)
                     return UploadResponse(**(await response.json()))
         elif source.is_file():
             self.logger.debug("Uploading file from %s to %s", source, request.target_path)
-            
+
             data = aiohttp.FormData()
-            data.add_field('file', 
-                          open(source, 'rb'),
-                          filename=source.name)
-            data.add_field('target_path', request.target_path)
-            data.add_field('unzip', 'false')
-            
-            async with session.post(
-                f"{self._api_url}/upload", 
-                data=data,
-                headers=self._headers
-            ) as response:
+            data.add_field("file", open(source, "rb"), filename=source.name)
+            data.add_field("target_path", request.target_path)
+            data.add_field("unzip", "false")
+
+            async with session.post(f"{self._api_url}/upload", data=data, headers=self._headers) as response:
                 await self._handle_response_errors(response)
                 return UploadResponse(**(await response.json()))
         else:
