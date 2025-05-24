@@ -1786,6 +1786,10 @@
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">get_modal_log_url</span>
 
 
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
 </h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_modal_log_url</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
 </code></pre></div>
@@ -1820,19 +1824,19 @@
 
             <details class="quote">
               <summary>Source code in <code>swerex/deployment/modal.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
-<span class="normal">201</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
 <span class="normal">205</span>
-<span class="normal">206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_modal_log_url</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_modal_log_url</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns URL to modal logs</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        DeploymentNotStartedError: If the deployment was not started.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;https://modal.com/apps/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_user</span><span class="si">}</span><span class="s2">/main/deployed/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">?activeTab=logs&amp;taskId=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sandbox</span><span class="o">.</span><span class="n">_get_task_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;https://modal.com/apps/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_user</span><span class="si">}</span><span class="s2">/main/deployed/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">?activeTab=logs&amp;taskId=</span><span class="si">{</span><span class="k">await</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">sandbox</span><span class="o">.</span><span class="n">_get_task_id</span><span class="o">.</span><span class="n">aio</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1905,7 +1909,8 @@ tested with bool().</p>
 <span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
-<span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_alive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IsAliveResponse</span><span class="p">:</span>
+<span class="normal">187</span>
+<span class="normal">188</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_alive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IsAliveResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks if the runtime is alive. The return value can be</span>
 <span class="sd">    tested with bool().</span>
 
@@ -1914,10 +1919,11 @@ tested with bool().</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">DeploymentNotStartedError</span><span class="p">()</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">exit_code</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">poll</span><span class="o">.</span><span class="n">aio</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">exit_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Container process terminated.&quot;</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;stdout:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-        <span class="n">output</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">stderr:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;stdout:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">aio</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="n">output</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">stderr:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">aio</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
         <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">output</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime</span><span class="o">.</span><span class="n">is_alive</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
@@ -1949,8 +1955,7 @@ tested with bool().</p>
 
             <details class="quote">
               <summary>Source code in <code>swerex/deployment/modal.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">208</span>
-<span class="normal">209</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">209</span>
 <span class="normal">210</span>
 <span class="normal">211</span>
 <span class="normal">212</span>
@@ -1982,7 +1987,9 @@ tested with bool().</p>
 <span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
-<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Starts the runtime.&quot;&quot;&quot;</span>
@@ -1990,7 +1997,7 @@ tested with bool().</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">_hooks</span><span class="o">.</span><span class="n">on_custom_step</span><span class="p">(</span><span class="s2">&quot;Starting modal sandbox&quot;</span><span class="p">)</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_token</span><span class="p">()</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span> <span class="o">=</span> <span class="n">modal</span><span class="o">.</span><span class="n">Sandbox</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span> <span class="o">=</span> <span class="k">await</span> <span class="n">modal</span><span class="o">.</span><span class="n">Sandbox</span><span class="o">.</span><span class="n">create</span><span class="o">.</span><span class="n">aio</span><span class="p">(</span>
         <span class="s2">&quot;/usr/bin/env&quot;</span><span class="p">,</span>
         <span class="s2">&quot;bash&quot;</span><span class="p">,</span>
         <span class="s2">&quot;-c&quot;</span><span class="p">,</span>
@@ -2001,10 +2008,11 @@ tested with bool().</p>
         <span class="n">app</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_app</span><span class="p">,</span>
         <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_modal_kwargs</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">tunnel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">tunnels</span><span class="p">()[</span><span class="bp">self</span><span class="o">.</span><span class="n">_port</span><span class="p">]</span>
+    <span class="n">tunnels</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">tunnels</span><span class="o">.</span><span class="n">aio</span><span class="p">()</span>
+    <span class="n">tunnel</span> <span class="o">=</span> <span class="n">tunnels</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_port</span><span class="p">]</span>
     <span class="n">elapsed_sandbox_creation</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sandbox (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">object_id</span><span class="si">}</span><span class="s2">) created in </span><span class="si">{</span><span class="n">elapsed_sandbox_creation</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Check sandbox logs at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_modal_log_url</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Check sandbox logs at </span><span class="si">{</span><span class="k">await</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">get_modal_log_url</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sandbox created with id </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">object_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting runtime at </span><span class="si">{</span><span class="n">tunnel</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -2044,21 +2052,25 @@ tested with bool().</p>
 
             <details class="quote">
               <summary>Source code in <code>swerex/deployment/modal.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
-<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stops the runtime.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_runtime</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">poll</span><span class="p">():</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">exit_code</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">poll</span><span class="o">.</span><span class="n">aio</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">exit_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span><span class="o">.</span><span class="n">terminate</span><span class="o">.</span><span class="n">aio</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_sandbox</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_app</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
