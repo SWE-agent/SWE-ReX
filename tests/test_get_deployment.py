@@ -2,12 +2,14 @@ import pytest
 
 from swerex.deployment import get_deployment
 from swerex.deployment.config import (
+    DaytonaDeploymentConfig,
     DockerDeploymentConfig,
     FargateDeploymentConfig,
     LocalDeploymentConfig,
     ModalDeploymentConfig,
     RemoteDeploymentConfig,
 )
+from swerex.deployment.daytona import DaytonaDeployment
 from swerex.deployment.docker import DockerDeployment
 from swerex.deployment.fargate import FargateDeployment
 from swerex.deployment.local import LocalDeployment
@@ -38,6 +40,11 @@ def test_get_remote_deployment():
 def test_get_fargate_deployment():
     deployment = get_deployment(FargateDeploymentConfig(image="test"))
     assert isinstance(deployment, FargateDeployment)
+
+
+def test_get_daytona_deployment():
+    deployment = get_deployment(DaytonaDeploymentConfig(image="test"))
+    assert isinstance(deployment, DaytonaDeployment)
 
 
 if __name__ == "__main__":
