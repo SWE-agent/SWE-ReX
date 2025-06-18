@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import shutil
 import subprocess
@@ -159,7 +160,7 @@ class BashSession(Session):
             encoding="utf-8",
             codec_errors="backslashreplace",
             echo=False,
-            env={"PS1": self._ps1, "PS2": "", "PS0": ""},  # type: ignore
+            env=dict(os.environ.copy(), **{"PS1": self._ps1, "PS2": "", "PS0": ""}),  # type: ignore
         )
         time.sleep(0.3)
         cmds = []
