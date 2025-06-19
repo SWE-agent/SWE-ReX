@@ -539,7 +539,7 @@
         <li class="md-nav__item">
   <a href="#running-with-modal" class="md-nav__link">
     <span class="md-ellipsis">
-      Running with modal
+      Running with Modal
     </span>
   </a>
   
@@ -1137,7 +1137,7 @@
         <li class="md-nav__item">
   <a href="#running-with-modal" class="md-nav__link">
     <span class="md-ellipsis">
-      Running with modal
+      Running with Modal
     </span>
   </a>
   
@@ -1244,8 +1244,42 @@ output=&#39;test&#39; exit_code=0 failure_reason=&#39;&#39; expect_string=&#39;S
 <li>We run <code>swerex-remote</code> in the container. It is installed by <code>pipx</code> in a virtual environment, so it will not pollute your global Python environment. This is a small server that will wait for commands from SWE-ReX. Fun fact, this will basically run the <code>LocalRuntime</code> which was started by the <code>LocalDeployment</code> in the previous example.</li>
 <li><code>DockerDeployment</code> starts a <code>RemoteRuntime</code> that connects to the <code>swerex-remote</code> server in the container and executes your commands.</li>
 </ol>
-<h2 id="running-with-modal">Running with modal</h2>
-<p>...</p>
+<h2 id="running-with-modal">Running with Modal</h2>
+<p>Similarly, you can also create remote runs on <a href="https://modal.com">Modal</a> by swapping out the <code>DockerDeployment</code> with <code>ModalDeployment</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">swerex.deployment.modal</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModalDeployment</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_modal_deployment</span><span class="p">():</span>
+    <span class="n">deployment</span> <span class="o">=</span> <span class="n">ModalDeployment</span><span class="p">(</span>
+        <span class="n">image</span><span class="o">=</span><span class="s2">&quot;python:3.12&quot;</span><span class="p">,</span>
+        <span class="n">startup_timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="c1"># wait 1 minute for deployment to start</span>
+        <span class="n">deployment_timeout</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> <span class="c1"># kill deployment after 1 hour</span>
+    <span class="p">)</span>
+    <span class="k">await</span> <span class="n">deployment</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="k">await</span> <span class="n">deployment</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">deployment</span>
+
+<span class="n">deployment</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run_modal_deployment</span><span class="p">())</span>
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run_some_stuff</span><span class="p">(</span><span class="n">deployment</span><span class="p">))</span>
+</code></pre></div>
+<p>You should see the following output:</p>
+<div class="highlight"><pre><span></span><code>🦖 INFO     Building image from docker registry python:3.12
+🦖 INFO     Starting modal sandbox
+🦖 INFO     Sandbox (sb-[ID]) created in 0.91s
+🦖 INFO     Check sandbox logs at [MODAL_APP_LOGS_URL]
+🦖 INFO     Sandbox created with id sb-[ID]
+🦖 INFO     Starting runtime at [MODAL_HOST_URL]   
+🦖 INFO     Runtime started in 10.46s
+🦖 INFO     Starting modal sandbox
+🦖 INFO     Sandbox (sb-[ID]) created in 1.17s
+🦖 INFO     Check sandbox logs at [MODAL_APP_LOGS_URL]  
+🦖 INFO     Sandbox created with id sb-[ID]
+🦖 INFO     Starting runtime at [MODAL_HOST_URL]
+🦖 INFO     Runtime started in 10.80s                                       
+stdout=&#39;Hello, world!\n&#39; stderr=&#39;&#39; exit_code=0
+output=&#39;&#39; exit_code=0 failure_reason=&#39;&#39; expect_string=&#39;SHELLPS1PREFIX&#39; session_type=&#39;bash&#39;
+output=&#39;test\n&#39; exit_code=0 failure_reason=&#39;&#39; expect_string=&#39;SHELLPS1PREFIX&#39; session_type=&#39;bash&#39;
+🦖 DEBUG    Ensuring deployment is stopped because object is deleted          
+</code></pre></div>
 
 
 
