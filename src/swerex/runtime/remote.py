@@ -190,26 +190,26 @@ class RemoteRuntime(AbstractRuntime):
         retry_delay = 0.1
         backoff_max = 5
 
-        async with aiohttp.ClientSession() as session:
-            while retry_count <= num_retries:
-                try:
-                    async with session.post(
-                        request_url, json=request.model_dump() if request else None, headers=headers
-                    ) as response:
-                        await self._handle_response_errors(response)
-                        data = await response.json()
-                        return output_class(**data)
-                except Exception as e:
-                    last_exception = e
-                    retry_count += 1
-                    if retry_count <= num_retries:
-                        await asyncio.sleep(retry_delay)
-                        retry_delay *= 2
-                        retry_delay += random.uniform(0, 0.5)
-                        retry_delay = min(retry_delay, backoff_max)
-                        continue
-                    self.logger.error("Error making request %s after %d retries: %s", request_id, num_retries, e)
-            raise last_exception
+        session = await self._ensure_session()
+        while retry_count <= num_retries:
+            try:
+                async with session.post(
+                    request_url, json=request.model_dump() if request else None, headers=headers
+                ) as response:
+                    await self._handle_response_errors(response)
+                    data = await response.json()
+                    return output_class(**data)
+            except Exception as e:
+                last_exception = e
+                retry_count += 1
+                if retry_count <= num_retries:
+                    await asyncio.sleep(retry_delay)
+                    retry_delay *= 2
+                    retry_delay += random.uniform(0, 0.5)
+                    retry_delay = min(retry_delay, backoff_max)
+                    continue
+                self.logger.error("Error making request %s after %d retries: %s", request_id, num_retries, e)
+        raise last_exception
 
     async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
         """Creates a new session."""
