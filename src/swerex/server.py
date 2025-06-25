@@ -44,7 +44,7 @@ class ResponseManager:
     This stores the response of the last request, and is used in retries to return
     already executed requests.
 
-    Note that in the case of multiple concurrent clients, idemponency isn't guaranteed.
+    Note that in the case of multiple concurrent clients, idempotency isn't guaranteed.
     """
 
     def __init__(self):
@@ -85,11 +85,15 @@ async def handle_request_id(request: Request, call_next):
 
     response = await call_next(request)
 
-    body = b""
-    async for chunk in response.body_iterator:
-        body += chunk
+    async def body_stream():
+        async for chunk in response.body_iterator:
+            yield chunk
+
     new_response = Response(
-        content=body, status_code=response.status_code, headers=dict(response.headers), media_type=response.media_type
+        content=body_stream(),
+        status_code=response.status_code,
+        headers=dict(response.headers),
+        media_type=response.media_type,
     )
 
     if request_id:
