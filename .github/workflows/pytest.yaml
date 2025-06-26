@@ -49,6 +49,10 @@ jobs:
       - name: Install dependencies
         run: |
             uv pip install --python ${Python_ROOT_DIR} '.[dev]'
+      - name: Explicitly install daytona
+        run: |
+          uv pip install --upgrade 'daytona-sdk' --python ${Python_ROOT_DIR}
+          uv pip install --upgrade 'daytona-sdk > 0.21' --python ${Python_ROOT_DIR}
       - name: Check python versions
         run: |
           uv pip freeze
