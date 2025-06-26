@@ -49,6 +49,9 @@ jobs:
       - name: Install dependencies
         run: |
             uv pip install --python ${Python_ROOT_DIR} '.[dev]'
+      - name: Check python versions
+        run: |
+          uv pip freeze
       - name: Run pytest
         uses: sjvrijn/pytest-last-failed@v2
         with:
