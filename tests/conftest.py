@@ -1,8 +1,6 @@
-import asyncio
 import socket
 import threading
 import time
-from collections.abc import Generator
 from dataclasses import dataclass, field
 
 import pytest
@@ -11,7 +9,6 @@ import uvicorn
 import swerex.server
 from swerex.runtime.abstract import (
     BashAction,
-    CloseBashSessionRequest,
     Command,
     CreateBashSessionRequest,
 )
@@ -55,17 +52,23 @@ def remote_server() -> RemoteServer:
 
 
 @pytest.fixture
-def remote_runtime(remote_server: RemoteServer) -> Generator[RemoteRuntime, None]:
+async def remote_runtime(remote_server: RemoteServer):
+    """Async fixture for RemoteRuntime that properly handles cleanup."""
     r = RemoteRuntime(port=remote_server.port, auth_token=TEST_API_KEY)
-    yield r
-    asyncio.run(r.close())
+    try:
+        yield r
+    finally:
+        await r.close()
 
 
 @pytest.fixture
-def runtime_with_default_session(remote_runtime: RemoteRuntime) -> Generator[RemoteRuntime, None]:
-    asyncio.run(remote_runtime.create_session(CreateBashSessionRequest()))
-    yield remote_runtime
-    asyncio.run(remote_runtime.close_session(CloseBashSessionRequest()))
+async def runtime_with_default_session(remote_runtime: RemoteRuntime):
+    """Async fixture that creates a default session and cleans it up properly."""
+    await remote_runtime.create_session(CreateBashSessionRequest())
+    try:
+        yield remote_runtime
+    finally:
+        await remote_runtime.close()
 
 
 class _Action(BashAction):
