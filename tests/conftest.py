@@ -9,9 +9,9 @@ import uvicorn
 import swerex.server
 from swerex.runtime.abstract import (
     BashAction,
+    CloseBashSessionRequest,
     Command,
     CreateBashSessionRequest,
-    CloseBashSessionRequest,
 )
 from swerex.runtime.remote import RemoteRuntime
 from swerex.utils.free_port import find_free_port

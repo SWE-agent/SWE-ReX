@@ -60,7 +60,6 @@ class RemoteRuntime(AbstractRuntime):
     def from_config(cls, config: RemoteRuntimeConfig) -> Self:
         return cls(**config.model_dump())
 
-
     def _get_timeout(self, timeout: float | None = None) -> float:
         if timeout is None:
             return self._config.timeout
@@ -133,7 +132,9 @@ class RemoteRuntime(AbstractRuntime):
             async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(force_close=True)) as session:
                 timeout_value = self._get_timeout(timeout)
                 async with session.get(
-                    f"{self._api_url}/is_alive", headers=self._headers, timeout=aiohttp.ClientTimeout(total=timeout_value)
+                    f"{self._api_url}/is_alive",
+                    headers=self._headers,
+                    timeout=aiohttp.ClientTimeout(total=timeout_value),
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
