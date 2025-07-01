@@ -31,8 +31,8 @@ class DaytonaDeployment(AbstractDeployment):
     ):
         self._config = DaytonaDeploymentConfig(**kwargs)
         self._runtime: RemoteRuntime | None = None
-        self._workspace = None
-        self._workspace_id = None
+        self._sandbox = None
+        self._sandbox_id = None
         self.logger = logger or get_logger("rex-deploy")
         self._hooks = CombinedDeploymentHook()
         self._daytona = None
@@ -74,13 +74,13 @@ class DaytonaDeployment(AbstractDeployment):
         Raises:
             DeploymentNotStartedError: If the deployment was not started.
         """
-        if self._runtime is None or self._workspace is None:
+        if self._runtime is None or self._sandbox is None:
             raise DeploymentNotStartedError()
 
         # Check if the workspace is still running
         try:
             # Get session status to verify the workspace is still active
-            sessions = self._workspace.process.list_sessions()
+            sessions = self._sandbox.process.list_sessions()
             if not sessions:
                 msg = "Daytona workspace has no active sessions"
                 raise RuntimeError(msg)
@@ -105,9 +105,9 @@ class DaytonaDeployment(AbstractDeployment):
         )
         assert self._daytona is not None
 
-        self._workspace = self._daytona.create(params)
-        self._workspace_id = self._workspace.id
-        self.logger.info(f"Created Daytona sandbox with ID: {self._workspace_id}")
+        self._sandbox = self._daytona.create(params)
+        self._sandbox_id = self._sandbox.id
+        self.logger.info(f"Created Daytona sandbox with ID: {self._sandbox_id}")
 
         # Generate authentication token
         self._auth_token = self._get_token()
@@ -118,20 +118,18 @@ class DaytonaDeployment(AbstractDeployment):
 
         # Create a session for the long-running process
         session_id = f"swerex-server-{uuid.uuid4().hex[:8]}"
-        self._workspace.process.create_session(session_id)
+        self._sandbox.process.create_session(session_id)
 
-        req = SessionExecuteRequest(command=command)
+        req = SessionExecuteRequest(command=command, runAsync=True)
         # Execute the command in the session
-        response = self._workspace.process.execute_session_command(session_id, req)
+        response = self._sandbox.process.execute_session_command(session_id, req)
         if response.exit_code != 0:
             self.logger.error(f"Failed to start SWE Rex server: {response.output}")
             await self.stop()
             msg = f"Failed to start SWE Rex server: {response.output}"
             raise RuntimeError(msg)
 
-        sandboxHost = await self._get_sandbox_host()
-
-        sweRexHost = f"https://{self._config.port}-{self._workspace_id}.{sandboxHost}"
+        sweRexHost = self._sandbox.get_preview_link(self._config.port)
 
         # Create the remote runtime
         self._runtime = RemoteRuntime(host=sweRexHost, port=None, auth_token=self._auth_token, logger=self.logger)
@@ -141,32 +139,22 @@ class DaytonaDeployment(AbstractDeployment):
         await self._wait_until_alive(timeout=self._config.runtime_timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
 
-    async def _get_sandbox_host(self) -> str:
-        """Get the host address of the Daytona sandbox."""
-        assert self._workspace is not None
-        runner_domain = self._workspace.runner_domain
-        if runner_domain is not None:
-            return runner_domain
-        else:
-            msg = "No runner domain found for Daytona sandbox"
-            raise RuntimeError(msg)
-
     async def stop(self):
         """Stops the runtime and removes the Daytona sandbox."""
         if self._runtime is not None:
             await self._runtime.close()
             self._runtime = None
 
-        if self._workspace is not None and self._daytona is not None:
+        if self._sandbox is not None and self._daytona is not None:
             try:
-                self.logger.info(f"Removing Daytona sandbox with ID: {self._workspace_id}")
-                self._daytona.delete(self._workspace)
+                self.logger.info(f"Removing Daytona sandbox with ID: {self._sandbox_id}")
+                self._daytona.delete(self._sandbox)
                 self.logger.info("Daytona sandbox removed successfully")
             except Exception as e:
                 self.logger.error(f"Failed to remove Daytona sandbox: {str(e)}")
 
-        self._workspace = None
-        self._workspace_id = None
+        self._sandbox = None
+        self._sandbox_id = None
         self._auth_token = None
 
     @property
