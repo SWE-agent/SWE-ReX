@@ -11,6 +11,7 @@ from swerex.runtime.abstract import (
     BashAction,
     Command,
     CreateBashSessionRequest,
+    CloseBashSessionRequest,
 )
 from swerex.runtime.remote import RemoteRuntime
 from swerex.utils.free_port import find_free_port
@@ -68,7 +69,7 @@ async def runtime_with_default_session(remote_runtime: RemoteRuntime):
     try:
         yield remote_runtime
     finally:
-        await remote_runtime.close()
+        await remote_runtime.close_session(CloseBashSessionRequest())
 
 
 class _Action(BashAction):
