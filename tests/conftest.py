@@ -46,7 +46,7 @@ def remote_server() -> RemoteServer:
         try:
             with socket.create_connection(("127.0.0.1", port), timeout=1):
                 break
-        except (ConnectionRefusedError, socket.timeout):
+        except (TimeoutError, ConnectionRefusedError):
             time.sleep(retry_delay)
     else:
         pytest.fail("Server did not start within the expected time")
