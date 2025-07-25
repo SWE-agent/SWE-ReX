@@ -39,9 +39,7 @@ def _pull_image(image: str, runtime: str = "docker") -> bytes:
         return subprocess.check_output([runtime, "pull", image], stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
         # e.stderr contains the error message as bytes
-        raise subprocess.CalledProcessError(
-            e.returncode, e.cmd, e.output, e.stderr
-        ) from None
+        raise subprocess.CalledProcessError(e.returncode, e.cmd, e.output, e.stderr) from None
 
 
 def _remove_image(image: str, runtime: str = "docker") -> bytes:
@@ -77,9 +75,7 @@ class DockerDeployment(AbstractDeployment):
 
     def _get_container_name(self) -> str:
         """Returns a unique container name based on the image name."""
-        image_name_sanitized = "".join(
-            c for c in self._config.image if c.isalnum() or c in "-_."
-        )
+        image_name_sanitized = "".join(c for c in self._config.image if c.isalnum() or c in "-_.")
         return f"{image_name_sanitized}-{uuid.uuid4()}"
 
     @property
@@ -109,13 +105,9 @@ class DockerDeployment(AbstractDeployment):
 
     async def _wait_until_alive(self, timeout: float = 10.0):
         try:
-            return await _wait_until_alive(
-                self.is_alive, timeout=timeout, function_timeout=self._runtime_timeout
-            )
+            return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._runtime_timeout)
         except TimeoutError as e:
-            self.logger.error(
-                "Runtime did not start within timeout. Here's the output from the container process."
-            )
+            self.logger.error("Runtime did not start within timeout. Here's the output from the container process.")
             self.logger.error(self._container_process.stdout.read().decode())  # type: ignore
             self.logger.error(self._container_process.stderr.read().decode())  # type: ignore
             assert self._container_process is not None
@@ -143,9 +135,7 @@ class DockerDeployment(AbstractDeployment):
     def _pull_image(self) -> None:
         if self._config.pull == "never":
             return
-        if self._config.pull == "missing" and _is_image_available(
-            self._config.image, self._config.container_runtime
-        ):
+        if self._config.pull == "missing" and _is_image_available(self._config.image, self._config.container_runtime):
             return
         self.logger.info(f"Pulling image {self._config.image!r}")
         self._hooks.on_custom_step("Pulling container image")
@@ -274,15 +264,11 @@ class DockerDeployment(AbstractDeployment):
         )
         self.logger.debug(f"Command: {cmd_str!r}")
         # shell=True required for && etc.
-        self._container_process = subprocess.Popen(
-            cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        self._container_process = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self._hooks.on_custom_step("Starting runtime")
         self.logger.info(f"Starting runtime at {self._config.port}")
         self._runtime = RemoteRuntime.from_config(
-            RemoteRuntimeConfig(
-                port=self._config.port, timeout=self._runtime_timeout, auth_token=token
-            )
+            RemoteRuntimeConfig(port=self._config.port, timeout=self._runtime_timeout, auth_token=token)
         )
         t0 = time.time()
         await self._wait_until_alive(timeout=self._config.startup_timeout)
@@ -315,9 +301,7 @@ class DockerDeployment(AbstractDeployment):
                 except subprocess.TimeoutExpired:
                     continue
             else:
-                self.logger.warning(
-                    f"Failed to kill container {self._container_name} with SIGKILL"
-                )
+                self.logger.warning(f"Failed to kill container {self._container_name} with SIGKILL")
 
             self._container_process = None
             self._container_name = None
@@ -328,9 +312,7 @@ class DockerDeployment(AbstractDeployment):
                 try:
                     _remove_image(self._config.image, self._config.container_runtime)
                 except subprocess.CalledProcessError:
-                    self.logger.error(
-                        f"Failed to remove image {self._config.image}", exc_info=True
-                    )
+                    self.logger.error(f"Failed to remove image {self._config.image}", exc_info=True)
 
     @property
     def runtime(self) -> RemoteRuntime:

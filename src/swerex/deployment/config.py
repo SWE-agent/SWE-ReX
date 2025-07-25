@@ -57,9 +57,7 @@ class DockerDeploymentConfig(BaseModel):
         docker_args = data.get("docker_args", [])
         platform = data.get("platform")
 
-        platform_arg_idx = next(
-            (i for i, arg in enumerate(docker_args) if arg.startswith("--platform")), -1
-        )
+        platform_arg_idx = next((i for i, arg in enumerate(docker_args) if arg.startswith("--platform")), -1)
 
         if platform_arg_idx != -1:
             if platform is not None:
@@ -69,15 +67,11 @@ class DockerDeploymentConfig(BaseModel):
             if "=" in docker_args[platform_arg_idx]:
                 # Handle case where platform is specified as --platform=value
                 data["platform"] = docker_args[platform_arg_idx].split("=", 1)[1]
-                data["docker_args"] = (
-                    docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 1 :]
-                )
+                data["docker_args"] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 1 :]
             elif platform_arg_idx + 1 < len(docker_args):
                 data["platform"] = docker_args[platform_arg_idx + 1]
                 # Remove the --platform and its value from docker_args
-                data["docker_args"] = (
-                    docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 2 :]
-                )
+                data["docker_args"] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 2 :]
             else:
                 msg = "--platform argument must be followed by a value"
                 raise ValueError(msg)
