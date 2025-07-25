@@ -55,6 +55,7 @@ dev = [
     "griffe-pydantic",
     "swe-rex[modal]",
     "swe-rex[fargate]",
+    "swe-rex[daytona]",
 ]
 modal = [
     "modal>=1.0",
@@ -62,6 +63,10 @@ modal = [
 ]
 fargate = [
     "boto3",
+]
+daytona = [
+    "daytona",
+    "daytona-sdk >= 0.21",
 ]
 
 [tool.setuptools]

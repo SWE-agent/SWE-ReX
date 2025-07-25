@@ -79,6 +79,45 @@ So what's going on here? There's multiple steps:
 2. We run `swerex-remote` in the container. It is installed by `pipx` in a virtual environment, so it will not pollute your global Python environment. This is a small server that will wait for commands from SWE-ReX. Fun fact, this will basically run the `LocalRuntime` which was started by the `LocalDeployment` in the previous example.
 3. `DockerDeployment` starts a `RemoteRuntime` that connects to the `swerex-remote` server in the container and executes your commands.
 
-## Running with modal
+## Running with Modal
 
-...
+Similarly, you can also create remote runs on [Modal](https://modal.com) by swapping out the `DockerDeployment` with `ModalDeployment`.
+
+```python
+from swerex.deployment.modal import ModalDeployment
+
+async def run_modal_deployment():
+    deployment = ModalDeployment(
+        image="python:3.12",
+        startup_timeout=60, # wait 1 minute for deployment to start
+        deployment_timeout=3600, # kill deployment after 1 hour
+    )
+    await deployment.start()
+    await deployment.is_alive()
+    return deployment
+
+deployment = asyncio.run(run_modal_deployment())
+asyncio.run(run_some_stuff(deployment))
+```
+
+You should see the following output:
+
+```
+🦖 INFO     Building image from docker registry python:3.12
+🦖 INFO     Starting modal sandbox
+🦖 INFO     Sandbox (sb-[ID]) created in 0.91s
+🦖 INFO     Check sandbox logs at [MODAL_APP_LOGS_URL]
+🦖 INFO     Sandbox created with id sb-[ID]
+🦖 INFO     Starting runtime at [MODAL_HOST_URL]   
+🦖 INFO     Runtime started in 10.46s
+🦖 INFO     Starting modal sandbox
+🦖 INFO     Sandbox (sb-[ID]) created in 1.17s
+🦖 INFO     Check sandbox logs at [MODAL_APP_LOGS_URL]  
+🦖 INFO     Sandbox created with id sb-[ID]
+🦖 INFO     Starting runtime at [MODAL_HOST_URL]
+🦖 INFO     Runtime started in 10.80s                                       
+stdout='Hello, world!\n' stderr='' exit_code=0
+output='' exit_code=0 failure_reason='' expect_string='SHELLPS1PREFIX' session_type='bash'
+output='test\n' exit_code=0 failure_reason='' expect_string='SHELLPS1PREFIX' session_type='bash'
+🦖 DEBUG    Ensuring deployment is stopped because object is deleted          
+```

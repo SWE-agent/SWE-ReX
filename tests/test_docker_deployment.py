@@ -16,6 +16,7 @@ async def test_docker_deployment():
     await d.stop()
 
 
+@pytest.mark.slow
 async def test_docker_deployment_with_python_standalone():
     port = find_free_port()
     print(f"Using port {port} for the docker deployment")
@@ -29,6 +30,7 @@ async def test_docker_deployment_with_python_standalone():
     await d.stop()
 
 
+@pytest.mark.slow
 def test_docker_deployment_config_platform():
     config = DockerDeploymentConfig(
         docker_args=["--platform", "linux/amd64", "--other-arg"]

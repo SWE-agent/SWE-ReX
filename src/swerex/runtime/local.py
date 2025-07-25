@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import shutil
 import subprocess
@@ -93,7 +94,7 @@ def _split_bash_command(inpt: str) -> list[str]:
 
 def _strip_control_chars(s: str) -> str:
     ansi_escape = re.compile(r"\x1B[@-_][0-?]*[ -/]*[@-~]")
-    return ansi_escape.sub("", s)
+    return ansi_escape.sub("", s).replace("\r\n", "\n")
 
 
 def _check_bash_command(command: str) -> None:
@@ -159,7 +160,7 @@ class BashSession(Session):
             encoding="utf-8",
             codec_errors="backslashreplace",
             echo=False,
-            env={"PS1": self._ps1, "PS2": "", "PS0": ""},  # type: ignore
+            env=dict(os.environ.copy(), **{"PS1": self._ps1, "PS2": "", "PS0": ""}),  # type: ignore
         )
         time.sleep(0.3)
         cmds = []
@@ -253,7 +254,7 @@ class BashSession(Session):
         except pexpect.TIMEOUT as e:
             msg = f"timeout after {action.timeout} seconds while running command {action.command!r}"
             raise CommandTimeoutError(msg) from e
-        output: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
+        output: str = _strip_control_chars(self.shell.before)  # type: ignore
         if action.is_interactive_quit:
             assert not action.is_interactive_command
             self.shell.setecho(False)
@@ -297,7 +298,7 @@ class BashSession(Session):
             # Bashlex is very buggy and can throw a variety of errors, including
             # ParsingErrors, NotImplementedErrors, TypeErrors, possibly more. So we catch them all
             self.logger.error("Bashlex fail: %s", e)
-            action.command += f"\n TMPEXITCODE=$? ; sleep 0.1; echo '{self._UNIQUE_STRING}' ; (exit $TMPEXITCODE)"
+            action.command += f"\n TMPEXITCODE=$? ; sleep 0.1; echo -n '{self._UNIQUE_STRING}' ; (exit $TMPEXITCODE)"
             fallback_terminator = True
         else:
             action.command = " ; ".join(individual_commands)
@@ -312,7 +313,7 @@ class BashSession(Session):
         except pexpect.TIMEOUT as e:
             msg = f"timeout after {action.timeout} seconds while running command {action.command!r}"
             raise CommandTimeoutError(msg) from e
-        output: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
+        output: str = _strip_control_chars(self.shell.before)  # type: ignore
 
         # Part 3: Get the exit code
         if action.check == "ignore":
@@ -327,7 +328,7 @@ class BashSession(Session):
             except pexpect.TIMEOUT:
                 msg = "timeout while getting exit code"
                 raise NoExitCodeError(msg)
-            exit_code_raw: str = _strip_control_chars(self.shell.before).strip()  # type: ignore
+            exit_code_raw: str = _strip_control_chars(self.shell.before)  # type: ignore
             exit_code = re.findall(f"{_exit_code_prefix}([0-9]+)", exit_code_raw)
             if len(exit_code) != 1:
                 msg = f"failed to parse exit code from output {exit_code_raw!r} (command: {action.command!r}, matches: {exit_code})"

@@ -117,10 +117,10 @@ class ModalDeployment(AbstractDeployment):
         logger: logging.Logger | None = None,
         image: str | modal.Image | PurePath,
         startup_timeout: float = 0.4,
-        runtime_timeout: float = 1800.0,
+        runtime_timeout: float = 3600.0,
         modal_sandbox_kwargs: dict[str, Any] | None = None,
         install_pipx: bool = True,
-        deployment_timeout: float = 1800.0,
+        deployment_timeout: float = 3600.0,
     ):
         """Deployment for modal.com. The deployment will only start when the
         `start` method is being called.
@@ -209,6 +209,10 @@ class ModalDeployment(AbstractDeployment):
         self,
     ):
         """Starts the runtime."""
+        if self._runtime is not None and self._sandbox is not None:
+            self.logger.warning("Deployment is already started. Ignoring duplicate start() call.")
+            return
+
         self.logger.info("Starting modal sandbox")
         self._hooks.on_custom_step("Starting modal sandbox")
         t0 = time.time()
