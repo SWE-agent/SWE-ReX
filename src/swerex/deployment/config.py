@@ -21,26 +21,28 @@ class LocalDeploymentConfig(BaseModel):
 
 
 class DockerDeploymentConfig(BaseModel):
-    """Configuration for running locally in a Docker container."""
+    """Configuration for running locally in a Docker or Podman container."""
 
     image: str = "python:3.11"
-    """The name of the docker image to use."""
+    """The name of the container image to use."""
     port: int | None = None
-    """The port that the docker container connects to. If None, a free port is found."""
+    """The port that the container connects to. If None, a free port is found."""
     docker_args: list[str] = []
-    """Additional arguments to pass to the docker run command. If --platform is specified here, it will be moved to the platform field."""
+    """Additional arguments to pass to the container run command. If --platform is specified here, it will be moved to the platform field."""
     startup_timeout: float = 180.0
     """The time to wait for the runtime to start."""
     pull: Literal["never", "always", "missing"] = "missing"
-    """When to pull docker images."""
+    """When to pull container images."""
     remove_images: bool = False
     """Whether to remove the image after it has stopped."""
     python_standalone_dir: str | None = None
     """The directory to use for the python standalone."""
     platform: str | None = None
-    """The platform to use for the docker image."""
+    """The platform to use for the container image."""
     remove_container: bool = True
     """Whether to remove the container after it has stopped."""
+    container_runtime: Literal["docker", "podman"] = "docker"
+    """The container runtime to use (docker or podman)."""
 
     type: Literal["docker"] = "docker"
     """Discriminator for (de)serialization/CLI. Do not change."""
@@ -55,7 +57,9 @@ class DockerDeploymentConfig(BaseModel):
         docker_args = data.get("docker_args", [])
         platform = data.get("platform")
 
-        platform_arg_idx = next((i for i, arg in enumerate(docker_args) if arg.startswith("--platform")), -1)
+        platform_arg_idx = next(
+            (i for i, arg in enumerate(docker_args) if arg.startswith("--platform")), -1
+        )
 
         if platform_arg_idx != -1:
             if platform is not None:
@@ -65,11 +69,15 @@ class DockerDeploymentConfig(BaseModel):
             if "=" in docker_args[platform_arg_idx]:
                 # Handle case where platform is specified as --platform=value
                 data["platform"] = docker_args[platform_arg_idx].split("=", 1)[1]
-                data["docker_args"] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 1 :]
+                data["docker_args"] = (
+                    docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 1 :]
+                )
             elif platform_arg_idx + 1 < len(docker_args):
                 data["platform"] = docker_args[platform_arg_idx + 1]
                 # Remove the --platform and its value from docker_args
-                data["docker_args"] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 2 :]
+                data["docker_args"] = (
+                    docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 2 :]
+                )
             else:
                 msg = "--platform argument must be followed by a value"
                 raise ValueError(msg)
