@@ -22,24 +22,28 @@ from swerex.utils.wait import _wait_until_alive
 __all__ = ["DockerDeployment", "DockerDeploymentConfig"]
 
 
-def _is_image_available(image: str) -> bool:
+def _is_image_available(image: str, runtime: str = "docker") -> bool:
     try:
-        subprocess.check_call(["docker", "inspect", image], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.check_call(
+            [runtime, "inspect", image],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         return True
     except subprocess.CalledProcessError:
         return False
 
 
-def _pull_image(image: str) -> bytes:
+def _pull_image(image: str, runtime: str = "docker") -> bytes:
     try:
-        return subprocess.check_output(["docker", "pull", image], stderr=subprocess.PIPE)
+        return subprocess.check_output([runtime, "pull", image], stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
         # e.stderr contains the error message as bytes
         raise subprocess.CalledProcessError(e.returncode, e.cmd, e.output, e.stderr) from None
 
 
-def _remove_image(image: str) -> bytes:
-    return subprocess.check_output(["docker", "rmi", image], timeout=30)
+def _remove_image(image: str, runtime: str = "docker") -> bytes:
+    return subprocess.check_output([runtime, "rmi", image], timeout=30)
 
 
 class DockerDeployment(AbstractDeployment):
@@ -49,7 +53,7 @@ class DockerDeployment(AbstractDeployment):
         logger: logging.Logger | None = None,
         **kwargs: Any,
     ):
-        """Deployment to local docker image.
+        """Deployment to local container image using Docker or Podman.
 
         Args:
             **kwargs: Keyword arguments (see `DockerDeploymentConfig` for details).
@@ -131,12 +135,12 @@ class DockerDeployment(AbstractDeployment):
     def _pull_image(self) -> None:
         if self._config.pull == "never":
             return
-        if self._config.pull == "missing" and _is_image_available(self._config.image):
+        if self._config.pull == "missing" and _is_image_available(self._config.image, self._config.container_runtime):
             return
         self.logger.info(f"Pulling image {self._config.image!r}")
-        self._hooks.on_custom_step("Pulling docker image")
+        self._hooks.on_custom_step("Pulling container image")
         try:
-            _pull_image(self._config.image)
+            _pull_image(self._config.image, self._config.container_runtime)
         except subprocess.CalledProcessError as e:
             msg = f"Failed to pull image {self._config.image}. "
             msg += f"Error: {e.stderr.decode()}"
@@ -202,7 +206,7 @@ class DockerDeployment(AbstractDeployment):
         if self._config.platform:
             platform_arg = ["--platform", self._config.platform]
         build_cmd = [
-            "docker",
+            self._config.container_runtime,
             "build",
             "-q",
             *platform_arg,
@@ -242,7 +246,7 @@ class DockerDeployment(AbstractDeployment):
         if self._config.remove_container:
             rm_arg = ["--rm"]
         cmds = [
-            "docker",
+            self._config.container_runtime,
             "run",
             *rm_arg,
             "-p",
@@ -279,14 +283,15 @@ class DockerDeployment(AbstractDeployment):
         if self._container_process is not None:
             try:
                 subprocess.check_call(
-                    ["docker", "kill", self._container_name],  # type: ignore
+                    [self._config.container_runtime, "kill", self._container_name],  # type: ignore
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     timeout=10,
                 )
             except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
                 self.logger.warning(
-                    f"Failed to kill container {self._container_name}: {e}. Will try harder.", exc_info=False
+                    f"Failed to kill container {self._container_name}: {e}. Will try harder.",
+                    exc_info=False,
                 )
             for _ in range(3):
                 self._container_process.kill()
@@ -302,10 +307,10 @@ class DockerDeployment(AbstractDeployment):
             self._container_name = None
 
         if self._config.remove_images:
-            if _is_image_available(self._config.image):
+            if _is_image_available(self._config.image, self._config.container_runtime):
                 self.logger.info(f"Removing image {self._config.image}")
                 try:
-                    _remove_image(self._config.image)
+                    _remove_image(self._config.image, self._config.container_runtime)
                 except subprocess.CalledProcessError:
                     self.logger.error(f"Failed to remove image {self._config.image}", exc_info=True)
 
