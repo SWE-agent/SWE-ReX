@@ -53,7 +53,7 @@ async def exception_handler(request: Request, exc: Exception):
     """We catch exceptions that are thrown by the runtime, serialize them to JSON and
     return them to the client so they can reraise them in their own code.
     """
-    if isinstance(exc, (HTTPException, StarletteHTTPException)):
+    if isinstance(exc, HTTPException | StarletteHTTPException):
         return await http_exception_handler(request, exc)
     extra_info = getattr(exc, "extra_info", {})
     _exc = _ExceptionTransfer(
