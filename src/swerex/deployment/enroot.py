@@ -197,7 +197,7 @@ class EnrootDeployment(AbstractDeployment):
         if self._config.partition:
             script_lines.append(f"#SBATCH --partition={self._config.partition}")
 
-        if hasattr(self._config, "constraint") and self._config.constraint:
+        if self._config.constraint:
             script_lines.append(f"#SBATCH --constraint={self._config.constraint}")
 
         if hasattr(self._config, "cpus_per_task"):
