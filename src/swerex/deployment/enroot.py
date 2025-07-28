@@ -200,7 +200,7 @@ class EnrootDeployment(AbstractDeployment):
         if self._config.constraint:
             script_lines.append(f"#SBATCH --constraint={self._config.constraint}")
 
-        if hasattr(self._config, "cpus_per_task"):
+        if self._config.cpus_per_task:
             script_lines.append(f"#SBATCH --cpus-per-task={self._config.cpus_per_task}")
 
         if self._config.memory:
