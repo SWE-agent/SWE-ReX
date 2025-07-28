@@ -203,7 +203,7 @@ class EnrootDeployment(AbstractDeployment):
         if hasattr(self._config, "cpus_per_task"):
             script_lines.append(f"#SBATCH --cpus-per-task={self._config.cpus_per_task}")
 
-        if hasattr(self._config, "memory") and self._config.memory:
+        if self._config.memory:
             script_lines.append(f"#SBATCH --mem={self._config.memory}")
 
         if self._config.train_job:
