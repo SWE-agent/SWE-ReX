@@ -21,26 +21,28 @@ class LocalDeploymentConfig(BaseModel):
 
 
 class DockerDeploymentConfig(BaseModel):
-    """Configuration for running locally in a Docker container."""
+    """Configuration for running locally in a Docker or Podman container."""
 
     image: str = "python:3.11"
-    """The name of the docker image to use."""
+    """The name of the container image to use."""
     port: int | None = None
-    """The port that the docker container connects to. If None, a free port is found."""
+    """The port that the container connects to. If None, a free port is found."""
     docker_args: list[str] = []
-    """Additional arguments to pass to the docker run command. If --platform is specified here, it will be moved to the platform field."""
+    """Additional arguments to pass to the container run command. If --platform is specified here, it will be moved to the platform field."""
     startup_timeout: float = 180.0
     """The time to wait for the runtime to start."""
     pull: Literal["never", "always", "missing"] = "missing"
-    """When to pull docker images."""
+    """When to pull container images."""
     remove_images: bool = False
     """Whether to remove the image after it has stopped."""
     python_standalone_dir: str | None = None
     """The directory to use for the python standalone."""
     platform: str | None = None
-    """The platform to use for the docker image."""
+    """The platform to use for the container image."""
     remove_container: bool = True
     """Whether to remove the container after it has stopped."""
+    container_runtime: Literal["docker", "podman"] = "docker"
+    """The container runtime to use (docker or podman)."""
 
     type: Literal["docker"] = "docker"
     """Discriminator for (de)serialization/CLI. Do not change."""
