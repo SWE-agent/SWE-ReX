@@ -6,6 +6,7 @@ import subprocess
 import threading
 import time
 import uuid
+from pathlib import Path
 from typing import Any
 from weakref import WeakSet
 
@@ -113,10 +114,10 @@ class EnrootDeployment(AbstractDeployment):
     @property
     def container_image(self) -> str:
         cleaned_image = self._config.image.split(":", 1)[0].replace("/", "+") + ".sqsh"
-        container_path = os.path.join("./images", cleaned_image)
-        if not os.path.exists(container_path):
+        container_path = Path("./images") / cleaned_image
+        if Path.exists(container_path):
             return self._config.image
-        return container_path
+        return str(container_path)
 
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
         """Checks if the runtime is alive."""
@@ -209,14 +210,14 @@ class EnrootDeployment(AbstractDeployment):
             script_lines.append("#SBATCH --no-requeue")
 
         # Create logs directory if it doesn't exist
-        logs_dir = os.getenv("SWEREX_LOGS_DIR", "logs/slurm")
+        logs_dir = Path(os.getenv("SWEREX_LOGS_DIR", "logs/slurm"))
 
         os.makedirs(logs_dir, exist_ok=True)
 
-        output_path = os.path.join(logs_dir, f"{job_name}_%j.out")
+        output_path = logs_dir / f"{job_name}_%j.out"
         script_lines.append(f"#SBATCH --output={output_path}")
 
-        error_path = os.path.join(logs_dir, f"{job_name}_%j.err")
+        error_path = logs_dir / f"{job_name}_%j.err"
         script_lines.append(f"#SBATCH --error={error_path}")
 
         # Add any additional sbatch arguments
