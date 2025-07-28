@@ -115,7 +115,7 @@ class EnrootDeployment(AbstractDeployment):
     def container_image(self) -> str:
         cleaned_image = self._config.image.split(":", 1)[0].replace("/", "+") + ".sqsh"
         container_path = Path("./images") / cleaned_image
-        if Path.exists(container_path):
+        if container_path.exists():
             return self._config.image
         return str(container_path)
 
