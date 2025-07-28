@@ -307,7 +307,7 @@ class EnrootDeployment(AbstractDeployment):
             if self._job_id:
                 self.logger.info(f"Waiting for job {self._job_id} to start...")
                 start_time = time.time()
-                while time.time() - start_time < 3600:  # Wait up to 1 hour
+                while time.time() - start_time < self._job_startup_timeout:  # Wait up to the configured timeout
                     job_node = self._get_job_node(self._job_id)
                     if job_node:
                         break
