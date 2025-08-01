@@ -201,6 +201,34 @@ class DaytonaDeploymentConfig(BaseModel):
         return DaytonaDeployment.from_config(self)
 
 
+class EnrootDeploymentConfig(BaseModel):
+    """Configuration for Enroot deployment using Pyxis and Slurm."""
+
+    image: str = "python:3.11"
+    port: int | None = None
+    sbatch_args: list[str] = []
+    pyxis_args: list[str] = []
+    enroot_args: list[str] = []
+    startup_timeout: float = 400.0
+    job_name: str = "swerex-enroot"
+    partition: str = "priority"
+    constraint: str = "cpu"
+    nodes: int = 1
+    ntasks_per_node: int = 1
+    cpus_per_task: int = 4
+    memory: str = "16G"
+    time_limit: str = "2:00:00"
+    train_job: bool = False
+    type: Literal["enroot"] = "enroot"
+
+    model_config = ConfigDict(extra="forbid")
+
+    def get_deployment(self) -> AbstractDeployment:
+        from swerex.deployment.enroot import EnrootDeployment
+
+        return EnrootDeployment.from_config(self)
+
+
 DeploymentConfig = (
     LocalDeploymentConfig
     | DockerDeploymentConfig
@@ -209,6 +237,7 @@ DeploymentConfig = (
     | RemoteDeploymentConfig
     | DummyDeploymentConfig
     | DaytonaDeploymentConfig
+    | EnrootDeploymentConfig
 )
 """Union of all deployment configurations. Useful for type hints."""
 
