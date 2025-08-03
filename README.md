@@ -57,7 +57,7 @@ Then head over to [our documentation](https://swe-rex.com/) to learn more!
 [SWE-bench]: https://swebench.com
 [enigma]: https://enigma-agent.com/
 
-## Related projects
+## Our other projects:
 
 <div align="center">
   <a href="https://github.com/SWE-agent/SWE-agent"><img src="docs/assets/sweagent_logo_text_below.svg" alt="SWE-agent" height="120px"></a>
