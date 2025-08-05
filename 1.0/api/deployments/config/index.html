@@ -765,6 +765,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#swerex.deployment.config.DockerDeploymentConfig.container_runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;container_runtime
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swerex.deployment.config.DockerDeploymentConfig.type" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;type
@@ -1850,6 +1859,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#swerex.deployment.config.DockerDeploymentConfig.container_runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;container_runtime
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swerex.deployment.config.DockerDeploymentConfig.type" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;type
@@ -2588,7 +2606,7 @@
             <p class="doc doc-class-bases">
               Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
 
-        <p>Configuration for running locally in a Docker container.</p>
+        <p>Configuration for running locally in a Docker or Podman container.</p>
 
     
       <p>Config:</p>
@@ -2680,6 +2698,15 @@
                 (<code><span title="bool">bool</span></code>)
             </li>
             <li>
+              <code><a class="autorefs autorefs-internal" title="            container_runtime
+
+
+  
+      pydantic-field
+   (swerex.deployment.config.DockerDeploymentConfig.container_runtime)" href="#swerex.deployment.config.DockerDeploymentConfig.container_runtime">container_runtime</a></code>
+                (<code><span title="typing.Literal">Literal</span>[&#39;docker&#39;, &#39;podman&#39;]</code>)
+            </li>
+            <li>
               <code><a class="autorefs autorefs-internal" title="            type
 
 
@@ -2730,7 +2757,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>The name of the docker image to use.</p>
+        <p>The name of the container image to use.</p>
 
     </div>
 
@@ -2754,7 +2781,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>The port that the docker container connects to. If None, a free port is found.</p>
+        <p>The port that the container connects to. If None, a free port is found.</p>
 
     </div>
 
@@ -2778,7 +2805,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Additional arguments to pass to the docker run command. If --platform is specified here, it will be moved to the platform field.</p>
+        <p>Additional arguments to pass to the container run command. If --platform is specified here, it will be moved to the platform field.</p>
 
     </div>
 
@@ -2826,7 +2853,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>When to pull docker images.</p>
+        <p>When to pull container images.</p>
 
     </div>
 
@@ -2898,7 +2925,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>The platform to use for the docker image.</p>
+        <p>The platform to use for the container image.</p>
 
     </div>
 
@@ -2923,6 +2950,30 @@
     <div class="doc doc-contents ">
 
         <p>Whether to remove the container after it has stopped.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="swerex.deployment.config.DockerDeploymentConfig.container_runtime" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">container_runtime</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-pydantic-field"><code>pydantic-field</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">container_runtime</span><span class="p">:</span> <span class="n"><span title="typing.Literal">Literal</span></span><span class="p">[</span><span class="s1">&#39;docker&#39;</span><span class="p">,</span> <span class="s1">&#39;podman&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;docker&#39;</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The container runtime to use (docker or podman).</p>
 
     </div>
 
