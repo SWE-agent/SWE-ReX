@@ -63,9 +63,13 @@ async def test_execute_command_with_leading_space_output(remote_runtime: RemoteR
 
 
 async def test_execute_command_with_echon(remote_runtime: RemoteRuntime):
-    assert (await remote_runtime.execute(C(command="echo -n 'hello world'", shell=True))).stdout == "hello world"
-    assert (await remote_runtime.execute(C(command="echo -n 'hello world\n'", shell=True))).stdout == "hello world\n"
-    assert (await remote_runtime.execute(C(command="echo -n '\nhello world'", shell=True))).stdout == "\nhello world"
+    assert (await remote_runtime.execute(C(command=["echo", "-n", "hello world"], shell=False))).stdout == "hello world"
+    assert (
+        await remote_runtime.execute(C(command=["echo", "-n", "hello world\n"], shell=False))
+    ).stdout == "hello world\n"
+    assert (
+        await remote_runtime.execute(C(command=["echo", "-n", "\nhello world"], shell=False))
+    ).stdout == "\nhello world"
 
 
 async def test_execute_command_with_newline_in_session(runtime_with_default_session: RemoteRuntime):
