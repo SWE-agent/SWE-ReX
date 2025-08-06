@@ -85,12 +85,12 @@ async def handle_request_id(request: Request, call_next):
 
     response = await call_next(request)
 
-    async def body_stream():
-        async for chunk in response.body_iterator:
-            yield chunk
+    body_content = b""
+    async for chunk in response.body_iterator:
+        body_content += chunk
 
     new_response = Response(
-        content=body_stream(),
+        content=body_content,
         status_code=response.status_code,
         headers=dict(response.headers),
         media_type=response.media_type,
