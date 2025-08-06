@@ -233,25 +233,29 @@ class RemoteRuntime(AbstractRuntime):
                     shutil.make_archive(str(zip_path.with_suffix("")), "zip", source)
                     self.logger.debug("Created zip file at %s", zip_path)
 
+                    with open(zip_path, "rb") as f:
+                        data = aiohttp.FormData()
+                        data.add_field("file", f, filename=zip_path.name, content_type="application/zip")
+                        data.add_field("target_path", request.target_path)
+                        data.add_field("unzip", "true")
+
+                        async with session.post(
+                            f"{self._api_url}/upload", data=data, headers=self._headers
+                        ) as response:
+                            await self._handle_response_errors(response)
+                            return UploadResponse(**(await response.json()))
+            elif source.is_file():
+                self.logger.debug("Uploading file from %s to %s", source, request.target_path)
+
+                with open(source, "rb") as f:
                     data = aiohttp.FormData()
-                    data.add_field("file", open(zip_path, "rb"), filename=zip_path.name, content_type="application/zip")
+                    data.add_field("file", f, filename=source.name)
                     data.add_field("target_path", request.target_path)
-                    data.add_field("unzip", "true")
+                    data.add_field("unzip", "false")
 
                     async with session.post(f"{self._api_url}/upload", data=data, headers=self._headers) as response:
                         await self._handle_response_errors(response)
                         return UploadResponse(**(await response.json()))
-            elif source.is_file():
-                self.logger.debug("Uploading file from %s to %s", source, request.target_path)
-
-                data = aiohttp.FormData()
-                data.add_field("file", open(source, "rb"), filename=source.name)
-                data.add_field("target_path", request.target_path)
-                data.add_field("unzip", "false")
-
-                async with session.post(f"{self._api_url}/upload", data=data, headers=self._headers) as response:
-                    await self._handle_response_errors(response)
-                    return UploadResponse(**(await response.json()))
             else:
                 msg = f"Source path {source} is not a file or directory"
                 raise ValueError(msg)
