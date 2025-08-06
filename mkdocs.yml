@@ -108,6 +108,8 @@ repo_url: https://github.com/SWE-agent/SWE-ReX
 repo_name: SWE-agent/SWE-ReX
 edit_uri: edit/main/docs/
 extra_css:
+  - https://fonts.googleapis.com/icon?family=Material+Icons
+  - css/navigation_cards.css
   - css/custom.css
   - css/mkdocstrings.css
   - css/bubbles.css

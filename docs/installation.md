@@ -25,3 +25,5 @@ If you want to contribute, please also use [pre-commit](https://pre-commit.com/)
 ```bash
 pre-commit install
 ```
+
+{% include-markdown "_footer.md" %}

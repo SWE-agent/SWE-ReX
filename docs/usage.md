@@ -121,3 +121,4 @@ output='' exit_code=0 failure_reason='' expect_string='SHELLPS1PREFIX' session_t
 output='test\n' exit_code=0 failure_reason='' expect_string='SHELLPS1PREFIX' session_type='bash'
 🦖 DEBUG    Ensuring deployment is stopped because object is deleted          
 ```
+{% include-markdown "_footer.md" %}

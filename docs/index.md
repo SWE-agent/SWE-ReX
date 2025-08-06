@@ -32,3 +32,4 @@ Using SWE-ReX, we
 
 [SWE-agent]: https://swe-agent.com
 [enigma]: https://enigma-agent.com
+{% include-markdown "_footer.md" %}
