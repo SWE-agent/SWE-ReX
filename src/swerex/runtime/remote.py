@@ -162,43 +162,28 @@ class RemoteRuntime(AbstractRuntime):
     async def wait_until_alive(self, *, timeout: float = 60.0):
         return await _wait_until_alive(self.is_alive, timeout=timeout)
 
-    async def _request(self, endpoint: str, payload: BaseModel | None, output_class: Any):
+    async def _request(self, endpoint: str, payload: BaseModel | None, output_class: Any, num_retries: int = 0):
         """Small helper to make requests to the server and handle errors and output."""
-        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(force_close=True)) as session:
-            async with session.post(
-                f"{self._api_url}/{endpoint}",
-                json=payload.model_dump() if payload else None,
-                headers=self._headers,
-            ) as resp:
-                await self._handle_response_errors(resp)
-                return output_class(**await resp.json())
-
-    async def _request_with_retry(
-        self,
-        request_url: str,
-        request: BaseModel | None,
-        output_class: Any,
-        num_retries: int,
-    ):
-        """Small helper to make requests to the server and handle errors and output."""
+        request_url = f"{self._api_url}/{endpoint}"
         request_id = str(uuid.uuid4())
         headers = self._headers.copy()
         headers["X-Request-ID"] = request_id  # idempotency key for the request
 
         retry_count = 0
-        last_exception = None
+        last_exception: Exception | None = None
         retry_delay = 0.1
         backoff_max = 5
 
-        session = await self._ensure_session()
         while retry_count <= num_retries:
             try:
-                async with session.post(
-                    request_url, json=request.model_dump() if request else None, headers=headers
-                ) as response:
-                    await self._handle_response_errors(response)
-                    data = await response.json()
-                    return output_class(**data)
+                async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(force_close=True)) as session:
+                    async with session.post(
+                        request_url,
+                        json=payload.model_dump() if payload else None,
+                        headers=headers,
+                    ) as resp:
+                        await self._handle_response_errors(resp)
+                        return output_class(**await resp.json())
             except Exception as e:
                 last_exception = e
                 retry_count += 1
@@ -209,7 +194,7 @@ class RemoteRuntime(AbstractRuntime):
                     retry_delay = min(retry_delay, backoff_max)
                     continue
                 self.logger.error("Error making request %s after %d retries: %s", request_id, num_retries, e)
-        raise last_exception
+        raise last_exception  # type: ignore
 
     async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
         """Creates a new session."""
