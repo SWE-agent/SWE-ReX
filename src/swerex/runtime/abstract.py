@@ -171,6 +171,10 @@ class Command(BaseModel):
     cwd: str | None = None
     """The current working directory to run the command in."""
 
+    merge_output_streams: bool = False
+    """If True, combine stdout and stderr into a single stream.
+    """
+
 
 class CommandResponse(BaseModel):
     stdout: str = ""

@@ -223,6 +223,18 @@ async def test_empty_command(remote_runtime: RemoteRuntime):
     await remote_runtime.execute(C(command="\n", shell=True, check=True))
 
 
+async def test_execute_merge_output_streams_true(remote_runtime: RemoteRuntime):
+    r = await remote_runtime.execute(C(command=["bash", "-lc", "echo 'out'; echo 'err' 1>&2"], shell=False, merge_output_streams=True))
+    assert r.stderr == ""
+    assert r.stdout.splitlines() == ["out", "err"]
+
+
+async def test_execute_merge_output_streams_false(remote_runtime: RemoteRuntime):
+    r = await remote_runtime.execute(C(command=["bash", "-lc", "echo out; echo err 1>&2"], shell=False, merge_output_streams=False))
+    assert r.stdout.strip() == "out"
+    assert r.stderr.strip() == "err"
+
+
 async def test_command_fails_check_exit_code(runtime_with_default_session: RemoteRuntime):
     with pytest.raises(NonZeroExitCodeError):
         await runtime_with_default_session.run_in_session(A(command="false", check="raise"))

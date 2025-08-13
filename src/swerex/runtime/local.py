@@ -428,12 +428,13 @@ class LocalRuntime(AbstractRuntime):
                 shell=command.shell,
                 timeout=command.timeout,
                 env=command.env,
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT if command.merge_output_streams else subprocess.PIPE,
                 cwd=command.cwd,
             )
             r = CommandResponse(
                 stdout=result.stdout.decode(errors="backslashreplace"),
-                stderr=result.stderr.decode(errors="backslashreplace"),
+                stderr=result.stderr.decode(errors="backslashreplace") if result.stderr is not None else "",
                 exit_code=result.returncode,
             )
         except subprocess.TimeoutExpired as e:

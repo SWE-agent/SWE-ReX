@@ -79,7 +79,7 @@ class DummyRuntime(AbstractRuntime):
         raise ValueError(msg)
 
     async def execute(self, command: Command) -> CommandResponse:
-        return CommandResponse(exit_code=0)
+        return CommandResponse(stdout="", stderr="", exit_code=0)
 
     async def read_file(self, request: ReadFileRequest) -> ReadFileResponse:
         return ReadFileResponse()
