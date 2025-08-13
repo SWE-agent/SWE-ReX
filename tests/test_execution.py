@@ -224,13 +224,17 @@ async def test_empty_command(remote_runtime: RemoteRuntime):
 
 
 async def test_execute_merge_output_streams_true(remote_runtime: RemoteRuntime):
-    r = await remote_runtime.execute(C(command=["bash", "-lc", "echo 'out'; echo 'err' 1>&2"], shell=False, merge_output_streams=True))
+    r = await remote_runtime.execute(
+        C(command=["bash", "-lc", "echo 'out'; echo 'err' 1>&2"], shell=False, merge_output_streams=True)
+    )
     assert r.stderr == ""
     assert r.stdout.splitlines() == ["out", "err"]
 
 
 async def test_execute_merge_output_streams_false(remote_runtime: RemoteRuntime):
-    r = await remote_runtime.execute(C(command=["bash", "-lc", "echo out; echo err 1>&2"], shell=False, merge_output_streams=False))
+    r = await remote_runtime.execute(
+        C(command=["bash", "-lc", "echo out; echo err 1>&2"], shell=False, merge_output_streams=False)
+    )
     assert r.stdout.strip() == "out"
     assert r.stderr.strip() == "err"
 
