@@ -1387,6 +1387,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#swerex.runtime.abstract.Command.merge_output_streams" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;merge_output_streams
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swerex.runtime.abstract.Command.shell" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;shell
@@ -2198,6 +2207,15 @@
   <a href="#swerex.runtime.abstract.Command.error_msg" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;error_msg
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swerex.runtime.abstract.Command.merge_output_streams" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;merge_output_streams
     </span>
   </a>
   
@@ -4168,6 +4186,15 @@ Empty string if the command timed out etc.</p>
    (swerex.runtime.abstract.Command.cwd)" href="#swerex.runtime.abstract.Command.cwd">cwd</a></code>
                 (<code><span title="str">str</span> | None</code>)
             </li>
+            <li>
+              <code><a class="autorefs autorefs-internal" title="            merge_output_streams
+
+
+  
+      pydantic-field
+   (swerex.runtime.abstract.Command.merge_output_streams)" href="#swerex.runtime.abstract.Command.merge_output_streams">merge_output_streams</a></code>
+                (<code><span title="bool">bool</span></code>)
+            </li>
         </ul>
 
 
@@ -4300,6 +4327,30 @@ of automatic escaping of spaces etc.) unless you set <code>shell=True</code>
 
         <p>This error message will be used in the <code>NonZeroExitCodeError</code> if the
 command has a non-zero exit code and <code>check</code> is True.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="swerex.runtime.abstract.Command.merge_output_streams" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">merge_output_streams</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-pydantic-field"><code>pydantic-field</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">merge_output_streams</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>If True, combine stdout and stderr into a single stream.</p>
 
     </div>
 
