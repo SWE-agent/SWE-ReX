@@ -157,7 +157,7 @@ class DockerDeployment(AbstractDeployment):
         return (
             "ARG BASE_IMAGE\n\n"
             # Build stage for standalone Python
-            f"FROM {platform_arg} python:3.11-slim AS builder\n"
+            f"FROM {platform_arg} python:3.11.9-slim-bookworm AS builder\n"
             # Install build dependencies
             "RUN apt-get update && apt-get install -y \\\n"
             "    wget \\\n"
