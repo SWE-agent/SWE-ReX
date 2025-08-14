@@ -27,7 +27,6 @@ def test_get_docker_deployment():
     assert isinstance(deployment, DockerDeployment)
 
 
-@pytest.mark.skip(reason="Requires a Modal auth token, which is not available in CI.")
 def test_get_modal_deployment():
     deployment = get_deployment(ModalDeploymentConfig(image="test"))
     assert isinstance(deployment, ModalDeployment)
