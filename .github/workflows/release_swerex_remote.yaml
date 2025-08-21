@@ -38,7 +38,7 @@ jobs:
         
         # Install uv
         curl -LsSf https://astral.sh/uv/install.sh | sh
-        export PATH="$HOME/.cargo/bin:$PATH"
+        source $HOME/.local/bin/env
         
         # Create virtual environment with Python 3.13
         uv venv --python 3.13 .venv
