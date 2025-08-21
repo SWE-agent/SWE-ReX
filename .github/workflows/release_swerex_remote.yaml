@@ -2,8 +2,12 @@ name: Release swerex-remote Executable
 
 on:
   push:
+    branches: [ main ]
     tags:
       - 'v*' # Triggers on version tags like v1.0.0, v2.1.3, etc.
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allow manual triggers
 
 jobs:
   build:
@@ -36,7 +40,7 @@ jobs:
         curl -LsSf https://astral.sh/uv/install.sh | sh
         export PATH="$HOME/.cargo/bin:$PATH"
         
-        # Create virtual environment with Python 3.11
+        # Create virtual environment with Python 3.13
         uv venv --python 3.13 .venv
         source .venv/bin/activate
         
@@ -77,6 +81,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' # Only create releases on push events (not PRs)
     
     steps:
     - name: Checkout code
@@ -98,30 +103,49 @@ jobs:
         sha256sum * > checksums.txt
         cd ..
 
-    - name: Extract version from tag
-      id: version
-      run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+    - name: Determine release type and details
+      id: release_info
+      run: |
+        if [[ $GITHUB_REF == refs/tags/v* ]]; then
+          # This is a version tag
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "type=version" >> $GITHUB_OUTPUT
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=Release $VERSION" >> $GITHUB_OUTPUT
+          echo "prerelease=false" >> $GITHUB_OUTPUT
+          echo "body=Release $VERSION of SWE-ReX remote server" >> $GITHUB_OUTPUT
+        else
+          # This is a dev build from main/master branch
+          DATE=$(date +'%Y%m%d-%H%M%S')
+          COMMIT_SHORT=$(echo $GITHUB_SHA | cut -c1-7)
+          echo "type=dev" >> $GITHUB_OUTPUT
+          echo "tag=dev-$DATE-$COMMIT_SHORT" >> $GITHUB_OUTPUT
+          echo "name=Development Build $DATE" >> $GITHUB_OUTPUT
+          echo "prerelease=true" >> $GITHUB_OUTPUT
+          echo "body=Development build from commit $GITHUB_SHA" >> $GITHUB_OUTPUT
+        fi
 
-    - name: Create versioned release
+    - name: Create or update release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.version.outputs.version }}
-        name: "Release ${{ steps.version.outputs.version }}"
+        tag_name: ${{ steps.release_info.outputs.tag }}
+        name: ${{ steps.release_info.outputs.name }}
         body: |
-          Release ${{ steps.version.outputs.version }} of SWE-ReX remote server
+          ${{ steps.release_info.outputs.body }}
           
           ## Download Links
-          - **Linux x86_64**: [swerex-remote-x86_64](https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/swerex-remote-x86_64)
-          - **Linux ARM64**: [swerex-remote-aarch64](https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/swerex-remote-aarch64)
-          - **Checksums**: [checksums.txt](https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/checksums.txt)
+          - **Linux x86_64**: [swerex-remote-x86_64](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_info.outputs.tag }}/swerex-remote-x86_64)
+          - **Linux ARM64**: [swerex-remote-aarch64](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_info.outputs.tag }}/swerex-remote-aarch64)
+          - **Checksums**: [checksums.txt](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_info.outputs.tag }}/checksums.txt)
           
-          ## Always Latest Links
-          - **Linux x86_64**: [swerex-remote-x86_64](https://github.com/${{ github.repository }}/releases/latest/download/swerex-remote-x86_64)
-          - **Linux ARM64**: [swerex-remote-aarch64](https://github.com/${{ github.repository }}/releases/latest/download/swerex-remote-aarch64)
+          ${{ steps.release_info.outputs.type == 'version' && '## Always Latest Links
+          - **Linux x86_64**: [swerex-remote-x86_64](https://github.com/' || '' }}${{ steps.release_info.outputs.type == 'version' && github.repository || '' }}${{ steps.release_info.outputs.type == 'version' && '/releases/latest/download/swerex-remote-x86_64)
+          - **Linux ARM64**: [swerex-remote-aarch64](https://github.com/' || '' }}${{ steps.release_info.outputs.type == 'version' && github.repository || '' }}${{ steps.release_info.outputs.type == 'version' && '/releases/latest/download/swerex-remote-aarch64)' || '' }}
         files: |
           release_assets/swerex-remote-x86_64
           release_assets/swerex-remote-aarch64
           release_assets/checksums.txt
-        prerelease: false
+        prerelease: ${{ steps.release_info.outputs.prerelease }}
+        make_latest: ${{ steps.release_info.outputs.type == 'version' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
