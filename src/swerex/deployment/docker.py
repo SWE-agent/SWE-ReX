@@ -1,10 +1,14 @@
 import logging
+import os
 import shlex
 import subprocess
+import tempfile
 import time
 import uuid
+from pathlib import Path
 from typing import Any
 
+import requests
 from typing_extensions import Self
 
 from swerex import PACKAGE_NAME, REMOTE_EXECUTABLE_NAME
@@ -20,6 +24,8 @@ from swerex.utils.log import get_logger
 from swerex.utils.wait import _wait_until_alive
 
 __all__ = ["DockerDeployment", "DockerDeploymentConfig"]
+
+REMOTE_EXECUTABLE_PATH = Path("/", REMOTE_EXECUTABLE_NAME)
 
 
 def _is_image_available(image: str, runtime: str = "docker") -> bool:
@@ -119,11 +125,7 @@ class DockerDeployment(AbstractDeployment):
 
     def _get_swerex_start_cmd(self, token: str) -> list[str]:
         rex_args = f"--auth-token {token}"
-        pipx_install = "python3 -m pip install pipx && python3 -m pipx ensurepath"
-        if self._config.python_standalone_dir:
-            cmd = f"{self._config.python_standalone_dir}/python3.11/bin/{REMOTE_EXECUTABLE_NAME} {rex_args}"
-        else:
-            cmd = f"{REMOTE_EXECUTABLE_NAME} {rex_args} || ({pipx_install} && pipx run {PACKAGE_NAME} {rex_args})"
+        cmd = f"chmod +x {REMOTE_EXECUTABLE_PATH} && {REMOTE_EXECUTABLE_PATH} --port 8000 {rex_args}"
         # Need to wrap with /bin/sh -c to avoid having '&&' interpreted by the parent shell
         return [
             "/bin/sh",
@@ -245,32 +247,53 @@ class DockerDeployment(AbstractDeployment):
         rm_arg = []
         if self._config.remove_container:
             rm_arg = ["--rm"]
-        cmds = [
+        # download the remote server
+        image_arch = subprocess.check_output(
+            self._config.container_runtime + " inspect --format '{{.Architecture}}' " + image_id, shell=True, text=True
+        ).strip()
+        assert image_arch in {"amd64", "arm64"}, f"Unsupported architecture: {image_arch}"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            tmp_exec_path = Path(temp_dir) / REMOTE_EXECUTABLE_NAME
+            exec_url = f"https://github.com/Co1lin/SWE-ReX/releases/latest/download/swerex-remote-{image_arch}"
+            self.logger.info(f"Downloading remote executable from {exec_url} to {tmp_exec_path}")
+            r_exec = requests.get(exec_url)
+            r_exec.raise_for_status()
+            with open(tmp_exec_path, "wb") as f:
+                f.write(r_exec.content)
+            # start the container
+            cmds_run = [
+                self._config.container_runtime,
+                "run",
+                *rm_arg,
+                "-p",
+                f"{self._config.port}:8000",
+                *platform_arg,
+                *self._config.docker_args,
+                "--name",
+                self._container_name,
+                "-itd",
+                image_id,
+            ]
+            self.logger.info(
+                f"Starting container {self._container_name} with image {self._config.image} serving on port {self._config.port}: {shlex.join(cmds_run)}"
+            )
+            t0 = time.time()
+            subprocess.check_output(cmds_run, stderr=subprocess.STDOUT)
+            # copy the remote server executable into the container
+            self._copy_to(tmp_exec_path, REMOTE_EXECUTABLE_PATH)
+        # execute the remote server
+        cmds_exec = [
             self._config.container_runtime,
-            "run",
-            *rm_arg,
-            "-p",
-            f"{self._config.port}:8000",
-            *platform_arg,
-            *self._config.docker_args,
-            "--name",
+            "exec",
             self._container_name,
-            image_id,
             *self._get_swerex_start_cmd(token),
         ]
-        cmd_str = shlex.join(cmds)
-        self.logger.info(
-            f"Starting container {self._container_name} with image {self._config.image} serving on port {self._config.port}"
-        )
-        self.logger.debug(f"Command: {cmd_str!r}")
-        # shell=True required for && etc.
-        self._container_process = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.logger.info(f"Executing remote server in container {self._container_name}: {shlex.join(cmds_exec)}")
+        self._container_process = subprocess.Popen(cmds_exec, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self._hooks.on_custom_step("Starting runtime")
-        self.logger.info(f"Starting runtime at {self._config.port}")
         self._runtime = RemoteRuntime.from_config(
             RemoteRuntimeConfig(port=self._config.port, timeout=self._runtime_timeout, auth_token=token)
         )
-        t0 = time.time()
         await self._wait_until_alive(timeout=self._config.startup_timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
 
@@ -288,6 +311,7 @@ class DockerDeployment(AbstractDeployment):
                     stderr=subprocess.DEVNULL,
                     timeout=10,
                 )
+                self.logger.info(f"Killed container {self._container_name}")
             except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
                 self.logger.warning(
                     f"Failed to kill container {self._container_name}: {e}. Will try harder.",
@@ -324,3 +348,38 @@ class DockerDeployment(AbstractDeployment):
         if self._runtime is None:
             raise DeploymentNotStartedError()
         return self._runtime
+
+    def _copy_to(self, src: str, dst: str) -> None:
+        """
+        Copies a file or directory from the host to the container.
+
+        Args:
+            src (str): The path to the source file or directory on the host.
+            dst (str): The destination path inside the container. If `dst` ends
+                       with '/', it's treated as a directory.
+        """
+        # Separate the destination path into directory and filename
+        dst_dir, dst_filename = os.path.split(dst)
+
+        # If dst is a directory path (e.g., "/path/to/dir/"), dst_filename will be empty.
+        # In this case, the destination filename should be the source filename.
+        if not dst_filename:
+            dst_filename = Path(src).name
+        dst_path = Path(dst_dir) / dst_filename
+
+        # Step 1: docker cp (host -> container)
+        subprocess.check_output(["docker", "cp", src, f"{self._container_name}:{dst_path}"], stderr=subprocess.STDOUT)
+
+        # Step 2: fix ownership to match container user
+        uid = subprocess.check_output(
+            ["docker", "exec", self._container_name, "id", "-u"],
+            text=True,
+        ).strip()
+        gid = subprocess.check_output(
+            ["docker", "exec", self._container_name, "id", "-g"],
+            text=True,
+        ).strip()
+        subprocess.check_output(
+            ["docker", "exec", self._container_name, "chown", "-R", f"{uid}:{gid}", dst_path],
+            stderr=subprocess.STDOUT,
+        )
