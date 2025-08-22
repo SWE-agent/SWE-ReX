@@ -248,7 +248,7 @@ class DockerDeployment(AbstractDeployment):
         rm_arg = []
         if self._config.remove_container:
             rm_arg = ["--rm"]
-        # download the remote server
+
         image_arch = subprocess.check_output(
             self._config.container_runtime + " inspect --format '{{.Architecture}}' " + image_id, shell=True, text=True
         ).strip()
@@ -257,6 +257,7 @@ class DockerDeployment(AbstractDeployment):
 
         def _start_and_copy():
             with tempfile.TemporaryDirectory() as temp_dir:
+                # download the remote server
                 tmp_exec_path = Path(temp_dir) / REMOTE_EXECUTABLE_NAME
                 exec_url = f"https://github.com/Co1lin/SWE-ReX/releases/latest/download/swerex-remote-{image_arch}"
                 self.logger.info(f"Downloading remote executable from {exec_url} to {tmp_exec_path}")
