@@ -154,6 +154,5 @@ jobs:
           release_assets/swerex-remote-aarch64
           release_assets/checksums.txt
         prerelease: ${{ steps.release_info.outputs.prerelease }}
-        make_latest: ${{ steps.release_info.outputs.type == 'version' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
