@@ -18,7 +18,7 @@ jobs:
           - arch: amd64
             name: amd64
           - arch: arm64
-            name: aarch64
+            name: arm64
     
     steps:
     - name: Checkout code
@@ -104,7 +104,7 @@ jobs:
       run: |
         mkdir -p release_assets
         cp artifacts/swerex-remote-amd64/swerex-remote-amd64 release_assets/
-        cp artifacts/swerex-remote-aarch64/swerex-remote-aarch64 release_assets/
+        cp artifacts/swerex-remote-arm64/swerex-remote-arm64 release_assets/
         
         # Create checksums
         cd release_assets
@@ -143,15 +143,15 @@ jobs:
           
           ## Download Links
           - **Linux AMD64**: [swerex-remote-amd64](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_info.outputs.tag }}/swerex-remote-amd64)
-          - **Linux ARM64**: [swerex-remote-aarch64](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_info.outputs.tag }}/swerex-remote-aarch64)
+          - **Linux ARM64**: [swerex-remote-arm64](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_info.outputs.tag }}/swerex-remote-arm64)
           - **Checksums**: [checksums.txt](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_info.outputs.tag }}/checksums.txt)
           
           ${{ steps.release_info.outputs.type == 'version' && '## Always Latest Links
           - **Linux AMD64**: [swerex-remote-amd64](https://github.com/' || '' }}${{ steps.release_info.outputs.type == 'version' && github.repository || '' }}${{ steps.release_info.outputs.type == 'version' && '/releases/latest/download/swerex-remote-amd64)
-          - **Linux ARM64**: [swerex-remote-aarch64](https://github.com/' || '' }}${{ steps.release_info.outputs.type == 'version' && github.repository || '' }}${{ steps.release_info.outputs.type == 'version' && '/releases/latest/download/swerex-remote-aarch64)' || '' }}
+          - **Linux ARM64**: [swerex-remote-arm64](https://github.com/' || '' }}${{ steps.release_info.outputs.type == 'version' && github.repository || '' }}${{ steps.release_info.outputs.type == 'version' && '/releases/latest/download/swerex-remote-arm64)' || '' }}
         files: |
           release_assets/swerex-remote-amd64
-          release_assets/swerex-remote-aarch64
+          release_assets/swerex-remote-arm64
           release_assets/checksums.txt
         prerelease: ${{ steps.release_info.outputs.prerelease }}
       env:
