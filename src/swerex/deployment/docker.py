@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import shlex
@@ -231,7 +232,7 @@ class DockerDeployment(AbstractDeployment):
 
     async def start(self):
         """Starts the runtime."""
-        self._pull_image()
+        asyncio.to_thread(self._pull_image)
         if self._config.python_standalone_dir:
             image_id = self._build_image()
         else:
@@ -252,35 +253,39 @@ class DockerDeployment(AbstractDeployment):
             self._config.container_runtime + " inspect --format '{{.Architecture}}' " + image_id, shell=True, text=True
         ).strip()
         assert image_arch in {"amd64", "arm64"}, f"Unsupported architecture: {image_arch}"
-        with tempfile.TemporaryDirectory() as temp_dir:
-            tmp_exec_path = Path(temp_dir) / REMOTE_EXECUTABLE_NAME
-            exec_url = f"https://github.com/Co1lin/SWE-ReX/releases/latest/download/swerex-remote-{image_arch}"
-            self.logger.info(f"Downloading remote executable from {exec_url} to {tmp_exec_path}")
-            r_exec = requests.get(exec_url)
-            r_exec.raise_for_status()
-            with open(tmp_exec_path, "wb") as f:
-                f.write(r_exec.content)
-            # start the container
-            cmds_run = [
-                self._config.container_runtime,
-                "run",
-                *rm_arg,
-                "-p",
-                f"{self._config.port}:8000",
-                *platform_arg,
-                *self._config.docker_args,
-                "--name",
-                self._container_name,
-                "-itd",
-                image_id,
-            ]
-            self.logger.info(
-                f"Starting container {self._container_name} with image {self._config.image} serving on port {self._config.port}: {shlex.join(cmds_run)}"
-            )
-            t0 = time.time()
-            subprocess.check_output(cmds_run, stderr=subprocess.STDOUT)
-            # copy the remote server executable into the container
-            self._copy_to(tmp_exec_path, REMOTE_EXECUTABLE_PATH)
+        t0 = time.time()
+
+        def _start_and_copy():
+            with tempfile.TemporaryDirectory() as temp_dir:
+                tmp_exec_path = Path(temp_dir) / REMOTE_EXECUTABLE_NAME
+                exec_url = f"https://github.com/Co1lin/SWE-ReX/releases/latest/download/swerex-remote-{image_arch}"
+                self.logger.info(f"Downloading remote executable from {exec_url} to {tmp_exec_path}")
+                r_exec = requests.get(exec_url)
+                r_exec.raise_for_status()
+                with open(tmp_exec_path, "wb") as f:
+                    f.write(r_exec.content)
+                # start the container
+                cmds_run = [
+                    self._config.container_runtime,
+                    "run",
+                    *rm_arg,
+                    "-p",
+                    f"{self._config.port}:8000",
+                    *platform_arg,
+                    *self._config.docker_args,
+                    "--name",
+                    self._container_name,
+                    "-itd",
+                    image_id,
+                ]
+                self.logger.info(
+                    f"Starting container {self._container_name} with image {self._config.image} serving on port {self._config.port}: {shlex.join(cmds_run)}"
+                )
+                subprocess.check_output(cmds_run, stderr=subprocess.STDOUT)
+                # copy the remote server executable into the container
+                self._copy_to(tmp_exec_path, REMOTE_EXECUTABLE_PATH)
+
+        await asyncio.to_thread(_start_and_copy)
         # execute the remote server
         cmds_exec = [
             self._config.container_runtime,
