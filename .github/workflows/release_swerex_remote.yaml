@@ -1,0 +1,158 @@
+name: Release swerex-remote Executable
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*' # Triggers on version tags like v1.0.0, v2.1.3, etc.
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allow manual triggers
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            name: amd64
+          - arch: arm64
+            name: arm64
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build executable in compatible container
+      run: |
+        # Create build script
+        cat > build_script.sh << 'EOF'
+        #!/bin/bash
+        set -e
+        
+        # Update package lists
+        apt-get update
+        
+        # Install basic dependencies
+        apt-get install -y curl ca-certificates build-essential
+        
+        # Install uv
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        
+        # Create virtual environment with Python 3.13
+        uv venv --python 3.13 .venv
+        source .venv/bin/activate
+        
+        # Install dependencies
+        uv pip install -e '.[dev]'
+        uv pip install pyinstaller
+        
+        # Build executable
+        pyinstaller src/swerex/server.py --onefile --name swerex-remote-$ARCH_NAME
+        
+        # Make executable and copy to output
+        chmod +x dist/swerex-remote-$ARCH_NAME
+        cp dist/swerex-remote-$ARCH_NAME /output/
+        EOF
+        
+        chmod +x build_script.sh
+        
+        # Create output directory
+        mkdir -p output
+        
+        BASE_IMAGE="ubuntu:14.04"
+        
+        docker run --rm \
+          --platform linux/${{ matrix.arch }} \
+          -v $(pwd):/workspace \
+          -v $(pwd)/output:/output \
+          -w /workspace \
+          -e ARCH_NAME=${{ matrix.name }} \
+          $BASE_IMAGE \
+          bash build_script.sh
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: swerex-remote-${{ matrix.name }}
+        path: output/swerex-remote-${{ matrix.name }}
+        retention-days: 30
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' # Only create releases on push events (not PRs)
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Prepare release assets
+      run: |
+        mkdir -p release_assets
+        cp artifacts/swerex-remote-amd64/swerex-remote-amd64 release_assets/
+        cp artifacts/swerex-remote-arm64/swerex-remote-arm64 release_assets/
+        
+        # Create checksums
+        cd release_assets
+        sha256sum * > checksums.txt
+        cd ..
+
+    - name: Determine release type and details
+      id: release_info
+      run: |
+        if [[ $GITHUB_REF == refs/tags/v* ]]; then
+          # This is a version tag
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "type=version" >> $GITHUB_OUTPUT
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=Release $VERSION" >> $GITHUB_OUTPUT
+          echo "prerelease=false" >> $GITHUB_OUTPUT
+          echo "body=Release $VERSION of SWE-ReX remote server" >> $GITHUB_OUTPUT
+        else
+          # This is a dev build from main/master branch
+          DATE=$(date +'%Y%m%d-%H%M%S')
+          COMMIT_SHORT=$(echo $GITHUB_SHA | cut -c1-7)
+          echo "type=dev" >> $GITHUB_OUTPUT
+          echo "tag=dev-$DATE-$COMMIT_SHORT" >> $GITHUB_OUTPUT
+          echo "name=Development Build $DATE" >> $GITHUB_OUTPUT
+          echo "prerelease=true" >> $GITHUB_OUTPUT
+          echo "body=Development build from commit $GITHUB_SHA" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create or update release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.release_info.outputs.tag }}
+        name: ${{ steps.release_info.outputs.name }}
+        body: |
+          ${{ steps.release_info.outputs.body }}
+          
+          ## Download Links
+          - **Linux AMD64**: [swerex-remote-amd64](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_info.outputs.tag }}/swerex-remote-amd64)
+          - **Linux ARM64**: [swerex-remote-arm64](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_info.outputs.tag }}/swerex-remote-arm64)
+          - **Checksums**: [checksums.txt](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_info.outputs.tag }}/checksums.txt)
+          
+          ${{ steps.release_info.outputs.type == 'version' && '## Always Latest Links
+          - **Linux AMD64**: [swerex-remote-amd64](https://github.com/' || '' }}${{ steps.release_info.outputs.type == 'version' && github.repository || '' }}${{ steps.release_info.outputs.type == 'version' && '/releases/latest/download/swerex-remote-amd64)
+          - **Linux ARM64**: [swerex-remote-arm64](https://github.com/' || '' }}${{ steps.release_info.outputs.type == 'version' && github.repository || '' }}${{ steps.release_info.outputs.type == 'version' && '/releases/latest/download/swerex-remote-arm64)' || '' }}
+        files: |
+          release_assets/swerex-remote-amd64
+          release_assets/swerex-remote-arm64
+          release_assets/checksums.txt
+        prerelease: ${{ steps.release_info.outputs.prerelease }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
