@@ -225,11 +225,7 @@ class DockerDeployment(AbstractDeployment):
         )
 
         def is_valid_image_id(image_id):
-            if runtime == "docker":
-                return image_id.startswith("sha256:")
-            elif runtime == "podman":
-                return image_id.isalnum() and len(image_id) == 64
-            return True
+            return image_id.startswith("sha256:") or (image_id.isalnum() and len(image_id) == 64)
 
         if not is_valid_image_id(image_id):
             msg = f"Failed to build image. Image ID is not a SHA256: {image_id}"
