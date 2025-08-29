@@ -229,6 +229,22 @@ class DockerDeployment(AbstractDeployment):
 
     async def start(self):
         """Starts the runtime."""
+        # Check if the container runtime is available
+        try:
+            subprocess.check_call(
+                [self._config.container_runtime, "--version"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            runtime = self._config.container_runtime
+            msg = f"Container runtime '{runtime}' not found. Please ensure that {runtime} is installed and available in PATH.\n"
+            if runtime == "docker":
+                msg += " You can install Docker from https://docs.docker.com/get-docker/"
+            elif runtime == "podman":
+                msg += " You can install Podman from https://podman.io/getting-started/installation"
+            raise RuntimeError(msg)
+
         self._pull_image()
         if self._config.python_standalone_dir:
             image_id = self._build_image()
