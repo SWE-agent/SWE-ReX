@@ -186,6 +186,52 @@ class DummyDeploymentConfig(BaseModel):
 
         return DummyDeployment.from_config(self)
 
+class VeFaasDeploymentConfig(BaseModel):
+    image: str = "python:3.11"
+    platform: str | None = None
+    startup_timeout: float = 180.0
+    model_config = ConfigDict(extra="forbid")
+    ak: str | None = None
+    sk: str | None = None
+    region: str | None = None
+    apigateway_service_id: str | None = None
+    function_id: str | None = None
+    request_timeout: int = 300
+    client_side_validation: bool = True
+
+    @model_validator(mode="before")
+    def validate_platform_args(cls, data: dict) -> dict:
+        if not isinstance(data, dict):
+            return data
+
+        docker_args = data.get("docker_args", [])
+        platform = data.get("platform")
+
+        platform_arg_idx = next((i for i, arg in enumerate(docker_args) if arg.startswith("--platform")), -1)
+
+        if platform_arg_idx != -1:
+            if platform is not None:
+                msg = "Cannot specify platform both via 'platform' field and '--platform' in docker_args"
+                raise ValueError(msg)
+            # Extract platform value from --platform argument
+            if "=" in docker_args[platform_arg_idx]:
+                # Handle case where platform is specified as --platform=value
+                data["platform"] = docker_args[platform_arg_idx].split("=", 1)[1]
+                data["docker_args"] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 1 :]
+            elif platform_arg_idx + 1 < len(docker_args):
+                data["platform"] = docker_args[platform_arg_idx + 1]
+                # Remove the --platform and its value from docker_args
+                data["docker_args"] = docker_args[:platform_arg_idx] + docker_args[platform_arg_idx + 2 :]
+            else:
+                msg = "--platform argument must be followed by a value"
+                raise ValueError(msg)
+
+        return data
+
+    def get_deployment(self) -> AbstractDeployment:
+        from swerex.deployment.vefaas import VeFaasDeployment
+
+        return VeFaasDeployment.from_config(self)
 
 class DaytonaDeploymentConfig(BaseModel):
     """Configuration for Daytona deployment."""
@@ -211,6 +257,7 @@ DeploymentConfig = (
     | RemoteDeploymentConfig
     | DummyDeploymentConfig
     | DaytonaDeploymentConfig
+    | VeFaasDeploymentConfig
 )
 """Union of all deployment configurations. Useful for type hints."""
 
