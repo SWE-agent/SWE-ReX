@@ -58,7 +58,9 @@ class FargateDeployment(AbstractDeployment):
 
     def _init_aws(self):
         self._cluster_arn = get_cluster_arn(self._config.cluster_name)
-        self._execution_role_arn = get_execution_role_arn(execution_role_prefix=self._config.execution_role_prefix)
+        self._execution_role_arn = get_execution_role_arn(
+            execution_role_prefix=self._config.execution_role_prefix, log_group=self._config.log_group
+        )
         self._task_definition = get_task_definition(
             image_name=self._config.image,
             port=self._config.port,
