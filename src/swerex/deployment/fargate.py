@@ -146,10 +146,12 @@ class FargateDeployment(AbstractDeployment):
         self.logger.info(f"Fargate container started in {time.time() - t0:.2f}s")
         if self._config.log_group:
             try:
+                region = ecs_client.meta.region_name
                 log_url = get_cloudwatch_log_url(
                     task_arn=self._task_arn,
                     task_definition=self._task_definition,
                     container_name=self._container_name,
+                    region=region,
                 )
                 self.logger.info(f"Monitor logs at: {log_url}")
             except Exception as e:

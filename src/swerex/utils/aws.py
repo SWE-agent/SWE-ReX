@@ -98,6 +98,8 @@ def get_task_definition(
     log_group: str | None = None,
 ) -> str:
     ecs_client = boto3.client("ecs")
+    region = ecs_client.meta.region_name
+
     task_definition = {
         "executionRoleArn": execution_role_arn,
         "networkMode": "awsvpc",
@@ -122,7 +124,7 @@ def get_task_definition(
             "logDriver": "awslogs",
             "options": {
                 "awslogs-group": log_group,
-                "awslogs-region": "us-east-2",
+                "awslogs-region": region,
                 "awslogs-stream-prefix": "ecs",
                 "awslogs-create-group": "true",
             },
