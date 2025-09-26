@@ -194,6 +194,7 @@ class DockerDeployment(AbstractDeployment):
         )
 
     def _build_image(self) -> str:
+        runtime = self._config.container_runtime
         """Builds image, returns image ID."""
         self.logger.info(
             f"Building image {self._config.image} to install a standalone python to {self._config.python_standalone_dir}. "
@@ -204,7 +205,7 @@ class DockerDeployment(AbstractDeployment):
         if self._config.platform:
             platform_arg = ["--platform", self._config.platform]
         build_cmd = [
-            self._config.container_runtime,
+            runtime,
             "build",
             "-q",
             *platform_arg,
@@ -220,7 +221,11 @@ class DockerDeployment(AbstractDeployment):
             .decode()
             .strip()
         )
-        if not image_id.startswith("sha256:"):
+
+        def is_valid_image_id(image_id):
+            return image_id.startswith("sha256:") or (image_id.isalnum() and len(image_id) == 64)
+
+        if not is_valid_image_id(image_id):
             msg = f"Failed to build image. Image ID is not a SHA256: {image_id}"
             raise RuntimeError(msg)
         return image_id
