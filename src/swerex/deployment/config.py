@@ -43,6 +43,8 @@ class DockerDeploymentConfig(BaseModel):
     """Whether to remove the container after it has stopped."""
     container_runtime: Literal["docker", "podman"] = "docker"
     """The container runtime to use (docker or podman)."""
+    exec_shell: list[str] = ["/bin/sh", "-c"]
+    """The shell executable and arguments to use for running commands."""
 
     type: Literal["docker"] = "docker"
     """Discriminator for (de)serialization/CLI. Do not change."""
