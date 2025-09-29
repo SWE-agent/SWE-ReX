@@ -186,6 +186,7 @@ class DummyDeploymentConfig(BaseModel):
 
         return DummyDeployment.from_config(self)
 
+
 class VeFaasDeploymentConfig(BaseModel):
     image: str = "python:3.11"
     platform: str | None = None
@@ -232,6 +233,7 @@ class VeFaasDeploymentConfig(BaseModel):
         from swerex.deployment.vefaas import VeFaasDeployment
 
         return VeFaasDeployment.from_config(self)
+
 
 class DaytonaDeploymentConfig(BaseModel):
     """Configuration for Daytona deployment."""
