@@ -20,7 +20,7 @@ def get_container_name(image_name: str) -> str:
     return hashlib.sha256(image_name_sanitized.encode()).hexdigest()[:255]
 
 
-def get_execution_role_arn(execution_role_prefix: str) -> str:
+def get_execution_role_arn(execution_role_prefix: str, log_group: str | None = None) -> str:
     iam_client = boto3.client("iam")
 
     trust_relationship = {
@@ -30,9 +30,10 @@ def get_execution_role_arn(execution_role_prefix: str) -> str:
         ],
     }
 
-    inline_policy = {
-        "Version": "2012-10-17",
-        "Statement": [
+    statements = []
+
+    if log_group:
+        statements.append(
             {
                 "Effect": "Allow",
                 "Action": [
@@ -40,14 +41,17 @@ def get_execution_role_arn(execution_role_prefix: str) -> str:
                     "logs:CreateLogStream",
                     "logs:PutLogEvents",
                     "logs:DescribeLogStreams",
-                    "secretsmanager:GetSecretValue",
                 ],
                 "Resource": [
-                    "arn:aws:logs:*:*:log-group:/ecs/swe-rex-deployment:*",
-                    "arn:aws:logs:*:*:log-group:/ecs/swe-rex-deployment",
+                    f"arn:aws:logs:*:*:log-group:{log_group}:*",
+                    f"arn:aws:logs:*:*:log-group:{log_group}",
                 ],
             }
-        ],
+        )
+
+    inline_policy = {
+        "Version": "2012-10-17",
+        "Statement": statements,
     }
     role_name = get_name_hash(execution_role_prefix, inline_policy, max_length=64)
     # Check if the role already exists
