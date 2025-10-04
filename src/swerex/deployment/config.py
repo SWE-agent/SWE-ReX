@@ -45,6 +45,8 @@ class DockerDeploymentConfig(BaseModel):
     """The container runtime to use (docker or podman)."""
     exec_shell: list[str] = ["/bin/sh", "-c"]
     """The shell executable and arguments to use for running commands."""
+    docker_internal_host: str = "http://127.0.0.1"
+    """The host to use for connecting to the runtime."""
 
     type: Literal["docker"] = "docker"
     """Discriminator for (de)serialization/CLI. Do not change."""

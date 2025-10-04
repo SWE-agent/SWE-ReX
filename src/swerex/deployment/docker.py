@@ -271,7 +271,12 @@ class DockerDeployment(AbstractDeployment):
         self._hooks.on_custom_step("Starting runtime")
         self.logger.info(f"Starting runtime at {self._config.port}")
         self._runtime = RemoteRuntime.from_config(
-            RemoteRuntimeConfig(port=self._config.port, timeout=self._runtime_timeout, auth_token=token)
+            RemoteRuntimeConfig(
+                host=self._config.docker_internal_host,
+                port=self._config.port,
+                timeout=self._runtime_timeout,
+                auth_token=token,
+            )
         )
         t0 = time.time()
         await self._wait_until_alive(timeout=self._config.startup_timeout)
