@@ -283,6 +283,8 @@ class BashSession(Session):
 
         assert self.shell is not None
         _check_bash_command(action.command)
+        self.shell.sendline(f"export PS1='{self._ps1}'")
+        self.shell.expect(self._ps1, timeout=1)
 
         # Part 2: Execute the command
 
