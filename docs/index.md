@@ -1,7 +1,7 @@
 # SWE-ReX
 
 <div style="text-align:center">
-    <img src="assets/swe-rex-logo.svg" alt="SWE-ReX" style="max-height: 10em"/>
+    <img src="https://raw.githubusercontent.com/SWE-agent/swe-agent-media/refs/heads/main/media/logos_banners/swerex_logo.svg" alt="SWE-ReX" style="max-height: 10em"/>
 </div>
 
 SWE-ReX is a runtime interface for interacting with sandboxed shell environments, allowing you to effortlessly let your AI agent run *any command* on *any environment*.
