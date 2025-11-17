@@ -117,8 +117,8 @@ class DockerDeployment(AbstractDeployment):
     def _get_token(self) -> str:
         return str(uuid.uuid4())
 
-    def _get_swerex_start_cmd(self, token: str) -> list[str]:
-        rex_args = f"--auth-token {token}"
+    def _get_swerex_start_cmd(self, token: str, port: int) -> list[str]:
+        rex_args = f"--auth-token {token} --port {port}"
         pipx_install = "python3 -m pip install pipx && python3 -m pipx ensurepath"
         if self._config.python_standalone_dir:
             cmd = f"{self._config.python_standalone_dir}/python3.11/bin/{REMOTE_EXECUTABLE_NAME} {rex_args}"
@@ -253,13 +253,13 @@ class DockerDeployment(AbstractDeployment):
             "run",
             *rm_arg,
             "-p",
-            f"{self._config.port}:8000",
+            f"{self._config.port}:{self._config.port}",
             *platform_arg,
             *self._config.docker_args,
             "--name",
             self._container_name,
             image_id,
-            *self._get_swerex_start_cmd(token),
+            *self._get_swerex_start_cmd(token, self._config.port),
         ]
         cmd_str = shlex.join(cmds)
         self.logger.info(
