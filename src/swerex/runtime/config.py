@@ -29,6 +29,9 @@ class RemoteRuntimeConfig(BaseModel):
     timeout: float = 0.15
     """The timeout for the runtime."""
 
+    timeout_request: float = 300.0
+    """The timeout for request."""
+
     type: Literal["remote"] = "remote"
     """Discriminator for (de)serialization/CLI. Do not change."""
 
