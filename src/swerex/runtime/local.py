@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import re
@@ -162,7 +163,7 @@ class BashSession(Session):
             echo=False,
             env=dict(os.environ.copy(), **{"PS1": self._ps1, "PS2": "", "PS0": ""}),  # type: ignore
         )
-        time.sleep(0.3)
+        await asyncio.sleep(0.3)
         cmds = []
         if self.request.startup_source:
             cmds += [f"source {path}" for path in self.request.startup_source] + ["sleep 0.3"]
@@ -192,7 +193,7 @@ class BashSession(Session):
                 expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
                 matched_expect_string = expect_strings[expect_index]
             except Exception:
-                time.sleep(0.2)
+                await asyncio.sleep(0.2)
                 continue
             output += _strip_control_chars(self.shell.before)  # type: ignore
             output += self._eat_following_output()
