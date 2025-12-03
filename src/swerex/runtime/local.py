@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import re
@@ -55,12 +56,12 @@ from swerex.utils.log import get_logger
 __all__ = ["LocalRuntime", "BashSession"]
 
 
-def _split_bash_command(inpt: str) -> list[str]:
+def _split_bash_command(input: str) -> list[str]:
     r"""Split a bash command with linebreaks, escaped newlines, and heredocs into a list of
     individual commands.
 
     Args:
-        inpt: The input string to split into commands.
+        input: The input string to split into commands.
     Returns:
         A list of commands as strings.
 
@@ -70,11 +71,11 @@ def _split_bash_command(inpt: str) -> list[str]:
     "cmd1\\\n asdf" is one command (because the linebreak is escaped)
     "cmd1<<EOF\na\nb\nEOF" is one command (because of the heredoc)
     """
-    inpt = inpt.strip()
-    if not inpt or all(l.strip().startswith("#") for l in inpt.splitlines()):
+    input = input.strip()
+    if not input or all(l.strip().startswith("#") for l in input.splitlines()):
         # bashlex can't deal with empty strings or the like :/
         return []
-    parsed = bashlex.parse(inpt)
+    parsed = bashlex.parse(input)
     cmd_strings = []
 
     def find_range(cmd: bashlex.ast.node) -> tuple[int, int]:
@@ -88,7 +89,7 @@ def _split_bash_command(inpt: str) -> list[str]:
 
     for cmd in parsed:
         start, end = find_range(cmd)
-        cmd_strings.append(inpt[start:end])
+        cmd_strings.append(input[start:end])
     return cmd_strings
 
 
@@ -162,7 +163,7 @@ class BashSession(Session):
             echo=False,
             env=dict(os.environ.copy(), **{"PS1": self._ps1, "PS2": "", "PS0": ""}),  # type: ignore
         )
-        time.sleep(0.3)
+        await asyncio.sleep(0.3)
         cmds = []
         if self.request.startup_source:
             cmds += [f"source {path}" for path in self.request.startup_source] + ["sleep 0.3"]
@@ -192,7 +193,7 @@ class BashSession(Session):
                 expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
                 matched_expect_string = expect_strings[expect_index]
             except Exception:
-                time.sleep(0.2)
+                await asyncio.sleep(0.2)
                 continue
             output += _strip_control_chars(self.shell.before)  # type: ignore
             output += self._eat_following_output()
