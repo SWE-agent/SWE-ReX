@@ -253,7 +253,7 @@ class ModalDeployment(AbstractDeployment):
         if self._sandbox is not None:
             # Check if the sandbox is still running
             exit_code = await self._sandbox.poll.aio()
-            
+
             # If exit_code is None, the process is still active -> Terminate it
             if exit_code is None:
                 self.logger.info(f"Terminating sandbox {self._sandbox.object_id}...")
