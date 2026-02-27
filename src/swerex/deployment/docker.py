@@ -124,11 +124,9 @@ class DockerDeployment(AbstractDeployment):
             cmd = f"{self._config.python_standalone_dir}/python3.11/bin/{REMOTE_EXECUTABLE_NAME} {rex_args}"
         else:
             cmd = f"{REMOTE_EXECUTABLE_NAME} {rex_args} || ({pipx_install} && pipx run {PACKAGE_NAME} {rex_args})"
-        # Need to wrap with /bin/sh -c to avoid having '&&' interpreted by the parent shell
+        # Use exec_shell from config
         return [
-            "/bin/sh",
-            # "-l",
-            "-c",
+            *self._config.exec_shell,
             cmd,
         ]
 
@@ -196,6 +194,7 @@ class DockerDeployment(AbstractDeployment):
         )
 
     def _build_image(self) -> str:
+        runtime = self._config.container_runtime
         """Builds image, returns image ID."""
         self.logger.info(
             f"Building image {self._config.image} to install a standalone python to {self._config.python_standalone_dir}. "
@@ -206,7 +205,7 @@ class DockerDeployment(AbstractDeployment):
         if self._config.platform:
             platform_arg = ["--platform", self._config.platform]
         build_cmd = [
-            self._config.container_runtime,
+            runtime,
             "build",
             "-q",
             *platform_arg,
@@ -222,7 +221,11 @@ class DockerDeployment(AbstractDeployment):
             .decode()
             .strip()
         )
-        if not image_id.startswith("sha256:"):
+
+        def is_valid_image_id(image_id):
+            return image_id.startswith("sha256:") or (image_id.isalnum() and len(image_id) == 64)
+
+        if not is_valid_image_id(image_id):
             msg = f"Failed to build image. Image ID is not a SHA256: {image_id}"
             raise RuntimeError(msg)
         return image_id
@@ -268,7 +271,12 @@ class DockerDeployment(AbstractDeployment):
         self._hooks.on_custom_step("Starting runtime")
         self.logger.info(f"Starting runtime at {self._config.port}")
         self._runtime = RemoteRuntime.from_config(
-            RemoteRuntimeConfig(port=self._config.port, timeout=self._runtime_timeout, auth_token=token)
+            RemoteRuntimeConfig(
+                host=self._config.docker_internal_host,
+                port=self._config.port,
+                timeout=self._runtime_timeout,
+                auth_token=token,
+            )
         )
         t0 = time.time()
         await self._wait_until_alive(timeout=self._config.startup_timeout)

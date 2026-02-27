@@ -43,6 +43,14 @@ class DockerDeploymentConfig(BaseModel):
     """Whether to remove the container after it has stopped."""
     container_runtime: Literal["docker", "podman"] = "docker"
     """The container runtime to use (docker or podman)."""
+    exec_shell: list[str] = ["/bin/sh", "-c"]
+    """The shell executable and arguments to use for running commands."""
+    docker_internal_host: str = "http://127.0.0.1"
+    """The host to use for connecting to the runtime.
+    In most cases you can leave this as-is, however for docker-in-docker
+    setups you might have to set it to http://host.docker.internal/ 
+    (see https://github.com/SWE-agent/SWE-ReX/issues/253 for more information).
+    """
 
     type: Literal["docker"] = "docker"
     """Discriminator for (de)serialization/CLI. Do not change."""
