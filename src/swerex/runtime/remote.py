@@ -71,9 +71,13 @@ class RemoteRuntime(AbstractRuntime):
     @property
     def _headers(self) -> dict[str, str]:
         """Request headers to use for authentication."""
+        headers = {}
+
         if self._config.auth_token:
-            return {"X-API-Key": self._config.auth_token}
-        return {}
+            headers["X-API-Key"] = self._config.auth_token
+        if self._config.faas_instance_name:
+            headers["x-faas-instance-name"] = self._config.faas_instance_name
+        return headers
 
     @property
     def _api_url(self) -> str:

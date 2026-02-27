@@ -42,7 +42,9 @@ class DeploymentNotStartedError(SwerexException, RuntimeError):
         super().__init__(message)
 
 
-class DeploymentStartupError(SwerexException, RuntimeError): ...
+class DeploymentStartupError(SwerexException, RuntimeError):
+    def __init__(self, message="Deployment startup error"):
+        super().__init__(message)
 
 
 class DockerPullError(DeploymentStartupError): ...

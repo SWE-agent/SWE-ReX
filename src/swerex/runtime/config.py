@@ -29,6 +29,9 @@ class RemoteRuntimeConfig(BaseModel):
     timeout: float = 0.15
     """The timeout for the runtime."""
 
+    faas_instance_name: str | None = None
+    """For Vefaas instance."""
+
     type: Literal["remote"] = "remote"
     """Discriminator for (de)serialization/CLI. Do not change."""
 
