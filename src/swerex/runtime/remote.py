@@ -181,6 +181,7 @@ class RemoteRuntime(AbstractRuntime):
                         request_url,
                         json=payload.model_dump() if payload else None,
                         headers=headers,
+                        timeout=aiohttp.ClientTimeout(total=self._config.timeout_request),
                     ) as resp:
                         await self._handle_response_errors(resp)
                         return output_class(**await resp.json())
