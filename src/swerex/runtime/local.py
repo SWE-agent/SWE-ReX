@@ -429,6 +429,7 @@ class LocalRuntime(AbstractRuntime):
                 shell=command.shell,
                 timeout=command.timeout,
                 env=command.env,
+                stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT if command.merge_output_streams else subprocess.PIPE,
                 cwd=command.cwd,
