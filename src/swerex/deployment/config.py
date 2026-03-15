@@ -210,6 +210,35 @@ class DaytonaDeploymentConfig(BaseModel):
 
         return DaytonaDeployment.from_config(self)
 
+class CloudflareDeploymentConfig(BaseModel):
+    """Configuration for Cloudflare Container deployment.
+
+    Requires a Cloudflare Worker (from cf-python-worker/) to be deployed.
+    The worker manages container instances via Durable Objects.
+    """
+
+    worker_url: str
+    """URL of the deployed Cloudflare Worker (e.g. https://swerex-cf-container.example.workers.dev)."""
+
+    worker_api_token: str = ""
+    """Bearer token for authenticating management requests to the CF Worker (optional)."""
+
+    startup_timeout: float = 300.0
+    """Time (seconds) to wait for the container to be ready."""
+
+    runtime_timeout: float = 30.0
+    """Timeout (seconds) for individual runtime HTTP requests."""
+
+    type: Literal["cf_container"] = "cf_container"
+    """Discriminator for (de)serialization/CLI. Do not change."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    def get_deployment(self) -> AbstractDeployment:
+        from swerex.deployment.cloudflare import CloudflareDeployment
+
+        return CloudflareDeployment.from_config(self)
+
 
 DeploymentConfig = (
     LocalDeploymentConfig
@@ -219,6 +248,7 @@ DeploymentConfig = (
     | RemoteDeploymentConfig
     | DummyDeploymentConfig
     | DaytonaDeploymentConfig
+    | CloudflareDeploymentConfig
 )
 """Union of all deployment configurations. Useful for type hints."""
 
