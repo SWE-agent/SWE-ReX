@@ -39,6 +39,7 @@ dependencies = [
     "bashlex",
     "python-multipart",
     "rich",
+    "aiohttp>=3.13.3",
 ]
 
 [project.optional-dependencies]
