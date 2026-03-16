@@ -3,7 +3,6 @@ import uuid
 from typing import Any
 
 import aiohttp
-from typing_extensions import Self
 
 from swerex.deployment.abstract import AbstractDeployment
 from swerex.deployment.config import CloudflareDeploymentConfig
@@ -16,11 +15,13 @@ from swerex.utils.wait import _wait_until_alive
 
 __all__ = ["CloudflareDeployment"]
 
+
 class CloudflareDeployment(AbstractDeployment):
     """Cloudflare deployment using Cloudflare Containers
     Requires a Cloudflare Worker to be deployed first.
     The worker manages container lifecycle via Durable Objects.
     """
+
     def __init__(
         self,
         *,

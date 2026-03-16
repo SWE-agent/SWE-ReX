@@ -63,8 +63,10 @@ async def test_start_sets_instance_id_and_runtime():
     d = CloudflareDeployment(worker_url="https://fake.workers.dev")
     session = _make_mock_session(post_json={"instance_id": "abc123"})
 
-    with patch("aiohttp.ClientSession", return_value=session), \
-         patch("swerex.deployment.cloudflare._wait_until_alive", new_callable=AsyncMock):
+    with (
+        patch("aiohttp.ClientSession", return_value=session),
+        patch("swerex.deployment.cloudflare._wait_until_alive", new_callable=AsyncMock),
+    ):
         await d.start()
 
     assert d._instance_id == "abc123"
@@ -75,8 +77,10 @@ async def test_start_uses_correct_worker_url():
     d = CloudflareDeployment(worker_url="https://fake.workers.dev", worker_api_token="tok")
     session = _make_mock_session()
 
-    with patch("aiohttp.ClientSession", return_value=session), \
-         patch("swerex.deployment.cloudflare._wait_until_alive", new_callable=AsyncMock):
+    with (
+        patch("aiohttp.ClientSession", return_value=session),
+        patch("swerex.deployment.cloudflare._wait_until_alive", new_callable=AsyncMock),
+    ):
         await d.start()
 
     call_args = session.post.call_args
@@ -130,6 +134,7 @@ async def test_stop_continues_if_runtime_close_fails():
 
 
 # --- Integration tests (require a live CF worker) ---
+
 
 @pytest.mark.cloud
 @pytest.mark.slow

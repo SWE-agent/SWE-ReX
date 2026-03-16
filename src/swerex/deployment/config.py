@@ -210,6 +210,7 @@ class DaytonaDeploymentConfig(BaseModel):
 
         return DaytonaDeployment.from_config(self)
 
+
 class CloudflareDeploymentConfig(BaseModel):
     """Configuration for Cloudflare Container deployment.
 
