@@ -55,7 +55,8 @@ class CloudflareDeployment(AbstractDeployment):
             ) as resp:
                 if resp.status >= 400:
                     body = await resp.text()
-                    raise RuntimeError(f"CF Worker /start returned {resp.status}: {body}")
+                    msg = f"CF Worker /start returned {resp.status}: {body}"
+                    raise RuntimeError(msg)
                 data = await resp.json()
                 self._instance_id = data["instance_id"]
 
