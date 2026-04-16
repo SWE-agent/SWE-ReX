@@ -18,7 +18,7 @@ from swerex.deployment.config import DaytonaDeploymentConfig
 from swerex.deployment.hooks.abstract import CombinedDeploymentHook, DeploymentHook
 from swerex.exceptions import DeploymentNotStartedError
 from swerex.runtime.abstract import IsAliveResponse
-from swerex.runtime.remote import RemoteRuntime
+from swerex.runtime.daytona import DaytonaRuntime
 from swerex.utils.log import get_logger
 from swerex.utils.wait import _wait_until_alive
 
@@ -31,7 +31,7 @@ class DaytonaDeployment(AbstractDeployment):
         **kwargs: Any,
     ):
         self._config = DaytonaDeploymentConfig(**kwargs)
-        self._runtime: RemoteRuntime | None = None
+        self._runtime: DaytonaRuntime | None = None
         self._sandbox = None
         self._sandbox_id = None
         self.logger = logger or get_logger("rex-deploy")
@@ -239,30 +239,22 @@ class DaytonaDeployment(AbstractDeployment):
         
         self.logger.info(f"Server is ready (took {time.time() - t0:.2f}s)")
 
-        # Get Preview URL for external access
-        preview_url = await self._sandbox.get_preview_link(self._config.port)
-        self.logger.debug(f"Preview URL object: {preview_url}")
-        
-        # Extract URL string from PortPreviewUrl object
-        sweRexHost = str(preview_url.url) if hasattr(preview_url, 'url') else str(preview_url)
-        # Extract preview token for proxy authentication
-        preview_token = str(preview_url.token) if hasattr(preview_url, 'token') else None
-        self.logger.info(f"Connecting to swerex at: {sweRexHost}")
-        self.logger.debug(f"Preview token: {preview_token}")
+        # Create a runtime session for SDK-based communication
+        runtime_session_id = f"swerex-runtime-{uuid.uuid4().hex[:8]}"
+        await self._sandbox.process.create_session(runtime_session_id)
+        self.logger.info(f"Created runtime session: {runtime_session_id}")
 
-        # Create the remote runtime with dual authentication:
-        # - X-Daytona-Preview-Token for proxy authentication
-        # - X-API-Key for swerex server authentication
-        self._runtime = RemoteRuntime(
-            host=sweRexHost, 
-            port=None, 
-            auth_token=self._auth_token, 
-            auth_header="X-API-Key",
-            extra_headers={"X-Daytona-Preview-Token": preview_token} if preview_token else {},
-            logger=self.logger
+        # Create the DaytonaRuntime that uses SDK commands instead of HTTP
+        # This bypasses OAuth authentication issues with Preview URLs
+        self._runtime = DaytonaRuntime(
+            sandbox=self._sandbox,
+            session_id=runtime_session_id,
+            auth_token=self._auth_token,
+            port=self._config.port,
+            logger=self.logger,
         )
 
-        # Wait for the runtime to be alive
+        # Verify runtime is alive
         t0 = time.time()
         await self._wait_until_alive(timeout=self._config.runtime_timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
@@ -287,7 +279,7 @@ class DaytonaDeployment(AbstractDeployment):
         self._session_id = None
 
     @property
-    def runtime(self) -> RemoteRuntime:
+    def runtime(self) -> DaytonaRuntime:
         """Returns the runtime if running.
 
         Raises:
