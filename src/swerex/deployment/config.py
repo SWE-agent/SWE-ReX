@@ -198,6 +198,7 @@ class DummyDeploymentConfig(BaseModel):
 class DaytonaDeploymentConfig(BaseModel):
     """Configuration for Daytona deployment."""
 
+    api_url: str | None = Field(default=None, description="Daytona API URL for self-hosted deployments")
     api_key: str = Field(default="", description="Daytona API key for authentication")
     target: str = Field(default="us", description="Daytona target region (us, eu, etc.)")
     port: int = Field(default=8000, description="Port to expose for the SWE Rex server")

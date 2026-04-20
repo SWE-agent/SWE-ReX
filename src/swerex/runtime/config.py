@@ -22,6 +22,10 @@ class LocalRuntimeConfig(BaseModel):
 class RemoteRuntimeConfig(BaseModel):
     auth_token: str
     """The token to use for authentication."""
+    auth_header: str = "X-API-Key"
+    """The header name to use for authentication."""
+    extra_headers: dict[str, str] = {}
+    """Additional headers to send with each request."""
     host: str = "http://127.0.0.1"
     """The host to connect to."""
     port: int | None = None

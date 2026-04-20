@@ -71,9 +71,10 @@ class RemoteRuntime(AbstractRuntime):
     @property
     def _headers(self) -> dict[str, str]:
         """Request headers to use for authentication."""
+        headers = dict(self._config.extra_headers)
         if self._config.auth_token:
-            return {"X-API-Key": self._config.auth_token}
-        return {}
+            headers[self._config.auth_header] = self._config.auth_token
+        return headers
 
     @property
     def _api_url(self) -> str:
