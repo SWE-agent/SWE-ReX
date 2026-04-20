@@ -77,7 +77,7 @@ class DaytonaDeployment(AbstractDeployment):
 
     async def _poll_command(self, session_id: str, command_id: str, timeout: float) -> tuple[int, str]:
         """Poll a command until it completes or times out.
-        
+
         Returns:
             tuple of (exit_code, output)
         """
@@ -94,10 +94,10 @@ class DaytonaDeployment(AbstractDeployment):
         self, server_session_id: str, timeout: float, server_cmd_id: str, auth_token: str
     ) -> bool:
         """Check if swerex server is ready by polling is_alive endpoint inside sandbox.
-        
+
         Uses a separate session for health checks to avoid conflicts with the server process.
         Uses Python's urllib instead of curl to avoid dependency on curl.
-        
+
         Returns:
             True if server is healthy, False otherwise
         """
@@ -105,34 +105,32 @@ class DaytonaDeployment(AbstractDeployment):
         health_session_id = f"health-check-{uuid.uuid4().hex[:8]}"
         await self._sandbox.process.create_session(health_session_id)
         self.logger.info(f"Created health check session: {health_session_id}")
-        
+
         # Use Python for health check with auth header
         health_cmd = (
-            f"python -c \""
+            f'python -c "'
             f"import urllib.request; "
             f"req = urllib.request.Request('http://localhost:{self._config.port}/is_alive'); "
             f"req.add_header('X-API-Key', '{auth_token}'); "
             f"resp = urllib.request.urlopen(req, timeout=5); "
             f"print(resp.status)"
-            f"\""
+            f'"'
         )
-        
+
         start_time = time.time()
         check_count = 0
         while time.time() - start_time < timeout:
             check_count += 1
-            
+
             # Log server status on first check
             if check_count == 1:
                 try:
-                    server_logs = await self._sandbox.process.get_session_command_logs(
-                        server_session_id, server_cmd_id
-                    )
+                    server_logs = await self._sandbox.process.get_session_command_logs(server_session_id, server_cmd_id)
                     log_output = server_logs.stdout or server_logs.stderr or "No logs yet"
                     self.logger.info(f"Initial server logs: {log_output[:500]}")
                 except Exception as log_e:
                     self.logger.info(f"Could not get initial server logs: {log_e}")
-            
+
             try:
                 response = await self._sandbox.process.execute_session_command(
                     health_session_id,
@@ -146,18 +144,16 @@ class DaytonaDeployment(AbstractDeployment):
                         return True
             except Exception as e:
                 self.logger.info(f"Health check #{check_count} failed: {e}")
-            
+
             # Every 5 checks, log server process status
             if check_count % 5 == 0:
                 try:
-                    server_logs = await self._sandbox.process.get_session_command_logs(
-                        server_session_id, server_cmd_id
-                    )
+                    server_logs = await self._sandbox.process.get_session_command_logs(server_session_id, server_cmd_id)
                     log_output = server_logs.stdout or server_logs.stderr or ""
                     self.logger.info(f"Server logs (last 200 chars): {log_output[-200:]}")
                 except Exception as log_e:
                     self.logger.info(f"Could not get server logs: {log_e}")
-            
+
             await asyncio.sleep(1)
         return False
 
@@ -188,7 +184,7 @@ class DaytonaDeployment(AbstractDeployment):
 
     async def start(self):
         """Starts the runtime in a Daytona sandbox.
-        
+
         This method uses polling to verify swerex server is running inside the sandbox,
         then connects to it via Preview URL for external access.
         """
@@ -215,7 +211,7 @@ class DaytonaDeployment(AbstractDeployment):
         # Create a session for the long-running process
         self._session_id = f"swerex-server-{uuid.uuid4().hex[:8]}"
         await self._sandbox.process.create_session(self._session_id)
-        
+
         # Execute server command asynchronously
         req = SessionExecuteRequest(command=command, run_async=True)
         server_response = await self._sandbox.process.execute_session_command(self._session_id, req)
@@ -225,18 +221,18 @@ class DaytonaDeployment(AbstractDeployment):
         # Poll for server health inside the sandbox
         self.logger.info("Waiting for swerex server to be ready...")
         t0 = time.time()
-        
+
         server_ready = await self._check_server_health(
-            self._session_id, 
-            timeout=self._config.runtime_timeout, 
+            self._session_id,
+            timeout=self._config.runtime_timeout,
             server_cmd_id=server_cmd_id,
             auth_token=self._auth_token,
         )
-        
+
         if not server_ready:
             msg = f"Server failed to start within {self._config.runtime_timeout}s"
             raise RuntimeError(msg)
-        
+
         self.logger.info(f"Server is ready (took {time.time() - t0:.2f}s)")
 
         # Create a runtime session for SDK-based communication
