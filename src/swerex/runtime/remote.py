@@ -162,7 +162,14 @@ class RemoteRuntime(AbstractRuntime):
     async def wait_until_alive(self, *, timeout: float = 60.0):
         return await _wait_until_alive(self.is_alive, timeout=timeout)
 
-    async def _request(self, endpoint: str, payload: BaseModel | None, output_class: Any, num_retries: int = 0):
+    async def _request(
+        self,
+        endpoint: str,
+        payload: BaseModel | None,
+        output_class: Any,
+        num_retries: int = 0,
+        timeout: float | None = None,
+    ):
         """Small helper to make requests to the server and handle errors and output."""
         request_url = f"{self._api_url}/{endpoint}"
         request_id = str(uuid.uuid4())
@@ -173,6 +180,7 @@ class RemoteRuntime(AbstractRuntime):
         last_exception: Exception | None = None
         retry_delay = 0.1
         backoff_max = 5
+        http_timeout = aiohttp.ClientTimeout(total=timeout if timeout is not None else self._config.timeout)
 
         while retry_count <= num_retries:
             try:
@@ -181,6 +189,7 @@ class RemoteRuntime(AbstractRuntime):
                         request_url,
                         json=payload.model_dump() if payload else None,
                         headers=headers,
+                        timeout=http_timeout,
                     ) as resp:
                         await self._handle_response_errors(resp)
                         return output_class(**await resp.json())
@@ -202,7 +211,10 @@ class RemoteRuntime(AbstractRuntime):
 
     async def run_in_session(self, action: Action) -> Observation:
         """Runs a command in a session."""
-        return await self._request("run_in_session", action, Observation)
+        http_timeout = None
+        if hasattr(action, "timeout") and action.timeout is not None:
+            http_timeout = action.timeout + 30  # 30s buffer for network overhead
+        return await self._request("run_in_session", action, Observation, timeout=http_timeout)
 
     async def close_session(self, request: CloseSessionRequest) -> CloseSessionResponse:
         """Closes a shell session."""
