@@ -99,14 +99,21 @@ def _strip_control_chars(s: str) -> str:
 
 
 def _check_bash_command(command: str) -> None:
-    """Check if a bash command is valid. Raises BashIncorrectSyntaxError if it's not."""
-    _unique_string = "SOUNIQUEEOF"
-    cmd = f"/usr/bin/env bash -n << '{_unique_string}'\n{command}\n{_unique_string}"
-    result = subprocess.run(cmd, shell=True, capture_output=True)
+    """Check if a bash command is valid. Raises BashIncorrectSyntaxError if it's not.
+
+    Uses stdin pipe instead of heredoc + shell=True to avoid command injection
+    through heredoc delimiter bypass.
+    """
+    result = subprocess.run(
+        ["bash", "-n"],
+        input=command,
+        text=True,
+        capture_output=True,
+    )
     if result.returncode == 0:
         return
-    stdout = result.stdout.decode(errors="backslashreplace")
-    stderr = result.stderr.decode(errors="backslashreplace")
+    stdout = result.stdout or ""
+    stderr = result.stderr or ""
     msg = (
         f"Error (exit code {result.returncode}) while checking bash command \n{command!r}\n"
         f"---- Stderr ----\n{stderr}\n---- Stdout ----\n{stdout}"
