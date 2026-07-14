@@ -56,6 +56,7 @@ dev = [
     "swe-rex[modal]",
     "swe-rex[fargate]",
     "swe-rex[daytona]",
+    "swe-rex[tenki]",
 ]
 modal = [
     "modal>=1.0",
@@ -67,6 +68,9 @@ fargate = [
 daytona = [
     "daytona",
     "daytona-sdk >= 0.21",
+]
+tenki = [
+    "tenki-sandbox",
 ]
 
 [tool.setuptools]

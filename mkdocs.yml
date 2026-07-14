@@ -68,6 +68,7 @@ nav:
       - Docker: api/deployments/docker.md
       - Modal: api/deployments/modal.md
       - Fargate: api/deployments/fargate.md
+      - Tenki: api/deployments/tenki.md
       - Dummy: api/deployments/dummy.md
     - Runtimes classes:
       - Abstract: api/runtimes/abstract.md
