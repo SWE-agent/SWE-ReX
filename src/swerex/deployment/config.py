@@ -253,6 +253,12 @@ class TenkiDeploymentConfig(BaseModel):
     runtime_timeout: float = Field(
         default=60.0, description="Runtime timeout (default timeout for all runtime requests)"
     )
+    runtime_retries: int = Field(
+        default=3,
+        description="How often the runtime retries requests that fail with connection errors. "
+        "Transient connection errors can occur on the preview gateway; retrying is safe because "
+        "requests carry an idempotency key.",
+    )
     sandbox_kwargs: dict[str, Any] = Field(
         default_factory=dict, description="Additional keyword arguments to pass to `tenki_sandbox.Sandbox.create`"
     )

@@ -28,6 +28,13 @@ class RemoteRuntimeConfig(BaseModel):
     """The port to connect to."""
     timeout: float = 0.15
     """The timeout for the runtime."""
+    num_retries: int = 0
+    """How often to retry requests that fail with connection errors.
+    Retries reuse the same idempotency key (`X-Request-ID` header), so the server
+    will not execute a request twice if it already processed it.
+    This is useful for deployments that connect through the public internet
+    (e.g., cloud sandboxes), where transient connection errors can occur.
+    """
 
     type: Literal["remote"] = "remote"
     """Discriminator for (de)serialization/CLI. Do not change."""

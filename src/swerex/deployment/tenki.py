@@ -171,6 +171,7 @@ class TenkiDeployment(AbstractDeployment):
             port=None,
             auth_token=self._auth_token,
             timeout=self._config.runtime_timeout,
+            num_retries=self._config.runtime_retries,
             logger=self.logger,
         )
 
@@ -181,7 +182,11 @@ class TenkiDeployment(AbstractDeployment):
     async def stop(self):
         """Stops the runtime and terminates the Tenki sandbox."""
         if self._runtime is not None:
-            await self._runtime.close()
+            try:
+                await self._runtime.close()
+            except Exception as e:
+                # Closing the runtime must not prevent the sandbox from being terminated
+                self.logger.error(f"Failed to close runtime: {e}")
             self._runtime = None
 
         if self._sandbox is not None:
