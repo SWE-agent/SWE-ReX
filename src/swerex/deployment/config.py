@@ -211,6 +211,36 @@ class DaytonaDeploymentConfig(BaseModel):
         return DaytonaDeployment.from_config(self)
 
 
+class TenkiDeploymentConfig(BaseModel):
+    """Configuration for Tenki deployment (tenki.cloud Firecracker microVMs)."""
+
+    api_key: str = Field(
+        default="", description="Tenki API key. Falls back to the TENKI_API_KEY / TENKI_AUTH_TOKEN env var when empty."
+    )
+    base_url: str = Field(default="", description="Override the Tenki API base URL (rarely needed).")
+    workspace_id: str = Field(
+        default="", description="Workspace to create sandboxes in. Defaults to the key's first workspace."
+    )
+    project_id: str = Field(
+        default="", description="Project to create sandboxes in. Defaults to the key's first project."
+    )
+    port: int = Field(default=8000, description="Port the SWE-ReX server listens on inside the sandbox")
+    container_timeout: float = Field(default=60 * 15, description="Lifetime cap (s) for the SWE-ReX server process")
+    runtime_timeout: float = Field(
+        default=180, description="How long to wait for the runtime to come alive (server install can take a bit)"
+    )
+    image: str = Field(default="", description="Tenki image to boot. Empty = the default image.")
+    cpu_cores: int | None = Field(default=None, description="vCPUs (default: the Tenki default)")
+    memory_mb: int | None = Field(default=None, description="Memory in MB (default: the Tenki default)")
+    type: Literal["tenki"] = "tenki"
+    """Discriminator for (de)serialization. Do not change."""
+
+    def get_deployment(self) -> AbstractDeployment:
+        from swerex.deployment.tenki import TenkiDeployment
+
+        return TenkiDeployment.from_config(self)
+
+
 DeploymentConfig = (
     LocalDeploymentConfig
     | DockerDeploymentConfig
@@ -219,6 +249,7 @@ DeploymentConfig = (
     | RemoteDeploymentConfig
     | DummyDeploymentConfig
     | DaytonaDeploymentConfig
+    | TenkiDeploymentConfig
 )
 """Union of all deployment configurations. Useful for type hints."""
 
