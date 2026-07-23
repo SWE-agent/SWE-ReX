@@ -115,9 +115,7 @@ class TenkiDeployment(AbstractDeployment):
         return await self._runtime.is_alive(timeout=timeout)
 
     async def _wait_until_alive(self, timeout: float):
-        return await _wait_until_alive(
-            self.is_alive, timeout=timeout, function_timeout=self._config.container_timeout
-        )
+        return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._config.container_timeout)
 
     async def start(self):
         """Starts the runtime in a Tenki sandbox."""
@@ -158,9 +156,7 @@ class TenkiDeployment(AbstractDeployment):
         exposed = await self._sandbox.expose_port(self._config.port)
         self.logger.info(f"SWE-ReX server exposed at {exposed.url}")
 
-        self._runtime = RemoteRuntime(
-            host=exposed.url, port=None, auth_token=self._auth_token, logger=self.logger
-        )
+        self._runtime = RemoteRuntime(host=exposed.url, port=None, auth_token=self._auth_token, logger=self.logger)
 
         t0 = time.time()
         await self._wait_until_alive(timeout=self._config.runtime_timeout)
