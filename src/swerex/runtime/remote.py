@@ -40,6 +40,11 @@ from swerex.utils.wait import _wait_until_alive
 
 __all__ = ["RemoteRuntime", "RemoteRuntimeConfig"]
 
+_RETRYABLE_EXCEPTIONS = (aiohttp.ClientError, asyncio.TimeoutError, ConnectionError)
+"""Transient network errors that are safe to retry: the server deduplicates
+retried requests by their `X-Request-ID` header, so a request that did reach
+the server is never executed twice."""
+
 
 class RemoteRuntime(AbstractRuntime):
     def __init__(
@@ -112,6 +117,9 @@ class RemoteRuntime(AbstractRuntime):
             )
             exception = SwerexException(exc_transfer.message)
         exception.extra_info = exc_transfer.extra_info
+        # The request was executed on the server, so it must never be retried,
+        # even if the transferred exception happens to be a connection error class.
+        exception._swerex_transferred = True
         raise exception from None
 
     async def _handle_response_errors(self, response: aiohttp.ClientResponse) -> None:
@@ -192,7 +200,9 @@ class RemoteRuntime(AbstractRuntime):
                 # Exceptions transferred from the server (e.g., a failing command)
                 # are not connection issues, so retrying would not help
                 raise
-            except Exception as e:
+            except _RETRYABLE_EXCEPTIONS as e:
+                if getattr(e, "_swerex_transferred", False):
+                    raise
                 last_exception = e
                 retry_count += 1
                 if retry_count <= num_retries:

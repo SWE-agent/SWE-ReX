@@ -131,17 +131,15 @@ environment variable (or pass it explicitly as `api_key`).
 ```python
 from swerex.deployment.tenki import TenkiDeployment
 
-async def run_tenki_deployment():
-    deployment = TenkiDeployment(
-        startup_timeout=180,  # wait up to 3 minutes for the runtime to start
-        container_timeout=3600,  # kill the sandbox after 1 hour
-    )
-    await deployment.start()
-    await deployment.is_alive()
-    return deployment
-
-deployment = asyncio.run(run_tenki_deployment())
+deployment = TenkiDeployment(
+    startup_timeout=180,  # wait up to 3 minutes for the runtime to start
+    container_timeout=3600,  # kill the sandbox after 1 hour
+)
 asyncio.run(run_some_stuff(deployment))
 ```
+
+Note that `run_some_stuff` already calls `deployment.start()` and `deployment.stop()`,
+which create and terminate the sandbox. Starting an already started deployment raises
+an error, so each deployment goes through exactly one start/stop lifecycle.
 
 {% include-markdown "_footer.md" %}

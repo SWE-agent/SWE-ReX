@@ -70,7 +70,7 @@ daytona = [
     "daytona-sdk >= 0.21",
 ]
 tenki = [
-    "tenki-sandbox",
+    "tenki-sandbox >= 0.4.0",
 ]
 
 [tool.setuptools]

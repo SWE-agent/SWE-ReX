@@ -119,8 +119,39 @@ class TenkiDeployment(AbstractDeployment):
         """Wait until the runtime is alive."""
         return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._config.runtime_timeout)
 
+    def _read_server_log(self) -> str:
+        """Best-effort read of the server log in the sandbox (for error messages)."""
+        if self._sandbox is None:
+            return "<no sandbox>"
+        try:
+            result = self._sandbox.exec("bash", "-lc", "tail -c 4096 /tmp/swerex.log")
+            return result.stdout_text.strip() or "<empty>"
+        except Exception as e:
+            return f"<could not read /tmp/swerex.log: {e}>"
+
+    def _terminate_sandbox(self):
+        """Terminates the sandbox (if any).
+
+        The sandbox handle is only cleared if termination succeeds, so that a
+        failed `stop()` can be retried.
+        """
+        if self._sandbox is None:
+            return
+        self.logger.info(f"Terminating Tenki sandbox with ID: {self._sandbox_id}")
+        self._sandbox.close_if_open()
+        self.logger.info("Tenki sandbox terminated successfully")
+        self._sandbox = None
+        self._sandbox_id = None
+
     async def start(self):
-        """Starts the runtime in a Tenki sandbox."""
+        """Starts the runtime in a Tenki sandbox.
+
+        Raises:
+            RuntimeError: If the deployment is already started or the runtime fails to start.
+        """
+        if self._sandbox is not None:
+            msg = "The deployment is already started. Call stop() before starting it again."
+            raise RuntimeError(msg)
         self.logger.info("Creating Tenki sandbox...")
 
         create_kwargs: dict[str, Any] = {
@@ -153,53 +184,70 @@ class TenkiDeployment(AbstractDeployment):
         self._sandbox_id = self._sandbox.id
         self.logger.info(f"Created Tenki sandbox with ID: {self._sandbox_id}")
 
-        self._auth_token = self._get_token()
+        try:
+            self._auth_token = self._get_token()
 
-        command = self._get_command(token=self._auth_token)
-        self.logger.info("Starting SWE Rex server in Tenki sandbox...")
-        result = self._sandbox.exec("bash", "-lc", command)
-        if result.exit_code != 0:
-            self.logger.error(f"Failed to start SWE Rex server: {result.stderr_text}")
-            await self.stop()
-            msg = f"Failed to start SWE Rex server: {result.stderr_text}"
-            raise RuntimeError(msg)
+            command = self._get_command(token=self._auth_token)
+            self.logger.info("Starting SWE Rex server in Tenki sandbox...")
+            result = self._sandbox.exec("bash", "-lc", command)
+            if result.exit_code != 0:
+                # The server itself is backgrounded, so this only catches failures
+                # of the launcher; server failures surface via the timeout below.
+                msg = f"Failed to launch the SWE Rex server: {result.stderr_text}"
+                raise RuntimeError(msg)
 
-        preview = self._sandbox.expose_port(self._config.port, ttl=self._config.container_timeout)
+            preview = self._sandbox.expose_port(self._config.port, ttl=self._config.container_timeout)
 
-        self._runtime = RemoteRuntime(
-            host=preview.url,
-            port=None,
-            auth_token=self._auth_token,
-            timeout=self._config.runtime_timeout,
-            num_retries=self._config.runtime_retries,
-            logger=self.logger,
-        )
+            self._runtime = RemoteRuntime(
+                host=preview.url,
+                port=None,
+                auth_token=self._auth_token,
+                timeout=self._config.runtime_timeout,
+                num_retries=self._config.runtime_retries,
+                logger=self.logger,
+            )
 
-        t0 = time.time()
-        await self._wait_until_alive(timeout=self._config.startup_timeout)
-        self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
+            t0 = time.time()
+            try:
+                await self._wait_until_alive(timeout=self._config.startup_timeout)
+            except Exception as e:
+                msg = (
+                    f"The SWE Rex server did not start within {self._config.startup_timeout}s. "
+                    f"Server log (/tmp/swerex.log in the sandbox):\n{self._read_server_log()}"
+                )
+                raise RuntimeError(msg) from e
+            self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
+        except BaseException:
+            # Don't leave the sandbox running (and billing) if startup fails
+            # or is cancelled.
+            self._runtime = None
+            self._auth_token = None
+            try:
+                self._terminate_sandbox()
+            except Exception as cleanup_exc:
+                self.logger.error(f"Failed to terminate Tenki sandbox after failed startup: {cleanup_exc}")
+            raise
 
     async def stop(self):
-        """Stops the runtime and terminates the Tenki sandbox."""
-        if self._runtime is not None:
-            try:
-                await self._runtime.close()
-            except Exception as e:
-                # Closing the runtime must not prevent the sandbox from being terminated
-                self.logger.error(f"Failed to close runtime: {e}")
-            self._runtime = None
+        """Stops the runtime and terminates the Tenki sandbox.
 
-        if self._sandbox is not None:
-            try:
-                self.logger.info(f"Terminating Tenki sandbox with ID: {self._sandbox_id}")
-                self._sandbox.close_if_open()
-                self.logger.info("Tenki sandbox terminated successfully")
-            except Exception as e:
-                self.logger.error(f"Failed to terminate Tenki sandbox: {e}")
-
-        self._sandbox = None
-        self._sandbox_id = None
-        self._auth_token = None
+        Sandbox termination errors are raised (with the sandbox handle kept),
+        so that a failed `stop()` can be retried.
+        """
+        try:
+            if self._runtime is not None:
+                try:
+                    await self._runtime.close()
+                except Exception as e:
+                    # Closing the runtime must not prevent the sandbox from being terminated
+                    self.logger.error(f"Failed to close runtime: {e}")
+                finally:
+                    self._runtime = None
+        finally:
+            # Terminate the sandbox even if closing the runtime was cancelled.
+            # The SDK call is synchronous, so cancellation cannot interrupt it.
+            self._auth_token = None
+            self._terminate_sandbox()
 
     @property
     def runtime(self) -> RemoteRuntime:

@@ -29,9 +29,11 @@ class RemoteRuntimeConfig(BaseModel):
     timeout: float = 0.15
     """The timeout for the runtime."""
     num_retries: int = 0
-    """How often to retry requests that fail with connection errors.
-    Retries reuse the same idempotency key (`X-Request-ID` header), so the server
-    will not execute a request twice if it already processed it.
+    """How often to retry requests that fail with transient network errors.
+    Retries reuse the same idempotency key (`X-Request-ID` header), which the
+    server uses to deduplicate both in-flight and completed requests, so a
+    retried request is never executed twice. Exceptions raised by the request
+    itself on the server are never retried.
     This is useful for deployments that connect through the public internet
     (e.g., cloud sandboxes), where transient connection errors can occur.
     """

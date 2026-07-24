@@ -255,9 +255,10 @@ class TenkiDeploymentConfig(BaseModel):
     )
     runtime_retries: int = Field(
         default=3,
-        description="How often the runtime retries requests that fail with connection errors. "
+        description="How often the runtime retries requests that fail with transient network errors. "
         "Transient connection errors can occur on the preview gateway; retrying is safe because "
-        "requests carry an idempotency key.",
+        "requests carry an idempotency key that the server uses to deduplicate in-flight and "
+        "completed requests.",
     )
     sandbox_kwargs: dict[str, Any] = Field(
         default_factory=dict, description="Additional keyword arguments to pass to `tenki_sandbox.Sandbox.create`"

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse
+import asyncio
 import shutil
 import tempfile
 import traceback
 import zipfile
+from collections import OrderedDict
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
@@ -40,25 +42,44 @@ def serialize_model(model):
 
 
 class ResponseManager:
+    """Deduplicates requests by their idempotency key (`X-Request-ID` header)
+    so that client retries never execute a request twice.
+
+    Responses of completed requests are kept in a bounded LRU cache. Requests
+    that are still executing are tracked separately, so that a duplicate
+    arriving while the original is in flight waits for the original's response
+    instead of executing the request again.
     """
-    This stores the response of the last request, and is used in retries to return
-    already executed requests.
 
-    Note that in the case of multiple concurrent clients, idempotency isn't guaranteed.
-    """
+    def __init__(self, max_entries: int = 256):
+        self._max_entries = max_entries
+        self._completed: OrderedDict[str, Response] = OrderedDict()
+        self._in_flight: dict[str, asyncio.Future] = {}
 
-    def __init__(self):
-        self.last_processed_request_id = None
-        self.last_processed_response = None
+    def get_completed(self, request_id: str) -> Response | None:
+        response = self._completed.get(request_id)
+        if response is not None:
+            self._completed.move_to_end(request_id)
+        return response
 
-    def get_response(self, request_id):
-        if request_id == self.last_processed_request_id:
-            return self.last_processed_response
-        return None
+    def get_in_flight(self, request_id: str) -> "asyncio.Future | None":
+        return self._in_flight.get(request_id)
 
-    def set_response(self, request_id, response):
-        self.last_processed_request_id = request_id
-        self.last_processed_response = response
+    def start(self, request_id: str) -> None:
+        self._in_flight[request_id] = asyncio.get_running_loop().create_future()
+
+    def finish(self, request_id: str, response: Response) -> None:
+        self._completed[request_id] = response
+        while len(self._completed) > self._max_entries:
+            self._completed.popitem(last=False)
+        self._in_flight.pop(request_id).set_result(response)
+
+    def fail(self, request_id: str, exc: BaseException) -> None:
+        future = self._in_flight.pop(request_id)
+        future.set_exception(exc)
+        # Mark the exception as retrieved so that a duplicate-free failure
+        # doesn't emit an "exception was never retrieved" warning.
+        future.exception()
 
 
 response_manager = ResponseManager()
@@ -78,27 +99,39 @@ async def authenticate(request: Request, call_next):
 async def handle_request_id(request: Request, call_next):
     """Handle request ID for idempotency."""
     request_id = request.headers.get("X-Request-ID")
-    if request_id:
-        response = response_manager.get_response(request_id)
-        if response:
-            return response
+    if not request_id:
+        return await call_next(request)
 
-    response = await call_next(request)
+    cached = response_manager.get_completed(request_id)
+    if cached is not None:
+        return cached
 
-    body_content = b""
-    async for chunk in response.body_iterator:
-        body_content += chunk
+    in_flight = response_manager.get_in_flight(request_id)
+    if in_flight is not None:
+        # A duplicate of a request that is still executing (e.g., the client
+        # timed out and retried): wait for the original instead of executing
+        # the request a second time. Shielded so that the duplicate's
+        # disconnect cannot cancel the shared future.
+        return await asyncio.shield(in_flight)
 
-    new_response = Response(
-        content=body_content,
-        status_code=response.status_code,
-        headers=dict(response.headers),
-        media_type=response.media_type,
-    )
-
-    if request_id:
-        response_manager.set_response(request_id, new_response)
-
+    response_manager.start(request_id)
+    try:
+        response = await call_next(request)
+        body_content = b""
+        async for chunk in response.body_iterator:
+            body_content += chunk
+        new_response = Response(
+            content=body_content,
+            status_code=response.status_code,
+            headers=dict(response.headers),
+            media_type=response.media_type,
+        )
+    except BaseException as exc:
+        # Failed executions are not cached: any waiting duplicate fails too,
+        # and a later retry executes the request again.
+        response_manager.fail(request_id, exc)
+        raise
+    response_manager.finish(request_id, new_response)
     return new_response
 
 
