@@ -34,8 +34,6 @@ class TenkiDeployment(AbstractDeployment):
         self._config = TenkiDeploymentConfig(**kwargs)
         self._runtime: RemoteRuntime | None = None
         self._sandbox: Sandbox | None = None
-        self._sandbox_id = None
-        self._auth_token = None
         self.logger = logger or get_logger("rex-deploy")
         self._hooks = CombinedDeploymentHook()
 
@@ -45,10 +43,6 @@ class TenkiDeployment(AbstractDeployment):
     @classmethod
     def from_config(cls, config: TenkiDeploymentConfig) -> Self:
         return cls(**config.model_dump())
-
-    def _get_token(self) -> str:
-        """Generate a unique authentication token."""
-        return str(uuid.uuid4())
 
     def _get_client_kwargs(self) -> dict[str, Any]:
         client_kwargs: dict[str, Any] = {}
@@ -116,8 +110,16 @@ class TenkiDeployment(AbstractDeployment):
         return await self._runtime.is_alive(timeout=timeout)
 
     async def _wait_until_alive(self, timeout: float):
-        """Wait until the runtime is alive."""
-        return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._config.runtime_timeout)
+        """Wait until the runtime is alive.
+
+        Only polls the runtime endpoint: going through `is_alive` would add a
+        Tenki control-plane round-trip to every 0.25s poll iteration.
+        """
+        if self._runtime is None:
+            raise DeploymentNotStartedError()
+        return await _wait_until_alive(
+            self._runtime.is_alive, timeout=timeout, function_timeout=self._config.runtime_timeout
+        )
 
     def _read_server_log(self) -> str:
         """Best-effort read of the server log in the sandbox (for error messages)."""
@@ -137,11 +139,10 @@ class TenkiDeployment(AbstractDeployment):
         """
         if self._sandbox is None:
             return
-        self.logger.info(f"Terminating Tenki sandbox with ID: {self._sandbox_id}")
+        self.logger.info(f"Terminating Tenki sandbox with ID: {self._sandbox.id}")
         self._sandbox.close_if_open()
         self.logger.info("Tenki sandbox terminated successfully")
         self._sandbox = None
-        self._sandbox_id = None
 
     async def start(self):
         """Starts the runtime in a Tenki sandbox.
@@ -181,13 +182,11 @@ class TenkiDeployment(AbstractDeployment):
 
         # Waits until the sandbox is RUNNING and exec-ready
         self._sandbox = Sandbox.create(**create_kwargs)
-        self._sandbox_id = self._sandbox.id
-        self.logger.info(f"Created Tenki sandbox with ID: {self._sandbox_id}")
+        self.logger.info(f"Created Tenki sandbox with ID: {self._sandbox.id}")
 
         try:
-            self._auth_token = self._get_token()
-
-            command = self._get_command(token=self._auth_token)
+            auth_token = str(uuid.uuid4())
+            command = self._get_command(token=auth_token)
             self.logger.info("Starting SWE Rex server in Tenki sandbox...")
             result = self._sandbox.exec("bash", "-lc", command)
             if result.exit_code != 0:
@@ -201,7 +200,7 @@ class TenkiDeployment(AbstractDeployment):
             self._runtime = RemoteRuntime(
                 host=preview.url,
                 port=None,
-                auth_token=self._auth_token,
+                auth_token=auth_token,
                 timeout=self._config.runtime_timeout,
                 num_retries=self._config.runtime_retries,
                 logger=self.logger,
@@ -221,7 +220,6 @@ class TenkiDeployment(AbstractDeployment):
             # Don't leave the sandbox running (and billing) if startup fails
             # or is cancelled.
             self._runtime = None
-            self._auth_token = None
             try:
                 self._terminate_sandbox()
             except Exception as cleanup_exc:
@@ -246,7 +244,6 @@ class TenkiDeployment(AbstractDeployment):
         finally:
             # Terminate the sandbox even if closing the runtime was cancelled.
             # The SDK call is synchronous, so cancellation cannot interrupt it.
-            self._auth_token = None
             self._terminate_sandbox()
 
     @property

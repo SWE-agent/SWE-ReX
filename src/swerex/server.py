@@ -62,7 +62,7 @@ class ResponseManager:
             self._completed.move_to_end(request_id)
         return response
 
-    def get_in_flight(self, request_id: str) -> "asyncio.Future | None":
+    def get_in_flight(self, request_id: str) -> asyncio.Future | None:
         return self._in_flight.get(request_id)
 
     def start(self, request_id: str) -> None:
@@ -70,7 +70,7 @@ class ResponseManager:
 
     def finish(self, request_id: str, response: Response) -> None:
         self._completed[request_id] = response
-        while len(self._completed) > self._max_entries:
+        if len(self._completed) > self._max_entries:
             self._completed.popitem(last=False)
         self._in_flight.pop(request_id).set_result(response)
 
