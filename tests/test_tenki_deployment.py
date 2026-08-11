@@ -16,7 +16,7 @@ class _FakeExecResult:
 
 
 def _make_fake_sandbox_class():
-    """A fresh fake `tenki_sandbox.Sandbox` class (with its own creation log) per test."""
+    """A fresh fake `tenki.Sandbox` class (with its own creation log) per test."""
 
     class FakeSandbox:
         created: list = []
@@ -72,7 +72,7 @@ def patched_wait(monkeypatch):
 
 
 def _make_deployment(**kwargs) -> TenkiDeployment:
-    config = dict(project_id="proj-test", api_key="tk_test", runtime_retries=0, runtime_timeout=0.2)
+    config = dict(api_key="tk_test", runtime_retries=0, runtime_timeout=0.2)
     config.update(kwargs)
     return TenkiDeployment(**config)
 

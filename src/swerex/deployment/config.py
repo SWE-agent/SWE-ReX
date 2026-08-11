@@ -222,13 +222,9 @@ class TenkiDeploymentConfig(BaseModel):
         default="",
         description="Tenki API base URL. Falls back to the TENKI_API_ENDPOINT environment variable or https://api.tenki.cloud if empty.",
     )
-    project_id: str = Field(
-        default="",
-        description="Tenki project to create the sandbox in. If empty, the project is resolved automatically (only possible if the API key has access to exactly one project).",
-    )
     workspace_id: str = Field(
         default="",
-        description="Tenki workspace to create the sandbox in. Usually not needed, as the workspace is implied by the project.",
+        description="Tenki workspace to create the sandbox in. Usually not needed, as the API key determines the workspace automatically.",
     )
     image: str | None = Field(
         default=None, description="Image to use for the sandbox. Uses the Tenki service default if None."
@@ -261,7 +257,7 @@ class TenkiDeploymentConfig(BaseModel):
         "completed requests.",
     )
     sandbox_kwargs: dict[str, Any] = Field(
-        default_factory=dict, description="Additional keyword arguments to pass to `tenki_sandbox.Sandbox.create`"
+        default_factory=dict, description="Additional keyword arguments to pass to `tenki.Sandbox.create`"
     )
 
     type: Literal["tenki"] = "tenki"

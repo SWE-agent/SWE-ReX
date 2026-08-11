@@ -3,7 +3,7 @@ import time
 import uuid
 from typing import Any
 
-from tenki_sandbox import Client, Sandbox
+from tenki import Sandbox
 from typing_extensions import Self
 
 from swerex import PACKAGE_NAME, REMOTE_EXECUTABLE_NAME
@@ -51,23 +51,6 @@ class TenkiDeployment(AbstractDeployment):
         if self._config.base_url:
             client_kwargs["base_url"] = self._config.base_url
         return client_kwargs
-
-    def _resolve_project_id(self) -> str:
-        """Resolve the project to create the sandbox in from the API key's identity.
-
-        Raises:
-            RuntimeError: If the API key has access to more than one project.
-        """
-        client = Client(**self._get_client_kwargs())
-        identity = client.who_am_i()
-        projects = [project.id for workspace in identity.workspaces for project in workspace.projects]
-        if len(projects) != 1:
-            msg = (
-                f"Could not resolve the Tenki project automatically (found {len(projects)} projects). "
-                "Please set project_id in the deployment configuration."
-            )
-            raise RuntimeError(msg)
-        return projects[0]
 
     def _get_command(self, *, token: str) -> str:
         """Generate the command to run the SWE Rex server."""
@@ -157,7 +140,6 @@ class TenkiDeployment(AbstractDeployment):
 
         create_kwargs: dict[str, Any] = {
             "name": f"swe-rex-{uuid.uuid4().hex[:8]}",
-            "project_id": self._config.project_id or self._resolve_project_id(),
             # Inbound is required to expose the server port, outbound for the
             # pipx fallback installation of swe-rex.
             "allow_inbound": True,
