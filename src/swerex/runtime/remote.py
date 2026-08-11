@@ -40,6 +40,15 @@ from swerex.utils.wait import _wait_until_alive
 
 __all__ = ["RemoteRuntime", "RemoteRuntimeConfig"]
 
+_RETRYABLE_EXCEPTIONS = (aiohttp.ClientError, asyncio.TimeoutError, ConnectionError)
+"""Transient network errors that are safe to retry: the server deduplicates
+retried requests by their `X-Request-ID` header, so a request that did reach
+the server is never executed twice."""
+
+_RETRYABLE_STATUSES = (502, 503, 504)
+"""Gateway errors: the request may never have reached the server, and the
+`X-Request-ID` deduplication makes retrying safe if it did."""
+
 
 class RemoteRuntime(AbstractRuntime):
     def __init__(
@@ -162,39 +171,45 @@ class RemoteRuntime(AbstractRuntime):
     async def wait_until_alive(self, *, timeout: float = 60.0):
         return await _wait_until_alive(self.is_alive, timeout=timeout)
 
-    async def _request(self, endpoint: str, payload: BaseModel | None, output_class: Any, num_retries: int = 0):
+    async def _request(self, endpoint: str, payload: BaseModel | None, output_class: Any):
         """Small helper to make requests to the server and handle errors and output."""
         request_url = f"{self._api_url}/{endpoint}"
         request_id = str(uuid.uuid4())
         headers = self._headers.copy()
         headers["X-Request-ID"] = request_id  # idempotency key for the request
 
-        retry_count = 0
-        last_exception: Exception | None = None
+        num_retries = self._config.num_retries
         retry_delay = 0.1
         backoff_max = 5
 
-        while retry_count <= num_retries:
-            try:
-                async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(force_close=True)) as session:
+        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(force_close=True)) as session:
+            for attempt in range(num_retries + 1):
+                try:
                     async with session.post(
                         request_url,
                         json=payload.model_dump() if payload else None,
                         headers=headers,
                     ) as resp:
-                        await self._handle_response_errors(resp)
-                        return output_class(**await resp.json())
-            except Exception as e:
-                last_exception = e
-                retry_count += 1
-                if retry_count <= num_retries:
+                        if resp.status in _RETRYABLE_STATUSES:
+                            resp.raise_for_status()
+                        data = await resp.json()
+                    break
+                except _RETRYABLE_EXCEPTIONS as e:
+                    if attempt >= num_retries:
+                        self.logger.error("Error making request %s after %d retries: %s", request_id, num_retries, e)
+                        raise
                     await asyncio.sleep(retry_delay)
-                    retry_delay *= 2
-                    retry_delay += random.uniform(0, 0.5)
-                    retry_delay = min(retry_delay, backoff_max)
-                    continue
-                self.logger.error("Error making request %s after %d retries: %s", request_id, num_retries, e)
-        raise last_exception  # type: ignore
+                    retry_delay = min(retry_delay * 2 + random.uniform(0, 0.5), backoff_max)
+
+            # The server produced this response, so nothing below is retried:
+            # server-side errors (e.g., a failing command) are not connection issues.
+            if resp.status == 511:
+                exc_transfer = _ExceptionTransfer(**data["swerexception"])
+                self._handle_transfer_exception(exc_transfer)
+            if resp.status >= 400:
+                self.logger.critical("Received error response: %s", data)
+                resp.raise_for_status()
+            return output_class(**data)
 
     async def create_session(self, request: CreateSessionRequest) -> CreateSessionResponse:
         """Creates a new session."""

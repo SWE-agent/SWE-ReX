@@ -121,4 +121,25 @@ output='' exit_code=0 failure_reason='' expect_string='SHELLPS1PREFIX' session_t
 output='test\n' exit_code=0 failure_reason='' expect_string='SHELLPS1PREFIX' session_type='bash'
 🦖 DEBUG    Ensuring deployment is stopped because object is deleted          
 ```
+
+## Running with Tenki
+
+You can also run in a [Tenki](https://tenki.cloud) sandbox by using the `TenkiDeployment`.
+Generate an API key in your Tenki workspace settings and set it as the `TENKI_API_KEY`
+environment variable (or pass it explicitly as `api_key`).
+
+```python
+from swerex.deployment.tenki import TenkiDeployment
+
+deployment = TenkiDeployment(
+    startup_timeout=180,  # wait up to 3 minutes for the runtime to start
+    container_timeout=3600,  # kill the sandbox after 1 hour
+)
+asyncio.run(run_some_stuff(deployment))
+```
+
+Note that `run_some_stuff` already calls `deployment.start()` and `deployment.stop()`,
+which create and terminate the sandbox. Starting an already started deployment raises
+an error, so each deployment goes through exactly one start/stop lifecycle.
+
 {% include-markdown "_footer.md" %}

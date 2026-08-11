@@ -8,6 +8,8 @@ pip install swe-rex
 pip install 'swe-rex[modal]'
 # With fargate support
 pip install 'swe-rex[fargate]'
+# With tenki support
+pip install 'swe-rex[tenki]'
 # Development setup (all optional dependencies)
 pip install 'swe-rex[dev]'
 ```

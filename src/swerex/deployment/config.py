@@ -211,6 +211,66 @@ class DaytonaDeploymentConfig(BaseModel):
         return DaytonaDeployment.from_config(self)
 
 
+class TenkiDeploymentConfig(BaseModel):
+    """Configuration for running in a Tenki sandbox (https://tenki.cloud)."""
+
+    api_key: str = Field(
+        default="",
+        description="Tenki API key. Falls back to the TENKI_AUTH_TOKEN/TENKI_API_KEY environment variables if empty.",
+    )
+    base_url: str = Field(
+        default="",
+        description="Tenki API base URL. Falls back to the TENKI_API_ENDPOINT environment variable or https://api.tenki.cloud if empty.",
+    )
+    workspace_id: str = Field(
+        default="",
+        description="Tenki workspace to create the sandbox in. Usually not needed, as the API key determines the workspace automatically.",
+    )
+    image: str | None = Field(
+        default=None, description="Image to use for the sandbox. Uses the Tenki service default if None."
+    )
+    snapshot_id: str | None = Field(
+        default=None, description="Tenki snapshot to restore the sandbox from (alternative to image)."
+    )
+    cpu_cores: int | None = Field(
+        default=None, description="Number of CPU cores for the sandbox. Uses the Tenki service default if None."
+    )
+    memory_mb: int | None = Field(
+        default=None, description="Memory in MB for the sandbox. Uses the Tenki service default if None."
+    )
+    disk_size_gb: int | None = Field(
+        default=None, description="Disk size in GB for the sandbox. Uses the Tenki service default if None."
+    )
+    port: int = Field(default=8000, description="Port to expose for the SWE Rex server")
+    container_timeout: float = Field(
+        default=60 * 15, description="Timeout for the sandbox (also used as its max duration)"
+    )
+    startup_timeout: float = Field(default=180.0, description="The time to wait for the runtime to start")
+    runtime_timeout: float = Field(
+        default=60.0, description="Runtime timeout (default timeout for all runtime requests)"
+    )
+    runtime_retries: int = Field(
+        default=3,
+        description="How often the runtime retries requests that fail with transient network errors. "
+        "Transient connection errors can occur on the preview gateway; retrying is safe because "
+        "requests carry an idempotency key that the server uses to deduplicate in-flight and "
+        "completed requests.",
+    )
+    sandbox_kwargs: dict[str, Any] = Field(
+        default_factory=dict, description="Additional keyword arguments to pass to `tenki.Sandbox.create`"
+    )
+
+    type: Literal["tenki"] = "tenki"
+    """Discriminator for (de)serialization/CLI. Do not change."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    def get_deployment(self) -> AbstractDeployment:
+        from swerex.deployment.tenki import TenkiDeployment
+
+        return TenkiDeployment.from_config(self)
+
+
 DeploymentConfig = (
     LocalDeploymentConfig
     | DockerDeploymentConfig
@@ -219,6 +279,7 @@ DeploymentConfig = (
     | RemoteDeploymentConfig
     | DummyDeploymentConfig
     | DaytonaDeploymentConfig
+    | TenkiDeploymentConfig
 )
 """Union of all deployment configurations. Useful for type hints."""
 

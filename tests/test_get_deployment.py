@@ -8,6 +8,7 @@ from swerex.deployment.config import (
     LocalDeploymentConfig,
     ModalDeploymentConfig,
     RemoteDeploymentConfig,
+    TenkiDeploymentConfig,
 )
 from swerex.deployment.daytona import DaytonaDeployment
 from swerex.deployment.docker import DockerDeployment
@@ -15,6 +16,7 @@ from swerex.deployment.fargate import FargateDeployment
 from swerex.deployment.local import LocalDeployment
 from swerex.deployment.modal import ModalDeployment
 from swerex.deployment.remote import RemoteDeployment
+from swerex.deployment.tenki import TenkiDeployment
 
 
 def test_get_local_deployment():
@@ -45,6 +47,11 @@ def test_get_fargate_deployment():
 def test_get_daytona_deployment():
     deployment = get_deployment(DaytonaDeploymentConfig(image="test"))
     assert isinstance(deployment, DaytonaDeployment)
+
+
+def test_get_tenki_deployment():
+    deployment = get_deployment(TenkiDeploymentConfig(api_key="test"))
+    assert isinstance(deployment, TenkiDeployment)
 
 
 if __name__ == "__main__":
