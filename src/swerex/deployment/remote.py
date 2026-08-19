@@ -47,14 +47,14 @@ class RemoteDeployment(AbstractDeployment):
             raise DeploymentNotStartedError()
         return self._runtime
 
-    async def is_alive(self) -> IsAliveResponse:
+    async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
         """Checks if the runtime is alive. The return value can be
         tested with bool().
 
         Raises:
             DeploymentNotStartedError: If the deployment was not started.
         """
-        return await self.runtime.is_alive()
+        return await self.runtime.is_alive(timeout=timeout)
 
     async def start(self):
         """Starts the runtime."""
