@@ -13,4 +13,8 @@ async def test_remote_deployment(remote_server):
         await d.is_alive()
     await d.start()
     assert await d.is_alive()
+    # `timeout` is part of the AbstractDeployment interface and every other
+    # deployment accepts it; RemoteDeployment used to omit it, so callers
+    # written against the interface hit a TypeError here.
+    assert await d.is_alive(timeout=10)
     await d.stop()
