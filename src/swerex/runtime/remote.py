@@ -162,8 +162,19 @@ class RemoteRuntime(AbstractRuntime):
     async def wait_until_alive(self, *, timeout: float = 60.0):
         return await _wait_until_alive(self.is_alive, timeout=timeout)
 
-    async def _request(self, endpoint: str, payload: BaseModel | None, output_class: Any, num_retries: int = 0):
-        """Small helper to make requests to the server and handle errors and output."""
+    async def _request(
+        self, endpoint: str, payload: BaseModel | None, output_class: Any, num_retries: int | None = None
+    ):
+        """Small helper to make requests to the server and handle errors and output.
+
+        Transport-level failures are retried `num_retries` times (defaulting to
+        the runtime's `num_retries` config). Every attempt sends the same
+        `X-Request-ID`, so a retry of a request the server already ran -- or is
+        still running -- gets the original response back rather than executing
+        the action twice.
+        """
+        if num_retries is None:
+            num_retries = self._config.num_retries
         request_url = f"{self._api_url}/{endpoint}"
         request_id = str(uuid.uuid4())
         headers = self._headers.copy()
