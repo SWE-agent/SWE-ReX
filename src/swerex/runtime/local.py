@@ -138,6 +138,12 @@ class BashSession(Session):
         self._ps1 = "SHELLPS1PREFIX"
         self._shell: pexpect.spawn | None = None
         self.logger = logger or get_logger("rex-session")
+        # One pty, one reader. Until the blocking waits below were moved off
+        # the event loop, the loop itself serialised every request; now that it
+        # no longer does, two operations on the same session could interleave
+        # reads on the same pexpect spawn. Per session, so different sessions
+        # still proceed in parallel.
+        self._lock = asyncio.Lock()
 
     @property
     def shell(self) -> pexpect.spawn:
@@ -156,6 +162,10 @@ class BashSession(Session):
 
     async def start(self) -> CreateBashSessionResponse:
         """Spawn the session, source any startupfiles and set the PS1."""
+        async with self._lock:
+            return await self._start()
+
+    async def _start(self) -> CreateBashSessionResponse:
         self._shell = pexpect.spawn(
             "/usr/bin/env bash",
             encoding="utf-8",
@@ -170,7 +180,7 @@ class BashSession(Session):
         cmds += self._get_reset_commands()
         cmd = " ; ".join(cmds)
         self.shell.sendline(cmd)
-        self.shell.expect(self._ps1, timeout=self.request.startup_timeout)
+        await asyncio.to_thread(self.shell.expect, self._ps1, timeout=self.request.startup_timeout)
         output = _strip_control_chars(self.shell.before)  # type: ignore
         return CreateBashSessionResponse(output=output)
 
@@ -190,25 +200,25 @@ class BashSession(Session):
             self.shell.sendintr()
             expect_strings = action.expect + [self._ps1]
             try:
-                expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
+                expect_index = await asyncio.to_thread(self.shell.expect, expect_strings, timeout=action.timeout)  # type: ignore
                 matched_expect_string = expect_strings[expect_index]
             except Exception:
                 await asyncio.sleep(0.2)
                 continue
             output += _strip_control_chars(self.shell.before)  # type: ignore
-            output += self._eat_following_output()
+            output += await asyncio.to_thread(self._eat_following_output)
             output = output.strip()
             return BashObservation(output=output, exit_code=0, expect_string=matched_expect_string)
         # Fall back to putting job to background and killing it there:
         try:
             self.shell.sendcontrol("z")
-            self.shell.expect(expect_strings, timeout=action.timeout)
+            await asyncio.to_thread(self.shell.expect, expect_strings, timeout=action.timeout)
             output += self.shell.before
             self.shell.sendline("kill -9 %1")
-            expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
+            expect_index = await asyncio.to_thread(self.shell.expect, expect_strings, timeout=action.timeout)  # type: ignore
             matched_expect_string = expect_strings[expect_index]
             output += self.shell.before
-            output += self._eat_following_output()
+            output += await asyncio.to_thread(self._eat_following_output)
             output = output.strip()
             return BashObservation(output=output, exit_code=0, expect_string=matched_expect_string)
         except pexpect.TIMEOUT:
@@ -230,6 +240,12 @@ class BashSession(Session):
         if self.shell is None:
             msg = "shell not initialized"
             raise SessionNotInitializedError(msg)
+        # Held across the dispatch, not inside it: `interrupt` must not take
+        # this lock, because it is reached from here and would deadlock.
+        async with self._lock:
+            return await self._dispatch(action)
+
+    async def _dispatch(self, action: BashAction | BashInterruptAction) -> BashObservation:
         if isinstance(action, BashInterruptAction):
             return await self.interrupt(action)
         if action.is_interactive_command or action.is_interactive_quit:
@@ -250,7 +266,7 @@ class BashSession(Session):
         self.shell.sendline(action.command)
         expect_strings = action.expect + [self._ps1]
         try:
-            expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
+            expect_index = await asyncio.to_thread(self.shell.expect, expect_strings, timeout=action.timeout)  # type: ignore
             matched_expect_string = expect_strings[expect_index]
         except pexpect.TIMEOUT as e:
             msg = f"timeout after {action.timeout} seconds while running command {action.command!r}"
@@ -262,8 +278,8 @@ class BashSession(Session):
             self.shell.waitnoecho()
             self.shell.sendline(f"stty -echo; echo '{self._UNIQUE_STRING}'")
             # Might need two expects for some reason
-            self.shell.expect(self._UNIQUE_STRING, timeout=1)
-            self.shell.expect(self._ps1, timeout=1)
+            await asyncio.to_thread(self.shell.expect, self._UNIQUE_STRING, timeout=1)
+            await asyncio.to_thread(self.shell.expect, self._ps1, timeout=1)
         else:
             # Interactive command.
             # For some reason, this often times enables echo mode within the shell.
@@ -283,7 +299,7 @@ class BashSession(Session):
         action = deepcopy(action)
 
         assert self.shell is not None
-        _check_bash_command(action.command)
+        await asyncio.to_thread(_check_bash_command, action.command)
 
         # Part 2: Execute the command
 
@@ -309,7 +325,7 @@ class BashSession(Session):
         else:
             expect_strings = [self._UNIQUE_STRING]
         try:
-            expect_index = self.shell.expect(expect_strings, timeout=action.timeout)  # type: ignore
+            expect_index = await asyncio.to_thread(self.shell.expect, expect_strings, timeout=action.timeout)  # type: ignore
             matched_expect_string = expect_strings[expect_index]
         except pexpect.TIMEOUT as e:
             msg = f"timeout after {action.timeout} seconds while running command {action.command!r}"
@@ -325,7 +341,7 @@ class BashSession(Session):
             _exit_code_suffix = "EXITCODEEND"
             self.shell.sendline(f"\necho {_exit_code_prefix}$?{_exit_code_suffix}")
             try:
-                self.shell.expect(_exit_code_suffix, timeout=1)
+                await asyncio.to_thread(self.shell.expect, _exit_code_suffix, timeout=1)
             except pexpect.TIMEOUT:
                 msg = "timeout while getting exit code"
                 raise NoExitCodeError(msg)
@@ -338,7 +354,7 @@ class BashSession(Session):
             exit_code = int(exit_code[0])
             # We get at least one more PS1 here.
             try:
-                self.shell.expect(self._ps1, timeout=0.1)
+                await asyncio.to_thread(self.shell.expect, self._ps1, timeout=0.1)
             except pexpect.TIMEOUT:
                 msg = "Timeout while getting PS1 after exit code extraction"
                 raise CommandTimeoutError(msg)
@@ -351,6 +367,10 @@ class BashSession(Session):
         return BashObservation(output=output, exit_code=exit_code, expect_string=matched_expect_string)
 
     async def close(self) -> CloseSessionResponse:
+        async with self._lock:
+            return await self._close()
+
+    async def _close(self) -> CloseSessionResponse:
         if self._shell is None:
             return CloseBashSessionResponse()
         self.shell.close()
@@ -424,7 +444,8 @@ class LocalRuntime(AbstractRuntime):
             NonZeroExitCodeError: If the command has a non-zero exit code and `check` is True.
         """
         try:
-            result = subprocess.run(
+            result = await asyncio.to_thread(
+                subprocess.run,
                 command.command,
                 shell=command.shell,
                 timeout=command.timeout,
