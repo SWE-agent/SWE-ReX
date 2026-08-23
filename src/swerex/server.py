@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import asyncio
 import shutil
 import tempfile
 import traceback
@@ -44,17 +45,47 @@ class ResponseManager:
     This stores the response of the last request, and is used in retries to return
     already executed requests.
 
+    A request is registered as in-flight *before* it is executed, so a retry that
+    arrives while the original is still running waits for that original instead of
+    starting a second, concurrent execution. Without this, a client retrying after
+    a dropped connection can run the same `run_in_session` action twice, and the
+    two commands interleave on a single shell.
+
     Note that in the case of multiple concurrent clients, idempotency isn't guaranteed.
     """
 
     def __init__(self):
         self.last_processed_request_id = None
         self.last_processed_response = None
+        # Keyed by request id rather than a single slot: two different requests
+        # in flight at once would otherwise overwrite each other's entry, and
+        # the first one's waiter would never be woken.
+        self._in_flight: dict[str, asyncio.Event] = {}
 
     def get_response(self, request_id):
         if request_id == self.last_processed_request_id:
             return self.last_processed_response
         return None
+
+    def mark_in_flight(self, request_id):
+        self._in_flight[request_id] = asyncio.Event()
+
+    def clear_in_flight(self, request_id):
+        event = self._in_flight.pop(request_id, None)
+        if event is not None:
+            event.set()
+
+    async def wait_for_in_flight(self, request_id):
+        """Await the in-flight request with this id and return its response.
+
+        Returns None if it is not in flight, or if it finished without recording
+        a response (it raised) -- in which case the caller should execute it.
+        """
+        event = self._in_flight.get(request_id)
+        if event is None:
+            return None
+        await event.wait()
+        return self.get_response(request_id)
 
     def set_response(self, request_id, response):
         self.last_processed_request_id = request_id
@@ -82,24 +113,35 @@ async def handle_request_id(request: Request, call_next):
         response = response_manager.get_response(request_id)
         if response:
             return response
+        # A retry that arrived while the original is still executing: wait for it
+        # rather than running the same action a second time.
+        response = await response_manager.wait_for_in_flight(request_id)
+        if response:
+            return response
+        response_manager.mark_in_flight(request_id)
 
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
 
-    body_content = b""
-    async for chunk in response.body_iterator:
-        body_content += chunk
+        body_content = b""
+        async for chunk in response.body_iterator:
+            body_content += chunk
 
-    new_response = Response(
-        content=body_content,
-        status_code=response.status_code,
-        headers=dict(response.headers),
-        media_type=response.media_type,
-    )
+        new_response = Response(
+            content=body_content,
+            status_code=response.status_code,
+            headers=dict(response.headers),
+            media_type=response.media_type,
+        )
 
-    if request_id:
-        response_manager.set_response(request_id, new_response)
+        if request_id:
+            response_manager.set_response(request_id, new_response)
 
-    return new_response
+        return new_response
+    finally:
+        # Must run even if the handler raised or was cancelled, or a waiting
+        # retry would block until its own client timeout.
+        response_manager.clear_in_flight(request_id)
 
 
 @app.exception_handler(Exception)

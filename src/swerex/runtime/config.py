@@ -28,6 +28,12 @@ class RemoteRuntimeConfig(BaseModel):
     """The port to connect to."""
     timeout: float = 0.15
     """The timeout for the runtime."""
+    num_retries: int = 3
+    """How many times to retry a request that failed with a transport-level error.
+
+    Retries reuse the request's `X-Request-ID`, so the server returns the original
+    response instead of executing the action a second time. Set to 0 to disable.
+    """
 
     type: Literal["remote"] = "remote"
     """Discriminator for (de)serialization/CLI. Do not change."""
