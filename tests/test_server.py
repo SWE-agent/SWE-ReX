@@ -93,9 +93,12 @@ def test_concurrent_distinct_request_ids_do_not_clobber_each_other(remote_server
     url = f"http://127.0.0.1:{remote_server.port}/execute"
 
     def post(rid, cmd):
-        return requests.post(url, json={"command": cmd, "shell": True},
-                             headers={**remote_server.headers, "X-Request-ID": rid},
-                             timeout=30)
+        return requests.post(
+            url,
+            json={"command": cmd, "shell": True},
+            headers={**remote_server.headers, "X-Request-ID": rid},
+            timeout=30,
+        )
 
     a, b = str(uuid.uuid4()), str(uuid.uuid4())
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
@@ -103,7 +106,7 @@ def test_concurrent_distinct_request_ids_do_not_clobber_each_other(remote_server
         time.sleep(0.3)
         fb = pool.submit(post, b, "echo other")
         time.sleep(0.3)
-        fa_retry = pool.submit(post, a, "sleep 2; echo $RANDOM")   # retry of A
+        fa_retry = pool.submit(post, a, "sleep 2; echo $RANDOM")  # retry of A
         ra, rb, ra2 = fa.result(), fb.result(), fa_retry.result()
 
     assert rb.json()["stdout"].strip() == "other"
