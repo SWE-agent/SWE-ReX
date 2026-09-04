@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from swerex.deployment.config import DockerDeploymentConfig
@@ -14,6 +16,30 @@ async def test_docker_deployment():
     await d.start()
     assert await d.is_alive()
     await d.stop()
+
+
+async def test_docker_deployment_parallel():
+    """Deployments started concurrently must not deadlock or time out each other."""
+    deployments = [DockerDeployment(image="swe-rex-test:latest") for _ in range(3)]
+    try:
+        await asyncio.gather(*(d.start() for d in deployments))
+        for d in deployments:
+            assert await d.is_alive()
+    finally:
+        await asyncio.gather(*(d.stop() for d in deployments), return_exceptions=True)
+
+
+async def test_docker_deployment_startup_timeout():
+    """A startup timeout must raise while the container is still running.
+
+    Reading the container's output from a pipe blocks until the container exits, so the
+    timeout handler used to hang instead of reporting the timeout.
+    """
+    # delay swerex past the startup timeout, then hand over to the start command in $0
+    slow_shell = ["/bin/sh", "-c", 'sleep 60; exec /bin/sh -c "$0"']
+    d = DockerDeployment(image="swe-rex-test:latest", exec_shell=slow_shell, startup_timeout=5)
+    with pytest.raises(TimeoutError):
+        await d.start()
 
 
 @pytest.mark.slow
