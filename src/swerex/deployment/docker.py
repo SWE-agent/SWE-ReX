@@ -1,9 +1,11 @@
+import asyncio
 import logging
 import shlex
 import subprocess
+import tempfile
 import time
 import uuid
-from typing import Any
+from typing import IO, Any
 
 from typing_extensions import Self
 
@@ -61,6 +63,8 @@ class DockerDeployment(AbstractDeployment):
         self._config = DockerDeploymentConfig(**kwargs)
         self._runtime: RemoteRuntime | None = None
         self._container_process = None
+        self._container_stdout: IO[bytes] | None = None
+        self._container_stderr: IO[bytes] | None = None
         self._container_name = None
         self.logger = logger or get_logger("rex-deploy")
         self._runtime_timeout = 0.15
@@ -82,6 +86,21 @@ class DockerDeployment(AbstractDeployment):
     def container_name(self) -> str | None:
         return self._container_name
 
+    def _read_container_output(self) -> str:
+        """Everything the container has written so far.
+
+        Unlike reading from a pipe, this never blocks, so it is safe to call while the
+        container is still running.
+        """
+
+        def read(stream: IO[bytes] | None) -> str:
+            if stream is None:
+                return ""
+            stream.seek(0)
+            return stream.read().decode(errors="replace")
+
+        return f"stdout:\n{read(self._container_stdout)}\nstderr:\n{read(self._container_stderr)}"
+
     async def is_alive(self, *, timeout: float | None = None) -> IsAliveResponse:
         """Checks if the runtime is alive. The return value can be
         tested with bool().
@@ -96,10 +115,7 @@ class DockerDeployment(AbstractDeployment):
             msg = "Container process not started"
             raise RuntimeError(msg)
         if self._container_process.poll() is not None:
-            msg = "Container process terminated."
-            output = "stdout:\n" + self._container_process.stdout.read().decode()  # type: ignore
-            output += "\nstderr:\n" + self._container_process.stderr.read().decode()  # type: ignore
-            msg += "\n" + output
+            msg = "Container process terminated.\n" + self._read_container_output()
             raise RuntimeError(msg)
         return await self._runtime.is_alive(timeout=timeout)
 
@@ -108,10 +124,12 @@ class DockerDeployment(AbstractDeployment):
             return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._runtime_timeout)
         except TimeoutError as e:
             self.logger.error("Runtime did not start within timeout. Here's the output from the container process.")
-            self.logger.error(self._container_process.stdout.read().decode())  # type: ignore
-            self.logger.error(self._container_process.stderr.read().decode())  # type: ignore
-            assert self._container_process is not None
-            await self.stop()
+            self.logger.error(self._read_container_output())
+            try:
+                await self.stop()
+            except Exception:
+                # Cleaning up must not replace the timeout the caller needs to see
+                self.logger.warning("Failed to stop deployment after startup timeout", exc_info=True)
             raise e
 
     def _get_token(self) -> str:
@@ -232,13 +250,16 @@ class DockerDeployment(AbstractDeployment):
 
     async def start(self):
         """Starts the runtime."""
-        self._pull_image()
+        # The container runtime is driven with blocking subprocess calls, so run them in a
+        # thread. Otherwise they stall the event loop and every deployment started
+        # concurrently with this one loses polling time it is still charged for.
+        await asyncio.to_thread(self._pull_image)
         if self._config.python_standalone_dir:
-            image_id = self._build_image()
+            image_id = await asyncio.to_thread(self._build_image)
         else:
             image_id = self._config.image
         if self._config.port is None:
-            self._config.port = find_free_port()
+            self._config.port = await asyncio.to_thread(find_free_port)
         assert self._container_name is None
         self._container_name = self._get_container_name()
         token = self._get_token()
@@ -266,8 +287,13 @@ class DockerDeployment(AbstractDeployment):
             f"Starting container {self._container_name} with image {self._config.image} serving on port {self._config.port}"
         )
         self.logger.debug(f"Command: {cmd_str!r}")
+        # Capture to files rather than pipes: nothing drains this output until something
+        # goes wrong, and a full pipe (64kiB on Linux) both discards everything after it
+        # and blocks whoever reads it while the container is still running.
+        self._container_stdout = tempfile.TemporaryFile()
+        self._container_stderr = tempfile.TemporaryFile()
         # shell=True required for && etc.
-        self._container_process = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self._container_process = subprocess.Popen(cmds, stdout=self._container_stdout, stderr=self._container_stderr)
         self._hooks.on_custom_step("Starting runtime")
         self.logger.info(f"Starting runtime at {self._config.port}")
         self._runtime = RemoteRuntime.from_config(
@@ -282,6 +308,41 @@ class DockerDeployment(AbstractDeployment):
         await self._wait_until_alive(timeout=self._config.startup_timeout)
         self.logger.info(f"Runtime started in {time.time() - t0:.2f}s")
 
+    def _kill_container(self) -> None:
+        """Kills the container. Blocking, so call it with `asyncio.to_thread`."""
+        assert self._container_process is not None
+        try:
+            subprocess.check_call(
+                [self._config.container_runtime, "kill", self._container_name],  # type: ignore
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=10,
+            )
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+            self.logger.warning(
+                f"Failed to kill container {self._container_name}: {e}. Will try harder.",
+                exc_info=False,
+            )
+        for _ in range(3):
+            self._container_process.kill()
+            try:
+                self._container_process.wait(timeout=5)
+                break
+            except subprocess.TimeoutExpired:
+                continue
+        else:
+            self.logger.warning(f"Failed to kill container {self._container_name} with SIGKILL")
+
+    def _remove_container_image(self) -> None:
+        """Removes the image. Blocking, so call it with `asyncio.to_thread`."""
+        if not _is_image_available(self._config.image, self._config.container_runtime):
+            return
+        self.logger.info(f"Removing image {self._config.image}")
+        try:
+            _remove_image(self._config.image, self._config.container_runtime)
+        except subprocess.CalledProcessError:
+            self.logger.error(f"Failed to remove image {self._config.image}", exc_info=True)
+
     async def stop(self):
         """Stops the runtime."""
         if self._runtime is not None:
@@ -289,38 +350,18 @@ class DockerDeployment(AbstractDeployment):
             self._runtime = None
 
         if self._container_process is not None:
-            try:
-                subprocess.check_call(
-                    [self._config.container_runtime, "kill", self._container_name],  # type: ignore
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    timeout=10,
-                )
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
-                self.logger.warning(
-                    f"Failed to kill container {self._container_name}: {e}. Will try harder.",
-                    exc_info=False,
-                )
-            for _ in range(3):
-                self._container_process.kill()
-                try:
-                    self._container_process.wait(timeout=5)
-                    break
-                except subprocess.TimeoutExpired:
-                    continue
-            else:
-                self.logger.warning(f"Failed to kill container {self._container_name} with SIGKILL")
-
+            await asyncio.to_thread(self._kill_container)
             self._container_process = None
             self._container_name = None
 
+        for stream in (self._container_stdout, self._container_stderr):
+            if stream is not None:
+                stream.close()
+        self._container_stdout = None
+        self._container_stderr = None
+
         if self._config.remove_images:
-            if _is_image_available(self._config.image, self._config.container_runtime):
-                self.logger.info(f"Removing image {self._config.image}")
-                try:
-                    _remove_image(self._config.image, self._config.container_runtime)
-                except subprocess.CalledProcessError:
-                    self.logger.error(f"Failed to remove image {self._config.image}", exc_info=True)
+            await asyncio.to_thread(self._remove_container_image)
 
     @property
     def runtime(self) -> RemoteRuntime:
