@@ -133,13 +133,11 @@ class DockerDeployment(AbstractDeployment):
     async def _wait_until_alive(self, timeout: float = 10.0):
         try:
             return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._runtime_timeout)
-        except TimeoutError as e:
-            self.logger.error("Runtime did not start within timeout. Here's the output from the container process.")
-            self.logger.error(self._container_process.stdout.read().decode())  # type: ignore
-            self.logger.error(self._container_process.stderr.read().decode())  # type: ignore
-            assert self._container_process is not None
+        except BaseException as error:
+            if isinstance(error, TimeoutError):
+                self.logger.error("Runtime did not start within timeout")
             await self.stop()
-            raise e
+            raise
 
     def _get_token(self) -> str:
         return str(uuid.uuid4())
@@ -318,7 +316,10 @@ class DockerDeployment(AbstractDeployment):
     async def stop(self):
         """Stops the runtime."""
         if self._runtime is not None:
-            await self._runtime.close()
+            try:
+                await self._runtime.close()
+            except Exception as error:
+                self.logger.warning(f"Failed to close runtime: {error}")
             self._runtime = None
 
         if self._container_process is not None:

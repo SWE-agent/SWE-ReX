@@ -34,6 +34,20 @@ async def test_stop_preserves_container_and_network_when_configured():
         subprocess.run(["docker", "network", "rm", network_name], capture_output=True)
 
 
+async def test_failed_start_removes_network():
+    deployment = DockerDeployment(
+        image="python:3.12-slim",
+        pull="never",
+        startup_timeout=1,
+        exec_shell=["command-that-does-not-exist"],
+    )
+
+    with pytest.raises(RuntimeError, match="Container process terminated"):
+        await deployment.start()
+
+    assert deployment._network_name is None
+
+
 @pytest.mark.slow
 async def test_docker_deployment_with_python_standalone():
     port = find_free_port()
