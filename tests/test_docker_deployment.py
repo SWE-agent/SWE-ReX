@@ -1,3 +1,6 @@
+import json
+import subprocess
+
 import pytest
 
 from swerex.deployment.config import DockerDeploymentConfig
@@ -53,6 +56,58 @@ def test_docker_deployment_config_container_runtime():
     # Test setting container runtime to podman
     config = DockerDeploymentConfig(image="test", container_runtime="podman")
     assert config.container_runtime == "podman"
+
+
+def test_docker_deployment_config_defaults_to_loopback():
+    assert DockerDeploymentConfig().port_bind_host == "127.0.0.1"
+
+
+@pytest.mark.slow
+def test_private_networks_block_peer_container_access():
+    deployments = [DockerDeployment(image="python:3.12-slim", pull="never") for _ in range(2)]
+    containers = []
+    try:
+        for deployment in deployments:
+            network_args = deployment._get_network_args()
+            container = subprocess.run(
+                ["docker", "run", "-d", "--rm", *network_args, "python:3.12-slim", "sleep", "60"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.strip()
+            containers.append(container)
+        info = json.loads(subprocess.run(["docker", "inspect", *containers], capture_output=True, text=True, check=True).stdout)
+        assert {deployment._network_name for deployment in deployments} == {
+            next(iter(item["NetworkSettings"]["Networks"])) for item in info
+        }
+        networks = json.loads(
+            subprocess.run(
+                ["docker", "network", "inspect", *(deployment._network_name for deployment in deployments)],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout
+        )
+        assert all(not network["Internal"] for network in networks)
+        first_ip = next(iter(info[0]["NetworkSettings"]["Networks"].values()))["IPAddress"]
+        subprocess.run(
+            ["docker", "exec", containers[0], "sh", "-c", "echo private >/tmp/marker; python -m http.server 18080 --directory /tmp >/tmp/http.log 2>&1 &"],
+            check=True,
+        )
+        probe = subprocess.run(
+            [
+                "docker", "exec", containers[1], "python", "-c",
+                f"import socket; socket.create_connection(('{first_ip}',18080),timeout=2)",
+            ]
+        )
+        assert probe.returncode != 0
+    finally:
+        for container in containers:
+            subprocess.run(["docker", "rm", "-f", container], capture_output=True)
+        for deployment in deployments:
+            if deployment._network_name:
+                subprocess.run(["docker", "network", "rm", deployment._network_name], capture_output=True)
+                deployment._network_name = None
 
 
 async def test_podman_deployment():
