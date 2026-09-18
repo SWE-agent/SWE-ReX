@@ -76,7 +76,9 @@ def test_private_networks_block_peer_container_access():
                 check=True,
             ).stdout.strip()
             containers.append(container)
-        info = json.loads(subprocess.run(["docker", "inspect", *containers], capture_output=True, text=True, check=True).stdout)
+        info = json.loads(
+            subprocess.run(["docker", "inspect", *containers], capture_output=True, text=True, check=True).stdout
+        )
         assert {deployment._network_name for deployment in deployments} == {
             next(iter(item["NetworkSettings"]["Networks"])) for item in info
         }
@@ -91,12 +93,23 @@ def test_private_networks_block_peer_container_access():
         assert all(not network["Internal"] for network in networks)
         first_ip = next(iter(info[0]["NetworkSettings"]["Networks"].values()))["IPAddress"]
         subprocess.run(
-            ["docker", "exec", containers[0], "sh", "-c", "echo private >/tmp/marker; python -m http.server 18080 --directory /tmp >/tmp/http.log 2>&1 &"],
+            [
+                "docker",
+                "exec",
+                containers[0],
+                "sh",
+                "-c",
+                "echo private >/tmp/marker; python -m http.server 18080 --directory /tmp >/tmp/http.log 2>&1 &",
+            ],
             check=True,
         )
         probe = subprocess.run(
             [
-                "docker", "exec", containers[1], "python", "-c",
+                "docker",
+                "exec",
+                containers[1],
+                "python",
+                "-c",
                 f"import socket; socket.create_connection(('{first_ip}',18080),timeout=2)",
             ]
         )
