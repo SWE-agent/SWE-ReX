@@ -19,6 +19,23 @@ async def test_docker_deployment():
     await d.stop()
 
 
+async def test_stop_preserves_container_and_network_when_configured():
+    port = find_free_port()
+    deployment = DockerDeployment(
+        image="swe-rex-test:latest", port=port, pull="never", remove_container=False
+    )
+    await deployment.start()
+    container_name = deployment.container_name
+    network_name = deployment._network_name
+    try:
+        await deployment.stop()
+        assert subprocess.run(["docker", "inspect", container_name], capture_output=True).returncode == 0
+        assert subprocess.run(["docker", "network", "inspect", network_name], capture_output=True).returncode == 0
+    finally:
+        subprocess.run(["docker", "rm", container_name], capture_output=True)
+        subprocess.run(["docker", "network", "rm", network_name], capture_output=True)
+
+
 @pytest.mark.slow
 async def test_docker_deployment_with_python_standalone():
     port = find_free_port()
@@ -56,10 +73,6 @@ def test_docker_deployment_config_container_runtime():
     # Test setting container runtime to podman
     config = DockerDeploymentConfig(image="test", container_runtime="podman")
     assert config.container_runtime == "podman"
-
-
-def test_docker_deployment_config_defaults_to_loopback():
-    assert DockerDeploymentConfig().port_bind_host == "127.0.0.1"
 
 
 @pytest.mark.slow

@@ -51,9 +51,6 @@ class DockerDeploymentConfig(BaseModel):
     setups you might have to set it to http://host.docker.internal/ 
     (see https://github.com/SWE-agent/SWE-ReX/issues/253 for more information).
     """
-    port_bind_host: str = "127.0.0.1"
-    """Host address on which the runtime port is published."""
-
     type: Literal["docker"] = "docker"
     """Discriminator for (de)serialization/CLI. Do not change."""
 

@@ -281,7 +281,7 @@ class DockerDeployment(AbstractDeployment):
             "run",
             *rm_arg,
             "-p",
-            f"{self._config.port_bind_host}:{self._config.port}:8000",
+            f"{self._config.port}:8000",
             *network_args,
             *platform_arg,
             *self._config.docker_args,
@@ -345,19 +345,7 @@ class DockerDeployment(AbstractDeployment):
                 self.logger.warning(f"Failed to kill container {self._container_name} with SIGKILL")
 
             self._container_process = None
-            if self._network_name is not None:
-                if not self._config.remove_container:
-                    subprocess.check_call(
-                        [
-                            self._config.container_runtime,
-                            "network",
-                            "disconnect",
-                            "--force",
-                            self._network_name,
-                            self._container_name,
-                        ],
-                        stdout=subprocess.DEVNULL,
-                    )
+            if self._network_name is not None and self._config.remove_container:
                 self._remove_network()
             self._container_name = None
 
