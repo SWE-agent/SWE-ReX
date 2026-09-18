@@ -21,9 +21,7 @@ async def test_docker_deployment():
 
 async def test_stop_preserves_container_and_network_when_configured():
     port = find_free_port()
-    deployment = DockerDeployment(
-        image="swe-rex-test:latest", port=port, pull="never", remove_container=False
-    )
+    deployment = DockerDeployment(image="swe-rex-test:latest", port=port, pull="never", remove_container=False)
     await deployment.start()
     container_name = deployment.container_name
     network_name = deployment._network_name
