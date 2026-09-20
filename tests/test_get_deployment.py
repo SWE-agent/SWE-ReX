@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from swerex.deployment import get_deployment
@@ -28,8 +30,13 @@ def test_get_docker_deployment():
 
 
 def test_get_modal_deployment():
-    deployment = get_deployment(ModalDeploymentConfig(image="test"))
+    # App lookup requires Modal credentials; only test deployment construction here.
+    with patch("swerex.deployment.modal.modal.App.lookup") as app_lookup:
+        deployment = get_deployment(ModalDeploymentConfig(image="test"))
+
+    app_lookup.assert_called_once_with("swe-rex", create_if_missing=True)
     assert isinstance(deployment, ModalDeployment)
+    assert deployment.app is app_lookup.return_value
 
 
 def test_get_remote_deployment():
