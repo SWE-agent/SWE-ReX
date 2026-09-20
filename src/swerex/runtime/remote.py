@@ -13,7 +13,7 @@ import aiohttp
 from pydantic import BaseModel
 from typing_extensions import Self
 
-from swerex.exceptions import SwerexException
+from swerex.exceptions import SwerexException, TruncatedUnicodeDecodeError
 from swerex.runtime.abstract import (
     AbstractRuntime,
     Action,
@@ -100,16 +100,31 @@ class RemoteRuntime(AbstractRuntime):
                     raise exc from None
             module_obj = sys.modules[module]
         try:
-            if isinstance(module_obj, dict):
+            if (
+                exc_transfer.class_path == "builtins.UnicodeDecodeError"
+                and exc_transfer.unicode_decode_error is not None
+            ):
+                data = exc_transfer.unicode_decode_error
+                context = bytes.fromhex(data.object_hex)
+                if data.object_offset == 0 and len(context) == data.object_length:
+                    exception = UnicodeDecodeError(data.encoding, context, data.start, data.end, data.reason)
+                else:
+                    exception = TruncatedUnicodeDecodeError(
+                        data.encoding,
+                        context,
+                        data.start,
+                        data.end,
+                        data.reason,
+                        object_offset=data.object_offset,
+                        object_length=data.object_length,
+                    )
+            elif isinstance(module_obj, dict):
                 # __builtins__, sometimes
                 exception = module_obj[exc_name](exc_transfer.message)
             else:
                 exception = getattr(module_obj, exc_name)(exc_transfer.message)
         except (AttributeError, TypeError):
-            self.logger.error(
-                f"Could not initialize transferred exception: {exc_transfer.class_path!r}. "
-                f"Transfer object: {exc_transfer}"
-            )
+            self.logger.error("Could not initialize transferred exception: %r", exc_transfer.class_path)
             exception = SwerexException(exc_transfer.message)
         exception.extra_info = exc_transfer.extra_info
         raise exception from None

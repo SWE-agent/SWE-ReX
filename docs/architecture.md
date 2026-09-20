@@ -19,6 +19,8 @@ Looking closer at the internals:
    In fact, if you want to run something locally (or your whole codebase runs in a sandboxed environment), you can just use the [`LocalRuntime`][localruntime] directly!
    Both classes are absolutely interchangeable, in fact we even transfer any exceptions happening in the [`LocalRuntime`][localruntime] to the [`RemoteRuntime`][remoteruntime] transparently,
    so you can easily catch and ignore certain errors.
+   For large decoding failures, remote exceptions carry bounded byte context;
+   see [file decoding error fidelity](api/runtimes/remote.md#file-decoding-errors).
 
 5. The [`Runtime`][abstractruntime] class provides several methods for reading/writing files, an [`execute` method][abstractruntime.execute] for running arbitrary commands, but the most important one is [`run_in_session`][abstractruntime.run_in_session].
    This method allows you to run a command in an existing shell session (or an interactive tool running inside of it) and return the output.

@@ -16,6 +16,7 @@ from starlette.responses import Response
 
 from swerex import __version__
 from swerex.runtime.abstract import (
+    _MAX_UNICODE_ERROR_BYTES,
     Action,
     CloseResponse,
     CloseSessionRequest,
@@ -25,6 +26,7 @@ from swerex.runtime.abstract import (
     UploadResponse,
     WriteFileRequest,
     _ExceptionTransfer,
+    _UnicodeDecodeErrorData,
 )
 from swerex.runtime.local import LocalRuntime
 
@@ -110,11 +112,29 @@ async def exception_handler(request: Request, exc: Exception):
     if isinstance(exc, HTTPException | StarletteHTTPException):
         return await http_exception_handler(request, exc)
     extra_info = getattr(exc, "extra_info", {})
+    unicode_decode_error = None
+    if type(exc) is UnicodeDecodeError:
+        object_length = len(exc.object)
+        object_offset = 0 if object_length <= _MAX_UNICODE_ERROR_BYTES else max(0, exc.start - 128)
+        try:
+            unicode_decode_error = _UnicodeDecodeErrorData(
+                encoding=exc.encoding,
+                object_hex=exc.object[object_offset : object_offset + _MAX_UNICODE_ERROR_BYTES].hex(),
+                object_offset=object_offset,
+                object_length=object_length,
+                start=exc.start,
+                end=exc.end,
+                reason=exc.reason,
+            )
+        except ValueError:
+            # Manually constructed errors can have invalid offsets; retain the generic fallback.
+            pass
     _exc = _ExceptionTransfer(
         message=str(exc),
         class_path=type(exc).__module__ + "." + type(exc).__name__,
         traceback=traceback.format_exc(),
         extra_info=extra_info,
+        unicode_decode_error=unicode_decode_error,
     )
     return JSONResponse(status_code=511, content={"swerexception": _exc.model_dump()})
 
