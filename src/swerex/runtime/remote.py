@@ -100,12 +100,20 @@ class RemoteRuntime(AbstractRuntime):
                     raise exc from None
             module_obj = sys.modules[module]
         try:
-            if isinstance(module_obj, dict):
+            if (
+                exc_transfer.class_path == "builtins.UnicodeDecodeError"
+                and exc_transfer.unicode_decode_error is not None
+            ):
+                data = exc_transfer.unicode_decode_error
+                exception = UnicodeDecodeError(
+                    data.encoding, bytes.fromhex(data.object_hex), data.start, data.end, data.reason
+                )
+            elif isinstance(module_obj, dict):
                 # __builtins__, sometimes
                 exception = module_obj[exc_name](exc_transfer.message)
             else:
                 exception = getattr(module_obj, exc_name)(exc_transfer.message)
-        except (AttributeError, TypeError):
+        except (AttributeError, TypeError, ValueError):
             self.logger.error(
                 f"Could not initialize transferred exception: {exc_transfer.class_path!r}. "
                 f"Transfer object: {exc_transfer}"

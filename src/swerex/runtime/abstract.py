@@ -221,6 +221,17 @@ class CloseResponse(BaseModel):
     pass
 
 
+class _UnicodeDecodeErrorData(BaseModel):
+    """JSON-safe constructor data for a UnicodeDecodeError."""
+
+    encoding: str
+    object_hex: str
+    """The undecodable bytes encoded as hex, without decoding or replacing them."""
+    start: int
+    end: int
+    reason: str
+
+
 class _ExceptionTransfer(BaseModel):
     """Helper class to transfer exceptions from the remote runtime to the client."""
 
@@ -229,6 +240,7 @@ class _ExceptionTransfer(BaseModel):
     traceback: str = ""
 
     extra_info: dict[str, Any] = {}
+    unicode_decode_error: _UnicodeDecodeErrorData | None = None
 
 
 class AbstractRuntime(ABC):

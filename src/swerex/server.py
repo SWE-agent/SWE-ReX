@@ -25,6 +25,7 @@ from swerex.runtime.abstract import (
     UploadResponse,
     WriteFileRequest,
     _ExceptionTransfer,
+    _UnicodeDecodeErrorData,
 )
 from swerex.runtime.local import LocalRuntime
 
@@ -110,11 +111,21 @@ async def exception_handler(request: Request, exc: Exception):
     if isinstance(exc, HTTPException | StarletteHTTPException):
         return await http_exception_handler(request, exc)
     extra_info = getattr(exc, "extra_info", {})
+    unicode_decode_error = None
+    if isinstance(exc, UnicodeDecodeError):
+        unicode_decode_error = _UnicodeDecodeErrorData(
+            encoding=exc.encoding,
+            object_hex=exc.object.hex(),
+            start=exc.start,
+            end=exc.end,
+            reason=exc.reason,
+        )
     _exc = _ExceptionTransfer(
         message=str(exc),
         class_path=type(exc).__module__ + "." + type(exc).__name__,
         traceback=traceback.format_exc(),
         extra_info=extra_info,
+        unicode_decode_error=unicode_decode_error,
     )
     return JSONResponse(status_code=511, content={"swerexception": _exc.model_dump()})
 
