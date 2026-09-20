@@ -4,6 +4,8 @@
 
 `read_file` keeps the requested `encoding` and `errors` semantics of `Path.read_text`.
 Strict decoding failures remain catchable with `except UnicodeDecodeError`.
+Use that catch rather than `except SwerexException`: as with local decoding errors,
+neither the built-in error nor its truncated subtype inherits `SwerexException`.
 
 Remote errors transfer at most 4,096 bytes from the original decoder object. For
 objects within that limit, the built-in exception's bytes, offsets, reason, and

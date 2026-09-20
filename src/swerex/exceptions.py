@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Any
 
 
@@ -21,6 +22,14 @@ class TruncatedUnicodeDecodeError(UnicodeDecodeError):
         self.original_end = end
         self.object_offset = object_offset
         self.object_length = object_length
+
+    def __reduce__(self):
+        # Reconstruct from original coordinates, not the window-relative args.
+        return (
+            partial(type(self), object_offset=self.object_offset, object_length=self.object_length),
+            (self.encoding, self.object, self.original_start, self.original_end, self.reason),
+            self.__dict__,
+        )
 
     def __str__(self):
         return (

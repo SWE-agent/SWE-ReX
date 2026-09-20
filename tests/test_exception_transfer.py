@@ -1,5 +1,7 @@
+import copy
 import json
 import logging
+import pickle
 
 import pytest
 from starlette.requests import Request
@@ -141,6 +143,65 @@ async def test_decode_error_span_larger_than_context(http_request):
     assert result.original_end > 4096
     assert 0 <= result.start < result.end <= len(result.object) <= 4096
     assert "truncated byte context" in str(result)
+
+
+@pytest.mark.parametrize("operation", ["copy", "deepcopy", *range(pickle.HIGHEST_PROTOCOL + 1)])
+@pytest.mark.parametrize(
+    ("encoding", "invalid_content"),
+    [("utf-8", b"\xff"), ("utf-7", b"+" + b"A" * 16385 + b"!")],
+    ids=["single-byte", "clipped-span"],
+)
+async def test_truncated_decode_error_reconstruction(http_request, operation, encoding, invalid_content):
+    content = b"a" * 5000 + invalid_content + b"b" * 5000
+    with pytest.raises(UnicodeDecodeError) as local:
+        content.decode(encoding)
+    local.value.extra_info = {"source": ["read_file"]}
+    response = await exception_handler(http_request, local.value)
+    transfer = _ExceptionTransfer(**json.loads(response.body)["swerexception"])
+    with pytest.raises(TruncatedUnicodeDecodeError) as remote:
+        RemoteRuntime(auth_token="")._handle_transfer_exception(transfer)
+    error = remote.value
+    error.related = error
+    assert error.object_offset > 0
+    assert error.original_start == 5000
+    assert len(error.object) == 4096
+    if encoding == "utf-7":
+        assert error.original_end - error.object_offset > len(error.object)
+        assert error.end == len(error.object)
+
+    if operation == "copy":
+        restored = copy.copy(error)
+    elif operation == "deepcopy":
+        restored = copy.deepcopy(error)
+    else:
+        restored = pickle.loads(pickle.dumps(error, protocol=operation))
+
+    assert restored is not error
+    assert type(restored) is TruncatedUnicodeDecodeError
+    assert isinstance(restored, UnicodeDecodeError)
+    assert not isinstance(restored, SwerexException)
+    assert restored.args == error.args
+    assert str(restored) == str(error)
+    for attribute in (
+        "encoding",
+        "object",
+        "start",
+        "end",
+        "reason",
+        "original_start",
+        "original_end",
+        "object_offset",
+        "object_length",
+    ):
+        assert getattr(restored, attribute) == getattr(error, attribute)
+    assert restored.extra_info == error.extra_info
+    if operation == "copy":
+        assert restored.extra_info is error.extra_info
+        assert restored.related is error
+    else:
+        assert restored.extra_info is not error.extra_info
+        assert restored.extra_info["source"] is not error.extra_info["source"]
+        assert restored.related is restored
 
 
 async def test_decode_error_subclass_has_no_unused_payload(http_request):
