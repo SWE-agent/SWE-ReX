@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class IsAliveResponse(BaseModel):
@@ -221,15 +221,30 @@ class CloseResponse(BaseModel):
     pass
 
 
+_MAX_UNICODE_ERROR_BYTES = 4096
+
+
 class _UnicodeDecodeErrorData(BaseModel):
-    """JSON-safe constructor data for a UnicodeDecodeError."""
+    """A bounded byte window and the error's offsets in the original decoder object."""
 
     encoding: str
-    object_hex: str
-    """The undecodable bytes encoded as hex, without decoding or replacing them."""
-    start: int
-    end: int
+    object_hex: str = Field(min_length=2, max_length=2 * _MAX_UNICODE_ERROR_BYTES, pattern=r"^(?:[0-9a-fA-F]{2})+$")
+    object_offset: int = Field(ge=0, strict=True)
+    object_length: int = Field(gt=0, strict=True)
+    start: int = Field(ge=0, strict=True)
+    end: int = Field(gt=0, strict=True)
     reason: str
+
+    @model_validator(mode="after")
+    def validate_window(self):
+        context_end = self.object_offset + len(self.object_hex) // 2
+        if not (self.start < self.end <= self.object_length):
+            msg = "Invalid original UnicodeDecodeError span"
+            raise ValueError(msg)
+        if not (self.object_offset <= self.start < context_end <= self.object_length):
+            msg = "UnicodeDecodeError context must contain the first failing byte and fit inside the original object"
+            raise ValueError(msg)
+        return self
 
 
 class _ExceptionTransfer(BaseModel):
@@ -241,6 +256,16 @@ class _ExceptionTransfer(BaseModel):
 
     extra_info: dict[str, Any] = {}
     unicode_decode_error: _UnicodeDecodeErrorData | None = None
+
+    @field_validator("unicode_decode_error", mode="wrap")
+    @classmethod
+    def ignore_invalid_decode_error(cls, value, handler):
+        # Keep the original message and generic fallback for malformed optional data.
+        # Do not surface a validation error containing the input bytes in client logs.
+        try:
+            return handler(value)
+        except ValueError:
+            return None
 
 
 class AbstractRuntime(ABC):
