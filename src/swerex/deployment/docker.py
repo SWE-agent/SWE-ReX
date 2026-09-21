@@ -62,6 +62,7 @@ class DockerDeployment(AbstractDeployment):
         self._runtime: RemoteRuntime | None = None
         self._container_process = None
         self._container_name = None
+        self._network_name = None
         self.logger = logger or get_logger("rex-deploy")
         self._runtime_timeout = 0.15
         self._hooks = CombinedDeploymentHook()
@@ -77,6 +78,32 @@ class DockerDeployment(AbstractDeployment):
         """Returns a unique container name based on the image name."""
         image_name_sanitized = "".join(c for c in self._config.image if c.isalnum() or c in "-_.")
         return f"{image_name_sanitized}-{uuid.uuid4()}"
+
+    def _get_network_args(self) -> list[str]:
+        if any(
+            arg in {"--network", "--net"} or arg.startswith(("--network=", "--net="))
+            for arg in self._config.docker_args
+        ):
+            return []
+        self._network_name = f"swerex-{uuid.uuid4()}"
+        subprocess.check_call(
+            [self._config.container_runtime, "network", "create", self._network_name],
+            stdout=subprocess.DEVNULL,
+        )
+        return ["--network", self._network_name]
+
+    def _remove_network(self) -> None:
+        if self._network_name is None:
+            return
+        result = subprocess.run(
+            [self._config.container_runtime, "network", "rm", self._network_name],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+        )
+        if result.returncode:
+            self.logger.warning(f"Failed to remove network {self._network_name}: {result.stderr.decode().strip()}")
+        else:
+            self._network_name = None
 
     @property
     def container_name(self) -> str | None:
@@ -106,13 +133,11 @@ class DockerDeployment(AbstractDeployment):
     async def _wait_until_alive(self, timeout: float = 10.0):
         try:
             return await _wait_until_alive(self.is_alive, timeout=timeout, function_timeout=self._runtime_timeout)
-        except TimeoutError as e:
-            self.logger.error("Runtime did not start within timeout. Here's the output from the container process.")
-            self.logger.error(self._container_process.stdout.read().decode())  # type: ignore
-            self.logger.error(self._container_process.stderr.read().decode())  # type: ignore
-            assert self._container_process is not None
+        except BaseException as error:
+            if isinstance(error, TimeoutError):
+                self.logger.error("Runtime did not start within timeout")
             await self.stop()
-            raise e
+            raise
 
     def _get_token(self) -> str:
         return str(uuid.uuid4())
@@ -241,6 +266,7 @@ class DockerDeployment(AbstractDeployment):
             self._config.port = find_free_port()
         assert self._container_name is None
         self._container_name = self._get_container_name()
+        network_args = self._get_network_args()
         token = self._get_token()
         platform_arg = []
         if self._config.platform is not None:
@@ -254,6 +280,7 @@ class DockerDeployment(AbstractDeployment):
             *rm_arg,
             "-p",
             f"{self._config.port}:8000",
+            *network_args,
             *platform_arg,
             *self._config.docker_args,
             "--name",
@@ -267,7 +294,11 @@ class DockerDeployment(AbstractDeployment):
         )
         self.logger.debug(f"Command: {cmd_str!r}")
         # shell=True required for && etc.
-        self._container_process = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            self._container_process = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except BaseException:
+            self._remove_network()
+            raise
         self._hooks.on_custom_step("Starting runtime")
         self.logger.info(f"Starting runtime at {self._config.port}")
         self._runtime = RemoteRuntime.from_config(
@@ -285,7 +316,10 @@ class DockerDeployment(AbstractDeployment):
     async def stop(self):
         """Stops the runtime."""
         if self._runtime is not None:
-            await self._runtime.close()
+            try:
+                await self._runtime.close()
+            except Exception as error:
+                self.logger.warning(f"Failed to close runtime: {error}")
             self._runtime = None
 
         if self._container_process is not None:
@@ -312,6 +346,8 @@ class DockerDeployment(AbstractDeployment):
                 self.logger.warning(f"Failed to kill container {self._container_name} with SIGKILL")
 
             self._container_process = None
+            if self._network_name is not None and self._config.remove_container:
+                self._remove_network()
             self._container_name = None
 
         if self._config.remove_images:
