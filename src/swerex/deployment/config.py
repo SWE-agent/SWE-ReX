@@ -1,7 +1,7 @@
 from pathlib import PurePath
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, model_validator
 
 from swerex.deployment.abstract import AbstractDeployment
 
@@ -181,6 +181,38 @@ class RemoteDeploymentConfig(BaseModel):
         return RemoteDeployment.from_config(self)
 
 
+class SmolDeploymentConfig(BaseModel):
+    """Run the SWE-ReX server in a local or Cloud Smol Machines microVM."""
+
+    type: Literal["smol"] = "smol"
+    target: Literal["local", "cloud"] = "local"
+    image: str = "python:3.12-slim"
+    """OCI image for the VM; a prebuilt image can include ``swe-rex``."""
+    install_server: bool = True
+    """Install this SWE-ReX version in the VM at boot (disable for prebuilt images)."""
+    port: int = Field(default=8000, ge=1, le=65535)
+    """Guest port used by the SWE-ReX server."""
+    host_port: int | None = Field(default=None, ge=1, le=65535)
+    """Local published host port; choose a free one when omitted."""
+    cpus: int | None = Field(default=None, gt=0)
+    memory_mb: int | None = Field(default=None, gt=0)
+    storage_gb: int | None = Field(default=None, gt=0)
+    overlay_gb: int | None = Field(default=None, gt=0)
+    startup_timeout: float = Field(default=180.0, gt=0)
+    runtime_timeout: float = Field(default=30.0, gt=0)
+    ttl_seconds: int = Field(default=86400, gt=0)
+    """Cloud safety net for VMs left behind after the client exits unexpectedly."""
+    api_key: SecretStr | None = Field(default=None, repr=False)
+    """Cloud key; omit to use SMOL_CLOUD_TOKEN or a smol CLI login."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    def get_deployment(self) -> AbstractDeployment:
+        from swerex.deployment.smol import SmolDeployment
+
+        return SmolDeployment.from_config(self)
+
+
 class DummyDeploymentConfig(BaseModel):
     """Configuration for `DummyDeployment`, a deployment that is used for testing."""
 
@@ -219,6 +251,7 @@ DeploymentConfig = (
     | RemoteDeploymentConfig
     | DummyDeploymentConfig
     | DaytonaDeploymentConfig
+    | SmolDeploymentConfig
 )
 """Union of all deployment configurations. Useful for type hints."""
 
