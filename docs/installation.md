@@ -8,6 +8,8 @@ pip install swe-rex
 pip install 'swe-rex[modal]'
 # With fargate support
 pip install 'swe-rex[fargate]'
+# With Smol Machines support (local microVMs or Cloud)
+pip install 'swe-rex[smol]'
 # Development setup (all optional dependencies)
 pip install 'swe-rex[dev]'
 ```

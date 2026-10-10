@@ -66,6 +66,7 @@ nav:
       - Local: api/deployments/local.md
       - Remote: api/deployments/remote.md
       - Docker: api/deployments/docker.md
+      - Smol Machines: api/deployments/smol.md
       - Modal: api/deployments/modal.md
       - Fargate: api/deployments/fargate.md
       - Dummy: api/deployments/dummy.md
