@@ -1,7 +1,7 @@
 from pathlib import PurePath
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, model_validator
 
 from swerex.deployment.abstract import AbstractDeployment
 
@@ -202,7 +202,7 @@ class SmolDeploymentConfig(BaseModel):
     runtime_timeout: float = Field(default=30.0, gt=0)
     ttl_seconds: int = Field(default=86400, gt=0)
     """Cloud safety net for VMs left behind after the client exits unexpectedly."""
-    api_key: str | None = Field(default=None, repr=False)
+    api_key: SecretStr | None = Field(default=None, repr=False)
     """Cloud key; omit to use SMOL_CLOUD_TOKEN or a smol CLI login."""
 
     model_config = ConfigDict(extra="forbid")

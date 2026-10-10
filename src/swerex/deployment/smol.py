@@ -111,11 +111,13 @@ class SmolDeployment(AbstractDeployment):
                     overlay_gb=cfg.overlay_gb,
                     network=True,
                 ),
-                persistent=True,
+                # This deployment has no reconnect path after process exit.
+                # Local SDK persistence would retain the VM and its disk.
+                persistent=False,
                 ttl_seconds=cfg.ttl_seconds if cfg.target == "cloud" else None,
                 ready_timeout_seconds=cfg.startup_timeout,
             ),
-            ConnectOptions(target=cfg.target, api_key=cfg.api_key),
+            ConnectOptions(target=cfg.target, api_key=cfg.api_key.get_secret_value() if cfg.api_key else None),
         )
 
     async def start(self) -> None:

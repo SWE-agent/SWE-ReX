@@ -39,9 +39,35 @@ class FakeRuntime:
 
 
 def test_config_creates_smol_deployment_without_exposing_api_key():
-    deployment = get_deployment(SmolDeploymentConfig(target="cloud", api_key="example-key"))
+    config = SmolDeploymentConfig(target="cloud", api_key="example-key")
+    deployment = get_deployment(config)
     assert isinstance(deployment, SmolDeployment)
     assert "example-key" not in repr(deployment._config)
+    assert "example-key" not in config.model_dump_json()
+    assert "example-key" not in str(config.model_dump(mode="json"))
+    assert "example-key" not in deployment._config.model_dump_json()
+    assert deployment._config.api_key.get_secret_value() == "example-key"
+
+
+def test_cloud_key_is_unwrapped_only_for_sdk_connect_options(monkeypatch):
+    import smol
+
+    config = SmolDeploymentConfig(target="cloud", api_key="example-key")
+    deployment = get_deployment(config)
+    connection = None
+    created_config = None
+
+    def fake_create(machine_config, conn):
+        nonlocal connection, created_config
+        connection = conn
+        created_config = machine_config
+        return FakeMachine()
+
+    monkeypatch.setattr(smol.Machine, "create", fake_create)
+    deployment._create_machine("guest-auth-token")
+    assert connection.target == "cloud"
+    assert connection.api_key == "example-key"
+    assert created_config.persistent is False
 
 
 async def test_cloud_runtime_sends_bridge_and_guest_credentials():
