@@ -105,6 +105,38 @@ async def test_start_cleans_up_when_guest_never_becomes_ready(monkeypatch):
         _ = deployment.runtime
 
 
+async def test_failed_start_keeps_vm_handle_when_cleanup_fails(monkeypatch):
+    from swerex.deployment import smol
+
+    machine = FakeMachine()
+    attempts = 0
+
+    def delete():
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            msg = "VM deletion interrupted"
+            raise OSError(msg)
+        machine.deleted = True
+
+    machine.delete = delete
+    deployment = SmolDeployment(runtime_timeout=12)
+    monkeypatch.setattr(deployment, "_create_machine", lambda token: machine)
+    monkeypatch.setattr(smol, "_SmolRemoteRuntime", FakeRuntime)
+
+    async def not_ready(*args, **kwargs):
+        msg = "guest did not start"
+        raise TimeoutError(msg)
+
+    monkeypatch.setattr(smol, "_wait_until_alive", not_ready)
+    with pytest.raises(TimeoutError, match="guest did not start"):
+        await deployment.start()
+    assert deployment._machine is machine
+    await deployment.stop()
+    assert machine.deleted
+    assert attempts == 2
+
+
 async def test_cancelled_start_still_deletes_created_vm(monkeypatch):
     started = threading.Event()
     release = threading.Event()

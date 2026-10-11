@@ -160,7 +160,15 @@ class SmolDeployment(AbstractDeployment):
                     except Exception:
                         pass  # create already cleans up its own failure
                 if machine is not None:
-                    await _drain(asyncio.create_task(asyncio.to_thread(machine.delete)))
+                    try:
+                        await _drain(asyncio.create_task(asyncio.to_thread(machine.delete)))
+                    except Exception:
+                        # Keep the handle so stop() can retry deletion instead of
+                        # orphaning a VM after a transient cleanup failure.
+                        self._machine = machine
+                        self.logger.warning(
+                            "Could not delete failed Smol deployment; call stop() to retry", exc_info=True
+                        )
                 raise
             finally:
                 self._starting = False
