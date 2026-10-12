@@ -18,6 +18,7 @@ from swerex.runtime.abstract import CreateBashSessionRequest, BashAction, Comman
 
 deployment = LocalDeployment()
 
+
 async def run_some_stuff(deployment):
     """Spoiler: This function will work with any deployment."""
     await deployment.start()  # (1)!
@@ -35,6 +36,7 @@ async def run_some_stuff(deployment):
     print(await runtime.run_in_session(BashAction(command="echo $MYVAR")))
 
     await deployment.stop()  # (2)!
+
 
 asyncio.run(run_some_stuff(deployment))  # (3)!
 ```
@@ -86,15 +88,17 @@ Similarly, you can also create remote runs on [Modal](https://modal.com) by swap
 ```python
 from swerex.deployment.modal import ModalDeployment
 
+
 async def run_modal_deployment():
     deployment = ModalDeployment(
         image="python:3.12",
-        startup_timeout=60, # wait 1 minute for deployment to start
-        deployment_timeout=3600, # kill deployment after 1 hour
+        startup_timeout=60,  # wait 1 minute for deployment to start
+        deployment_timeout=3600,  # kill deployment after 1 hour
     )
     await deployment.start()
     await deployment.is_alive()
     return deployment
+
 
 deployment = asyncio.run(run_modal_deployment())
 asyncio.run(run_some_stuff(deployment))
