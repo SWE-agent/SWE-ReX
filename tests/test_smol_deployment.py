@@ -186,3 +186,27 @@ async def test_cancelled_stop_still_deletes_vm(monkeypatch):
     assert machine.deleted
     with pytest.raises(DeploymentNotStartedError):
         _ = deployment.runtime
+
+
+def _smol_can_run_here() -> bool:
+    """smol boots VMs on Apple Silicon macOS and on Linux with KVM."""
+    import os
+    import platform
+
+    if platform.system() == "Darwin":
+        return platform.machine() == "arm64"
+    return platform.system() == "Linux" and os.access("/dev/kvm", os.R_OK | os.W_OK)
+
+
+@pytest.mark.slow
+@pytest.mark.skipif(not _smol_can_run_here(), reason="smol cannot boot a VM on this host")
+async def test_real_vm_session_output_is_plain():
+    from swerex.runtime.abstract import BashAction, CreateBashSessionRequest
+
+    d = SmolDeployment(image="python:3.11-slim")
+    await d.start()
+    try:
+        await d.runtime.create_session(CreateBashSessionRequest())
+        assert (await d.runtime.run_in_session(BashAction(command="echo hello", check="raise"))).output == "hello\n"
+    finally:
+        await d.stop()

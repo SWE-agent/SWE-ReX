@@ -93,7 +93,8 @@ class SmolDeployment(AbstractDeployment):
         install = (
             f"python3 -m pip install -q {shlex.quote('swe-rex==' + __version__)} && " if cfg.install_server else ""
         )
-        cmd = f'{install}exec swerex-remote --port {cfg.port} --auth-token "$SWEREX_AUTH_TOKEN"'
+        # Without a terminal type, as under docker, the runtime's bash sessions emit no terminal control output.
+        cmd = f'unset TERM; {install}exec swerex-remote --port {cfg.port} --auth-token "$SWEREX_AUTH_TOKEN"'
         # A cloud PortSpec's host port is ignored; the control plane allocates
         # the actual mapping. Local VMs need an available host port up front.
         host_port = cfg.host_port or find_free_port()
