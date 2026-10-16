@@ -79,6 +79,28 @@ So what's going on here? There's multiple steps:
 2. We run `swerex-remote` in the container. It is installed by `pipx` in a virtual environment, so it will not pollute your global Python environment. This is a small server that will wait for commands from SWE-ReX. Fun fact, this will basically run the `LocalRuntime` which was started by the `LocalDeployment` in the previous example.
 3. `DockerDeployment` starts a `RemoteRuntime` that connects to the `swerex-remote` server in the container and executes your commands.
 
+## Running in a Smol Machines microVM
+
+Install `swe-rex[smol]` and select a Smol deployment. The same runtime API and
+persistent Bash sessions work with local microVMs and Smol Cloud:
+
+```python
+from swerex.deployment.smol import SmolDeployment
+
+# A local VM with a published port (requires a working local Smol runtime).
+asyncio.run(run_some_stuff(SmolDeployment(target="local")))
+
+# Or create the VM in Smol Cloud. Authenticate with `smol auth login` or set
+# SMOL_CLOUD_TOKEN; no token needs to appear in your Python source.
+asyncio.run(run_some_stuff(SmolDeployment(target="cloud")))
+```
+
+`start()` creates a VM from `python:3.12-slim`, installs this version of
+SWE-ReX inside it, and waits for its server to be reachable. `stop()` deletes
+the VM. To avoid installing on every start, supply an image that already
+contains `swe-rex` and set `install_server=False`. Cloud VMs have a default
+24-hour TTL as a safety net if the client exits before `stop()`.
+
 ## Running with Modal
 
 Similarly, you can also create remote runs on [Modal](https://modal.com) by swapping out the `DockerDeployment` with `ModalDeployment`.

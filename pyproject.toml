@@ -32,6 +32,7 @@ classifiers = [
 
 dependencies = [
     "fastapi",
+    "aiohttp>=3.9",  # Required by RemoteRuntime (including Docker and Smol).
     "uvicorn",
     "requests",
     "pydantic>=2",
@@ -63,6 +64,9 @@ modal = [
 ]
 fargate = [
     "boto3",
+]
+smol = [
+    "smolmachines>=1.26.1",
 ]
 daytona = [
     "daytona",
