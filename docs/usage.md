@@ -83,12 +83,16 @@ So what's going on here? There's multiple steps:
 
 Similarly, you can also create remote runs on [Modal](https://modal.com) by swapping out the `DockerDeployment` with `ModalDeployment`.
 
+By default, deployments use the `swe-rex` Modal application. Set `app_name` on
+`ModalDeployment` or `ModalDeploymentConfig` to use a different application.
+
 ```python
 from swerex.deployment.modal import ModalDeployment
 
 async def run_modal_deployment():
     deployment = ModalDeployment(
         image="python:3.12",
+        app_name="my-agent",
         startup_timeout=60, # wait 1 minute for deployment to start
         deployment_timeout=3600, # kill deployment after 1 hour
     )
