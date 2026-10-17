@@ -116,6 +116,7 @@ class ModalDeployment(AbstractDeployment):
         *,
         logger: logging.Logger | None = None,
         image: str | modal.Image | PurePath,
+        app_name: str = "swe-rex",
         startup_timeout: float = 0.4,
         runtime_timeout: float = 3600.0,
         modal_sandbox_kwargs: dict[str, Any] | None = None,
@@ -131,6 +132,7 @@ class ModalDeployment(AbstractDeployment):
                 2. Path to a Dockerfile
                 3. Dockerhub image name (e.g. `python:3.11-slim`)
                 4. ECR image name (e.g. `123456789012.dkr.ecr.us-east-1.amazonaws.com/my-image:tag`)
+            app_name: Modal application to look up or create. Defaults to `swe-rex`.
             startup_timeout: The time to wait for the runtime to start.
             runtime_timeout: The runtime timeout.
             deployment_timeout: The deployment timeout.
@@ -142,7 +144,7 @@ class ModalDeployment(AbstractDeployment):
         self._sandbox: modal.Sandbox | None = None
         self._port = 8880
         self.logger = logger or get_logger("rex-deploy")
-        self._app = modal.App.lookup("swe-rex", create_if_missing=True)
+        self._app = modal.App.lookup(app_name, create_if_missing=True)
         self._user = _get_modal_user()
         self._runtime_timeout = runtime_timeout
         self._deployment_timeout = deployment_timeout
@@ -158,6 +160,7 @@ class ModalDeployment(AbstractDeployment):
     def from_config(cls, config: ModalDeploymentConfig) -> Self:
         return cls(
             image=config.image,
+            app_name=config.app_name,
             install_pipx=config.install_pipx,
             startup_timeout=config.startup_timeout,
             runtime_timeout=config.runtime_timeout,

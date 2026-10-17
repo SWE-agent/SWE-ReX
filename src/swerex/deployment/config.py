@@ -98,6 +98,9 @@ class ModalDeploymentConfig(BaseModel):
     image: str | PurePath = "python:3.11"
     """Image to use for the deployment."""
 
+    app_name: str = "swe-rex"
+    """Modal application to look up or create for the deployment."""
+
     startup_timeout: float = 180.0
     """The time to wait for the runtime to start."""
 
