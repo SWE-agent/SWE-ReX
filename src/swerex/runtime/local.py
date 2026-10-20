@@ -168,6 +168,8 @@ class BashSession(Session):
         if self.request.startup_source:
             cmds += [f"source {path}" for path in self.request.startup_source] + ["sleep 0.3"]
         cmds += self._get_reset_commands()
+        # Commands are typed into readline, where a TAB would trigger completion instead of being inserted
+        cmds.append("bind 'set disable-completion on' 2>/dev/null")
         cmd = " ; ".join(cmds)
         self.shell.sendline(cmd)
         self.shell.expect(self._ps1, timeout=self.request.startup_timeout)

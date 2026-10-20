@@ -267,6 +267,15 @@ async def test_bash_multiline_command_eof(runtime_with_default_session: RemoteRu
     assert r.output == "hello world\nhello world 2\n"
 
 
+async def test_run_in_shell_keeps_tabs(runtime_with_default_session: RemoteRuntime, tmp_path: Path):
+    content = "func f() {\n\treturn\n}\n\t\tdone\n"
+    path = tmp_path / "tabs.go"
+    command = f"cat > {path} <<EOF\n{content}EOF"
+    r = await runtime_with_default_session.run_in_session(A(command=command, check="raise"))
+    assert r.output == ""
+    assert path.read_text() == content
+
+
 async def test_run_in_shell_subshell_command(runtime_with_default_session: RemoteRuntime):
     await runtime_with_default_session.run_in_session(A(command="(sleep 10) &", check="raise"))
 
