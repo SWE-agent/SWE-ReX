@@ -26,7 +26,7 @@ async def _wait_until_alive(
             return
         await asyncio.sleep(sleep)
         n_attempts += 1
-    last_response_message = await_response.message if await_response else None
+    last_response_message = getattr(await_response, "message", None)
     msg = (
         f"Runtime did not start within {timeout}s (tried to connect {n_attempts} times). "
         f"The last await response was:\n{last_response_message}"
