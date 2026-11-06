@@ -1,8 +1,79 @@
+import shlex
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
+import swerex
 from swerex.deployment.config import DockerDeploymentConfig
 from swerex.deployment.docker import DockerDeployment
 from swerex.utils.free_port import find_free_port
+
+
+def test_swerex_start_cmd_fallback_order():
+    d = DockerDeployment(image="test", exec_shell=["/bin/sh", "-c"])
+    assert d._get_swerex_start_cmd("TOKEN") == [
+        "/bin/sh",
+        "-c",
+        "swerex-remote --auth-token TOKEN"
+        " || (python3 -m pip install pipx && python3 -m pipx ensurepath"
+        " && python3 -m pipx run --spec swe-rex swerex-remote --auth-token TOKEN)"
+        " || (python3 -m pip install --target /tmp/swerex-pip swe-rex"
+        " && python3 -c \"import sys; sys.path[:1] = ['/tmp/swerex-pip']; from swerex.server import main; main()\""
+        " --auth-token TOKEN)",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("failing", "last_step"),
+    [
+        pytest.param("", "-m pipx run", id="pipx-works"),
+        pytest.param("install pipx", "-c", id="pipx-cannot-be-installed"),
+        pytest.param("ensurepath", "-c", id="ensurepath-fails"),
+        pytest.param("pipx run", "-c", id="pipx-run-fails"),
+    ],
+)
+def test_swerex_start_cmd_falls_through(tmp_path: Path, failing: str, last_step: str):
+    """Runs the generated command with a stub `python3`, as there's no `swerex-remote` on the PATH."""
+    log = tmp_path / "log"
+    stub = tmp_path / "python3"
+    stub.write_text(f"""#!/bin/sh
+echo "$*" >> "{log}"
+case "$*" in
+*"{failing or "NOTHING FAILS"}"*) exit 1 ;;
+esac
+exit 0
+""")
+    stub.chmod(0o755)
+    d = DockerDeployment(image="test", exec_shell=["/bin/sh", "-c"])
+    result = subprocess.run(d._get_swerex_start_cmd("TOKEN"), env={"PATH": str(tmp_path)}, capture_output=True)
+    assert result.returncode == 0
+    steps = log.read_text().splitlines()
+    assert steps[-1].startswith(last_step)
+    assert steps[-1].endswith("--auth-token TOKEN")
+
+
+def test_swerex_start_cmd_last_fallback_ignores_packages_in_working_directory(tmp_path: Path):
+    """The working directory might hold a project with packages named like the server's dependencies."""
+    (tmp_path / "pydantic").mkdir()
+    (tmp_path / "pydantic" / "__init__.py").write_text("raise RuntimeError('shadowed')")
+    d = DockerDeployment(image="test", exec_shell=["/bin/sh", "-c"])
+    cmd = d._get_swerex_start_cmd("TOKEN")[-1]
+    code = shlex.split(cmd.rsplit("||", 1)[1].partition("python3 -c ")[2])[0]
+    code = code.replace("/tmp/swerex-pip", str(Path(swerex.__file__).parent.parent))
+    result = subprocess.run([sys.executable, "-c", code, "--version"], cwd=tmp_path, capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    assert swerex.__version__ in result.stdout
+
+
+def test_swerex_start_cmd_python_standalone_has_no_fallback():
+    d = DockerDeployment(image="test", exec_shell=["/bin/sh", "-c"], python_standalone_dir="/root")
+    assert d._get_swerex_start_cmd("TOKEN") == [
+        "/bin/sh",
+        "-c",
+        "/root/python3.11/bin/swerex-remote --auth-token TOKEN",
+    ]
 
 
 async def test_docker_deployment():
