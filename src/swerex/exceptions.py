@@ -25,10 +25,28 @@ class BashIncorrectSyntaxError(SwerexException, RuntimeError):
         self.extra_info = extra_info
 
 
-class CommandTimeoutError(SwerexException, RuntimeError, TimeoutError): ...
+class CommandTimeoutError(SwerexException, RuntimeError, TimeoutError):
+    """Raised if a command times out. For commands in a shell session, `extra_info.get("output")`
+    holds the output collected so far (the key is absent for other commands and older servers).
+    """
+
+    def __init__(self, message: str = "", *, extra_info: dict[str, Any] = None):
+        super().__init__(message)
+        if extra_info is None:
+            extra_info = {}
+        self.extra_info = extra_info
 
 
-class NoExitCodeError(SwerexException, RuntimeError): ...
+class NoExitCodeError(SwerexException, RuntimeError):
+    """Raised if we can't get the exit code of a command in a shell session.
+    `extra_info.get("output")` holds the output collected so far (the key is absent for older servers).
+    """
+
+    def __init__(self, message: str = "", *, extra_info: dict[str, Any] = None):
+        super().__init__(message)
+        if extra_info is None:
+            extra_info = {}
+        self.extra_info = extra_info
 
 
 class SessionExistsError(SwerexException, ValueError): ...
