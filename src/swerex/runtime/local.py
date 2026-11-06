@@ -161,17 +161,24 @@ class BashSession(Session):
             encoding="utf-8",
             codec_errors="backslashreplace",
             echo=False,
-            env=dict(os.environ.copy(), **{"PS1": self._ps1, "PS2": "", "PS0": ""}),  # type: ignore
+            # The REPL of Python 3.13+ redraws the terminal, which garbles the output of interactive commands.
+            env={"PYTHON_BASIC_REPL": "1", **os.environ, "PS1": self._ps1, "PS2": "", "PS0": ""},  # type: ignore
         )
         await asyncio.sleep(0.3)
         cmds = []
         if self.request.startup_source:
             cmds += [f"source {path}" for path in self.request.startup_source] + ["sleep 0.3"]
         cmds += self._get_reset_commands()
+        # Bash prints a prompt on startup (our PS1, unless an rc file replaces it) and another one after
+        # these commands. To leave no prompt unread in either case, seek to a marker that's printed after
+        # the commands and then to the final prompt. The quotes split the marker in the command itself,
+        # so that the command being echoed can't match it.
+        cmds.append(f"echo '{self._UNIQUE_STRING[:6]}''{self._UNIQUE_STRING[6:]}'")
         cmd = " ; ".join(cmds)
         self.shell.sendline(cmd)
+        self.shell.expect(self._UNIQUE_STRING, timeout=self.request.startup_timeout)
+        output = _strip_control_chars(self.shell.before).replace(self._ps1, "").strip()  # type: ignore
         self.shell.expect(self._ps1, timeout=self.request.startup_timeout)
-        output = _strip_control_chars(self.shell.before)  # type: ignore
         return CreateBashSessionResponse(output=output)
 
     def _eat_following_output(self, timeout: float = 0.5) -> str:
@@ -258,8 +265,6 @@ class BashSession(Session):
         output: str = _strip_control_chars(self.shell.before)  # type: ignore
         if action.is_interactive_quit:
             assert not action.is_interactive_command
-            self.shell.setecho(False)
-            self.shell.waitnoecho()
             self.shell.sendline(f"stty -echo; echo '{self._UNIQUE_STRING}'")
             # Might need two expects for some reason
             self.shell.expect(self._UNIQUE_STRING, timeout=1)
@@ -398,7 +403,12 @@ class LocalRuntime(AbstractRuntime):
             msg = f"unknown session type: {request!r}"
             raise ValueError(msg)
         self.sessions[request.session] = session
-        return await session.start()
+        try:
+            return await session.start()
+        except Exception:
+            await session.close()
+            del self.sessions[request.session]
+            raise
 
     async def run_in_session(self, action: Action) -> Observation:
         """Runs a command in a session."""

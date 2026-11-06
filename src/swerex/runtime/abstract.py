@@ -28,8 +28,8 @@ class CreateBashSessionRequest(BaseModel):
     """
     session: str = "default"
     session_type: Literal["bash"] = "bash"
-    startup_timeout: float = 1.0
-    """The timeout for the startup commands."""
+    startup_timeout: float = 10.0
+    """The timeout for the startup commands, including sourcing the files in `startup_source`."""
 
 
 CreateSessionRequest = Annotated[CreateBashSessionRequest, Field(discriminator="session_type")]
