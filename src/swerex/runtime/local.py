@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -98,12 +99,34 @@ def _strip_control_chars(s: str) -> str:
     return ansi_escape.sub("", s).replace("\r\n", "\n")
 
 
-def _check_bash_command(command: str) -> None:
-    """Check if a bash command is valid. Raises BashIncorrectSyntaxError if it's not."""
-    _unique_string = "SOUNIQUEEOF"
-    cmd = f"/usr/bin/env bash -n << '{_unique_string}'\n{command}\n{_unique_string}"
-    result = subprocess.run(cmd, shell=True, capture_output=True)
+def _check_bash_command(command: str, *, session_has_extglob: Callable[[], bool] = lambda: False) -> None:
+    """Check if a bash command is valid. Raises BashIncorrectSyntaxError if it's not.
+
+    The check runs in a separate process that can't see the session's shell options. So if a
+    command fails to parse, it is parsed again with extglob on if extglob will be active: either
+    the session reports it (`session_has_extglob`), or the command contains `shopt -s extglob`.
+    Accepting that parse in any other case would let bash reject single lines of the command
+    and run the rest.
+
+    Setting the environment variable `SWEREX_DISABLE_SYNTAX_CHECK` to exactly `1` skips the
+    check. It is read from the environment of the process running this runtime. Errors that
+    bash can detect immediately (`a | | b`) then come back as regular shell output, but this
+    is risky: incomplete commands such as an unclosed quote or a missing `fi` leave bash
+    waiting for more input. These produce no error output, but a `CommandTimeoutError`, and
+    later commands return wrong results or time out until a `BashInterruptAction` is sent.
+    """
+    if os.environ.get("SWEREX_DISABLE_SYNTAX_CHECK") == "1":
+        return
+
+    def parse(options: str) -> subprocess.CompletedProcess:
+        _unique_string = "SOUNIQUEEOF"
+        cmd = f"/usr/bin/env bash {options} << '{_unique_string}'\n{command}\n{_unique_string}"
+        return subprocess.run(cmd, shell=True, capture_output=True)
+
+    result = parse("-n")
     if result.returncode == 0:
+        return
+    if ("shopt -s extglob" in command or session_has_extglob()) and parse("-O extglob -n").returncode == 0:
         return
     stdout = result.stdout.decode(errors="backslashreplace")
     stderr = result.stderr.decode(errors="backslashreplace")
@@ -182,6 +205,17 @@ class BashSession(Session):
         except pexpect.TIMEOUT:
             return ""
         return _strip_control_chars(output)
+
+    def _has_extglob(self) -> bool:
+        """Ask the session if extglob is on. This runs a command in the session, so it resets `$?`."""
+        self.shell.sendline("shopt -q extglob; echo EXTGLOBSTATE$?END")
+        try:
+            self.shell.expect(r"EXTGLOBSTATE(\d+)END", timeout=1)
+            enabled = self.shell.match.group(1) == "0"  # type: ignore
+            self.shell.expect(self._ps1, timeout=1)
+        except pexpect.TIMEOUT:
+            return False
+        return enabled
 
     async def interrupt(self, action: BashInterruptAction) -> BashObservation:
         """Interrupt the session."""
@@ -283,7 +317,7 @@ class BashSession(Session):
         action = deepcopy(action)
 
         assert self.shell is not None
-        _check_bash_command(action.command)
+        _check_bash_command(action.command, session_has_extglob=self._has_extglob)
 
         # Part 2: Execute the command
 
@@ -374,6 +408,8 @@ class LocalRuntime(AbstractRuntime):
         self._config = LocalRuntimeConfig(**kwargs)
         self._sessions: dict[str, Session] = {}
         self.logger = logger or get_logger("rex-runtime")
+        if os.environ.get("SWEREX_DISABLE_SYNTAX_CHECK") == "1":
+            self.logger.warning("SWEREX_DISABLE_SYNTAX_CHECK=1: Incomplete commands will time out and block sessions")
 
     @classmethod
     def from_config(cls, config: LocalRuntimeConfig) -> Self:
