@@ -120,10 +120,19 @@ class DockerDeployment(AbstractDeployment):
     def _get_swerex_start_cmd(self, token: str) -> list[str]:
         rex_args = f"--auth-token {token}"
         pipx_install = "python3 -m pip install pipx && python3 -m pipx ensurepath"
+        pip_target = "/tmp/swerex-pip"
         if self._config.python_standalone_dir:
             cmd = f"{self._config.python_standalone_dir}/python3.11/bin/{REMOTE_EXECUTABLE_NAME} {rex_args}"
         else:
-            cmd = f"{REMOTE_EXECUTABLE_NAME} {rex_args} || ({pipx_install} && pipx run {PACKAGE_NAME} {rex_args})"
+            cmd = (
+                f"{REMOTE_EXECUTABLE_NAME} {rex_args}"
+                f" || ({pipx_install} && python3 -m pipx run --spec {PACKAGE_NAME} {REMOTE_EXECUTABLE_NAME} {rex_args})"
+                # Keeps the server's dependencies out of the image's environment and packages in the
+                # working directory out of the server's imports. Subprocesses don't inherit `sys.path`.
+                f" || (python3 -m pip install --target {pip_target} {PACKAGE_NAME}"
+                f" && python3 -c \"import sys; sys.path[:1] = ['{pip_target}']; from swerex.server import main; main()\""
+                f" {rex_args})"
+            )
         # Use exec_shell from config
         return [
             *self._config.exec_shell,
