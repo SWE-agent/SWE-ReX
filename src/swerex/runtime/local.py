@@ -183,6 +183,14 @@ class BashSession(Session):
             return ""
         return _strip_control_chars(output)
 
+    def _partial_output_info(self, output: str) -> dict[str, str]:
+        """`extra_info` for exceptions that are raised before a command's output is complete.
+        This keeps the output across the server (attributes other than `extra_info` are lost).
+        The exit code probe is cut off, as a command that's still running might have received it.
+        """
+        output = re.split(r"(?:echo )?EXITCODESTART", output)[0]
+        return {"output": output.replace(self._UNIQUE_STRING, "").replace(self._ps1, "")}
+
     async def interrupt(self, action: BashInterruptAction) -> BashObservation:
         """Interrupt the session."""
         output = ""
@@ -220,9 +228,12 @@ class BashSession(Session):
 
         Raises:
             SessionNotInitializedError: If the shell is not initialized.
-            CommandTimeoutError: If the command times out.
+            CommandTimeoutError: If the command times out. `extra_info.get("output")` holds everything unread
+                in the session so far, which the next interrupt returns again. The key is absent for servers
+                that don't send it yet.
             NonZeroExitCodeError: If the command has a non-zero exit code and `action.check` is True.
-            NoExitCodeError: If we cannot get the exit code of the command.
+            NoExitCodeError: If we cannot get the exit code of the command. `extra_info.get("output")` holds
+                the output so far.
 
         Returns:
             BashObservation: The observation of the command.
@@ -254,7 +265,11 @@ class BashSession(Session):
             matched_expect_string = expect_strings[expect_index]
         except pexpect.TIMEOUT as e:
             msg = f"timeout after {action.timeout} seconds while running command {action.command!r}"
-            raise CommandTimeoutError(msg) from e
+            partial_output = _strip_control_chars(self.shell.before)  # type: ignore
+            if action.is_interactive_command:
+                # See below: The shell might have echoed the command
+                partial_output = partial_output.lstrip().removeprefix(action.command).strip()
+            raise CommandTimeoutError(msg, extra_info=self._partial_output_info(partial_output)) from e
         output: str = _strip_control_chars(self.shell.before)  # type: ignore
         if action.is_interactive_quit:
             assert not action.is_interactive_command
@@ -313,7 +328,8 @@ class BashSession(Session):
             matched_expect_string = expect_strings[expect_index]
         except pexpect.TIMEOUT as e:
             msg = f"timeout after {action.timeout} seconds while running command {action.command!r}"
-            raise CommandTimeoutError(msg) from e
+            partial_output = _strip_control_chars(self.shell.before)  # type: ignore
+            raise CommandTimeoutError(msg, extra_info=self._partial_output_info(partial_output)) from e
         output: str = _strip_control_chars(self.shell.before)  # type: ignore
 
         # Part 3: Get the exit code
@@ -328,12 +344,13 @@ class BashSession(Session):
                 self.shell.expect(_exit_code_suffix, timeout=1)
             except pexpect.TIMEOUT:
                 msg = "timeout while getting exit code"
-                raise NoExitCodeError(msg)
+                partial_output = output + _strip_control_chars(self.shell.before)  # type: ignore
+                raise NoExitCodeError(msg, extra_info=self._partial_output_info(partial_output))
             exit_code_raw: str = _strip_control_chars(self.shell.before)  # type: ignore
             exit_code = re.findall(f"{_exit_code_prefix}([0-9]+)", exit_code_raw)
             if len(exit_code) != 1:
                 msg = f"failed to parse exit code from output {exit_code_raw!r} (command: {action.command!r}, matches: {exit_code})"
-                raise NoExitCodeError(msg)
+                raise NoExitCodeError(msg, extra_info=self._partial_output_info(output + exit_code_raw))
             output += exit_code_raw.split(_exit_code_prefix)[0]
             exit_code = int(exit_code[0])
             # We get at least one more PS1 here.
@@ -341,13 +358,14 @@ class BashSession(Session):
                 self.shell.expect(self._ps1, timeout=0.1)
             except pexpect.TIMEOUT:
                 msg = "Timeout while getting PS1 after exit code extraction"
-                raise CommandTimeoutError(msg)
+                raise CommandTimeoutError(msg, extra_info=self._partial_output_info(output))
             output = output.replace(self._UNIQUE_STRING, "").replace(self._ps1, "")
-        except Exception:
+        except Exception as e:
             # Ignore all exceptions if check == 'silent'
             if action.check == "raise":
                 raise
             exit_code = None
+            output = getattr(e, "extra_info", {}).get("output", output)
         return BashObservation(output=output, exit_code=exit_code, expect_string=matched_expect_string)
 
     async def close(self) -> CloseSessionResponse:

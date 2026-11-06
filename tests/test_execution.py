@@ -6,6 +6,7 @@ import pytest
 from swerex.exceptions import (
     BashIncorrectSyntaxError,
     CommandTimeoutError,
+    NoExitCodeError,
     NonZeroExitCodeError,
     SessionDoesNotExistError,
 )
@@ -17,8 +18,10 @@ from swerex.runtime.abstract import (
     UploadRequest,
     WriteFileRequest,
 )
+from swerex.runtime.local import LocalRuntime
 from swerex.runtime.remote import RemoteRuntime
 
+from .conftest import TEST_API_KEY, RemoteServer
 from .conftest import _Action as A
 from .conftest import _Command as C
 
@@ -373,3 +376,106 @@ async def test_interrupt_pager(runtime_with_default_session: RemoteRuntime):
     r = await runtime_with_default_session.run_in_session(A(command="echo 'asdf'", check="raise"))
     assert "asdf" in r.output
     assert "kill" in r.output.lower()
+
+
+@pytest.fixture(params=["local", "remote"])
+async def runtime_with_session(request: pytest.FixtureRequest, remote_server: RemoteServer):
+    """Local and remote runtimes with a ready session, so that `extra_info` is also tested
+    across the server round trip.
+    """
+    runtime: LocalRuntime | RemoteRuntime
+    if request.param == "local":
+        runtime = LocalRuntime()
+    else:
+        runtime = RemoteRuntime(port=remote_server.port, auth_token=TEST_API_KEY)
+    await runtime.create_session(CreateBashSessionRequest())
+    # Depending on the shell's startup files, start() can leave a PS1 behind, which
+    # the first command would match instead of its own PS1. Get past it.
+    await runtime.run_in_session(A(command="true", check="silent"))
+    try:
+        yield runtime
+    finally:
+        await runtime.close_session(CloseBashSessionRequest())
+        await runtime.close()
+
+
+# The text only appears when this runs, so that an echo of the command can't satisfy the tests
+_PRINT_MARKER = "printf 'mar%s\\n' ker"
+_MARKER = "marker"
+
+
+async def test_timeout_preserves_output(runtime_with_session: LocalRuntime | RemoteRuntime):
+    with pytest.raises(CommandTimeoutError, match="timeout after 1") as e:
+        await runtime_with_session.run_in_session(A(command=f"{_PRINT_MARKER}; sleep 5", timeout=1))
+    assert _MARKER in e.value.extra_info["output"]
+
+
+async def test_timeout_preserves_output_interactive(runtime_with_session: LocalRuntime | RemoteRuntime):
+    with pytest.raises(CommandTimeoutError, match="timeout after 1") as e:
+        await runtime_with_session.run_in_session(
+            A(command=f"{_PRINT_MARKER}; sleep 5", is_interactive_command=True, expect=["WONTHITTHIS"], timeout=1)
+        )
+    assert _MARKER in e.value.extra_info["output"]
+
+
+async def test_timeout_does_not_change_session_handling(runtime_with_session: LocalRuntime | RemoteRuntime):
+    with pytest.raises(CommandTimeoutError):
+        await runtime_with_session.run_in_session(A(command=f"{_PRINT_MARKER}; sleep 5", timeout=1))
+    # Reading the output doesn't consume it: later expects still see it
+    r = await runtime_with_session.run_in_session(BashInterruptAction())
+    assert _MARKER in r.output
+    r = await runtime_with_session.run_in_session(A(command="echo 'asdf'", check="raise"))
+    assert "asdf" in r.output
+
+
+async def test_exit_code_timeout_preserves_output(runtime_with_session: LocalRuntime | RemoteRuntime):
+    """The command is still running when we ask for the exit code"""
+    with pytest.raises(NoExitCodeError, match="timeout while getting exit code") as e:
+        await runtime_with_session.run_in_session(
+            A(command=f"{_PRINT_MARKER}; echo MATCHED; echo after; sleep 5", expect=["MATCHED"], check="raise")
+        )
+    assert _MARKER in e.value.extra_info["output"]
+    assert "after" in e.value.extra_info["output"]
+    assert "EXITCODE" not in e.value.extra_info["output"]
+
+
+async def test_exit_code_parse_failure_preserves_output(runtime_with_session: LocalRuntime | RemoteRuntime):
+    """The command prints the exit code suffix itself, so we stop reading before the exit code"""
+    with pytest.raises(NoExitCodeError, match="failed to parse exit code") as e:
+        await runtime_with_session.run_in_session(
+            A(command=f"{_PRINT_MARKER}; echo MATCHED; echo EXITCODEEND", expect=["MATCHED"], check="raise")
+        )
+    assert _MARKER in e.value.extra_info["output"]
+
+
+async def test_ps1_timeout_after_exit_code_preserves_output(runtime_with_session: LocalRuntime | RemoteRuntime):
+    """The command changes the PS1, so we get the exit code but never see the PS1 we expect"""
+    with pytest.raises(CommandTimeoutError, match="getting PS1") as e:
+        await runtime_with_session.run_in_session(
+            A(command=f"{_PRINT_MARKER}; echo MATCHED; PS1=changed", expect=["MATCHED"], check="raise")
+        )
+    assert _MARKER in e.value.extra_info["output"]
+
+
+async def test_silent_check_still_returns_output_without_exit_code(runtime_with_session: LocalRuntime | RemoteRuntime):
+    r = await runtime_with_session.run_in_session(
+        A(
+            command=f"{_PRINT_MARKER}; echo MATCHED; echo important; echo EXITCODEEND",
+            expect=["MATCHED"],
+            check="silent",
+        )
+    )
+    assert _MARKER in r.output
+    assert "important" in r.output
+    assert r.exit_code is None
+
+
+@pytest.mark.parametrize("exc_class", [CommandTimeoutError, NoExitCodeError])
+def test_extra_info_is_optional(exc_class: type[Exception]):
+    """The remote runtime rebuilds exceptions from only their message"""
+    exc = exc_class("message")
+    assert str(exc) == "message"
+    assert exc.extra_info == {}
+    exc = exc_class("message", extra_info={"output": "text"})
+    assert str(exc) == "message"
+    assert exc.extra_info == {"output": "text"}
