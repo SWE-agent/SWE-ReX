@@ -41,6 +41,19 @@ from swerex.utils.wait import _wait_until_alive
 __all__ = ["RemoteRuntime", "RemoteRuntimeConfig"]
 
 
+class _RemoteTraceback(Exception):
+    """Cause of re-raised remote exceptions, so that the remote traceback shows up when the
+    exception is formatted with its traceback, but not in its message.
+    """
+
+    def __init__(self, remote_traceback: str):
+        super().__init__(remote_traceback)
+        self.remote_traceback = remote_traceback
+
+    def __str__(self) -> str:
+        return self.remote_traceback
+
+
 class RemoteRuntime(AbstractRuntime):
     def __init__(
         self,
@@ -82,11 +95,14 @@ class RemoteRuntime(AbstractRuntime):
         return f"{self._config.host}:{self._config.port}"
 
     def _handle_transfer_exception(self, exc_transfer: _ExceptionTransfer) -> None:
-        """Reraise exceptions that were thrown on the remote."""
-        if exc_transfer.traceback:
-            self.logger.critical("Traceback: \n%s", exc_transfer.traceback)
+        """Reraise exceptions that were thrown on the remote.
+
+        The remote traceback is attached as the cause rather than logged, because the caller
+        might catch the exception.
+        """
+        message = exc_transfer.message
+        cause = _RemoteTraceback(exc_transfer.traceback) if exc_transfer.traceback else None
         module, _, exc_name = exc_transfer.class_path.rpartition(".")
-        print(module, exc_name)
         if module == "builtins":
             module_obj = __builtins__
         else:
@@ -96,23 +112,20 @@ class RemoteRuntime(AbstractRuntime):
                     __import__(module)
                 except ImportError:
                     self.logger.debug("Failed to import module %s", module)
-                    exc = SwerexException(exc_transfer.message)
-                    raise exc from None
+                    exc = SwerexException(message)
+                    raise exc from cause
             module_obj = sys.modules[module]
         try:
             if isinstance(module_obj, dict):
                 # __builtins__, sometimes
-                exception = module_obj[exc_name](exc_transfer.message)
+                exception = module_obj[exc_name](message)
             else:
-                exception = getattr(module_obj, exc_name)(exc_transfer.message)
-        except (AttributeError, TypeError):
-            self.logger.error(
-                f"Could not initialize transferred exception: {exc_transfer.class_path!r}. "
-                f"Transfer object: {exc_transfer}"
-            )
-            exception = SwerexException(exc_transfer.message)
+                exception = getattr(module_obj, exc_name)(message)
+        except (AttributeError, KeyError, TypeError):
+            self.logger.error(f"Could not initialize transferred exception: {exc_transfer.class_path!r}: {message}")
+            exception = SwerexException(message)
         exception.extra_info = exc_transfer.extra_info
-        raise exception from None
+        raise exception from cause
 
     async def _handle_response_errors(self, response: aiohttp.ClientResponse) -> None:
         """Raise exceptions found in the request response."""
