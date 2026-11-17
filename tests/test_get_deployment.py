@@ -7,6 +7,7 @@ from swerex.deployment.config import (
     FargateDeploymentConfig,
     LocalDeploymentConfig,
     ModalDeploymentConfig,
+    OpenSandboxDeploymentConfig,
     RemoteDeploymentConfig,
 )
 from swerex.deployment.daytona import DaytonaDeployment
@@ -14,6 +15,7 @@ from swerex.deployment.docker import DockerDeployment
 from swerex.deployment.fargate import FargateDeployment
 from swerex.deployment.local import LocalDeployment
 from swerex.deployment.modal import ModalDeployment
+from swerex.deployment.opensandbox import OpenSandboxDeployment
 from swerex.deployment.remote import RemoteDeployment
 
 
@@ -45,6 +47,11 @@ def test_get_fargate_deployment():
 def test_get_daytona_deployment():
     deployment = get_deployment(DaytonaDeploymentConfig(image="test"))
     assert isinstance(deployment, DaytonaDeployment)
+
+
+def test_get_opensandbox_deployment():
+    deployment = get_deployment(OpenSandboxDeploymentConfig(image="test"))
+    assert isinstance(deployment, OpenSandboxDeployment)
 
 
 if __name__ == "__main__":

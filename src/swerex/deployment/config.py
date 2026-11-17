@@ -211,6 +211,51 @@ class DaytonaDeploymentConfig(BaseModel):
         return DaytonaDeployment.from_config(self)
 
 
+class OpenSandboxDeploymentConfig(BaseModel):
+    """Configuration for OpenSandbox deployment."""
+
+    image: str = Field(default="python:3.11", description="Image to use for the sandbox")
+    port: int = Field(default=8880, description="Port that the SWE Rex server listens on inside the sandbox")
+    startup_timeout: float = Field(default=180.0, description="The time to wait for the runtime to start")
+    runtime_timeout: float = Field(default=60, description="Timeout for the runtime")
+    sandbox_timeout: float = Field(
+        default=3600.0,
+        description="Maximum lifetime of the sandbox in seconds. The sandbox is removed by the "
+        "OpenSandbox server after this time no matter what.",
+    )
+    resource: dict[str, str] | None = Field(
+        default=None,
+        description="Resource limits for the sandbox (e.g. {'cpu': '1', 'memory': '2Gi'})",
+    )
+    api_key: str = Field(
+        default="",
+        description="API key for the OpenSandbox server. If empty, the opensandbox SDK falls back "
+        "to the OPEN_SANDBOX_API_KEY environment variable.",
+    )
+    domain: str = Field(
+        default="",
+        description="Base domain of the OpenSandbox server. If empty, the opensandbox SDK falls back "
+        "to the OPEN_SANDBOX_DOMAIN environment variable (default: localhost:8080).",
+    )
+    protocol: str = Field(default="http", description="Protocol to use for the OpenSandbox server (http/https)")
+    request_timeout: float = Field(
+        default=30.0, description="Timeout in seconds for HTTP requests to the OpenSandbox server"
+    )
+    create_sandbox_kwargs: dict[str, Any] = {}
+    """Additional keyword arguments to pass to `opensandbox.Sandbox.create`
+    (e.g. env, metadata, network_policy, volumes)."""
+
+    type: Literal["opensandbox"] = "opensandbox"
+    """Discriminator for (de)serialization/CLI. Do not change."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    def get_deployment(self) -> AbstractDeployment:
+        from swerex.deployment.opensandbox import OpenSandboxDeployment
+
+        return OpenSandboxDeployment.from_config(self)
+
+
 DeploymentConfig = (
     LocalDeploymentConfig
     | DockerDeploymentConfig
@@ -219,6 +264,7 @@ DeploymentConfig = (
     | RemoteDeploymentConfig
     | DummyDeploymentConfig
     | DaytonaDeploymentConfig
+    | OpenSandboxDeploymentConfig
 )
 """Union of all deployment configurations. Useful for type hints."""
 

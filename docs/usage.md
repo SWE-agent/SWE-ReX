@@ -122,3 +122,30 @@ output='test\n' exit_code=0 failure_reason='' expect_string='SHELLPS1PREFIX' ses
 🦖 DEBUG    Ensuring deployment is stopped because object is deleted          
 ```
 {% include-markdown "_footer.md" %}
+
+## Running with OpenSandbox
+
+Similarly, you can run commands in [OpenSandbox](https://github.com/opensandbox-group/OpenSandbox) sandboxes by using the `OpenSandboxDeployment`.
+
+```python
+from swerex.deployment.opensandbox import OpenSandboxDeployment
+
+async def run_opensandbox_deployment():
+    deployment = OpenSandboxDeployment(
+        image="python:3.11",
+        domain="opensandbox.example.com",  # or set OPEN_SANDBOX_DOMAIN
+        api_key="...",  # or set OPEN_SANDBOX_API_KEY
+        startup_timeout=60, # wait 1 minute for deployment to start
+        sandbox_timeout=3600, # sandbox is removed after 1 hour
+    )
+    await deployment.start()
+    await deployment.is_alive()
+    return deployment
+
+deployment = asyncio.run(run_opensandbox_deployment())
+asyncio.run(run_some_stuff(deployment))
+```
+
+This requires the `opensandbox` Python SDK: `pip install 'swe-rex[opensandbox]'`.
+
+You can pass additional arguments to `opensandbox.Sandbox.create` (e.g. `env`, `metadata`, `network_policy`, `volumes`, `resource`) via `create_sandbox_kwargs`, or set resource limits directly via the `resource` argument.

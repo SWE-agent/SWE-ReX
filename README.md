@@ -45,6 +45,8 @@ pip install 'swe-rex[modal]'
 pip install 'swe-rex[fargate]'
 # With daytona support (WIP)
 pip install 'swe-rex[daytona]'
+# With OpenSandbox support (WIP)
+pip install 'swe-rex[opensandbox]'
 # Development setup (all optional dependencies)
 pip install 'swe-rex[dev]'
 ```
